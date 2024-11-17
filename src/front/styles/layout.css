@@ -1,0 +1,78 @@
+/* General Sidebar Styles */
+.sidebar {
+    background-color: #2d3748; /* Equivalent to bg-gray-800 */
+    color: #a0aec0; /* Equivalent to text-gray-300 */
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    width: 16rem; /* w-64 for expanded */
+    height: 100vh;
+  }
+  
+  .sidebar.collapsed {
+    width: 5rem; /* w-20 for collapsed */
+  }
+  
+  /* Logo Area */
+  .sidebar .logo-area {
+    height: 4rem; /* h-16 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+  
+  /* Navigation Items */
+  .sidebar .nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+    border-radius: 0.375rem; /* rounded-md */
+    transition: background-color 0.2s, color 0.2s;
+  }
+  
+  .sidebar .nav-item:hover {
+    background-color: #4a5568; /* hover:bg-gray-700 */
+    color: #ffffff; /* hover:text-white */
+  }
+  
+  .sidebar .nav-item.active {
+    background-color: #1a202c; /* bg-gray-900 */
+    color: #ffffff; /* text-white */
+  }
+  
+  /* Logout Section */
+  .sidebar .logout {
+    border-top: 1px solid #4a5568; /* border-gray-700 */
+    padding: 1rem;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    color: #a0aec0;
+    cursor: pointer;
+  }
+  
+  .sidebar .logout:hover {
+    color: #ffffff;
+  }
+  
+  /* Main Content */
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .main-content .header {
+    background-color: #ffffff; /* bg-white */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* shadow */
+    height: 4rem; /* h-16 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+  
