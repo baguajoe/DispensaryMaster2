@@ -30,6 +30,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ManageRoles from "./pages/ManageRoles";
 import ProductSearch from "./pages/ProductSearch";
 import Pricing from "./pages/Pricing";
+import PredictiveInventoryAnalyticsPage from "./pages/PredictiveInventoryAnalyticsPage";
+import SalesPredictionPage from "./pages/SalesPredictionPage";
 
 const Layout = () => {
   return (
@@ -84,6 +86,25 @@ const Layout = () => {
         {/* Admin */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/manage-roles" element={<ManageRoles />} />
+
+        {/* Tech Support */}
+        <Routes>
+          <Route path="/support" element={<SupportForm />} />
+          <Route path="/support/tickets" element={<SupportTickets />} />
+          <Route path="/admin/support" element={<AdminSupport />} />
+        </Routes>
+
+        {/* predictive analytics */}
+        <Routes>
+          <Route path="/analytics/predictive" element={<PredictiveInventoryAnalyticsPage />} />
+        </Routes>
+
+        {/* sales prediction */}
+
+        <Routes>
+
+          <Route path="/analytics/sales-predictions" element={<SalesPredictionPage />} />
+        </Routes>
 
         {/* Pricing */}
         <Route path="/pricing" element={<Pricing />} />
