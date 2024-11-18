@@ -1,238 +1,283 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { Line } from "react-chartjs-2";
-import Chart from "chart.js/auto";
+import React, { useState } from 'react';
+import { Check, X } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
-const SubscriptionPage = () => {
-  const [plan, setPlan] = useState("basic"); // Default plan
-  const [email, setEmail] = useState(""); // User email input
-  const [userCount, setUserCount] = useState(1); // Default to 1 user for Power BI
-  const [totalPrice, setTotalPrice] = useState(249.99); // Default price for Basic Plan
+const PricingComparison = () => {
+  const [selectedPlan, setSelectedPlan] = useState('basic');
+  const [email, setEmail] = useState('');
+  const [userCount, setUserCount] = useState(1);
+  const [totalPrice, setTotalPrice] = useState(249.99);
 
-  const handlePlanChange = (e) => {
-    setPlan(e.target.value);
-    setUserCount(1); // Reset user count to 1 when switching plans
-    if (e.target.value === "basic") {
-      setTotalPrice(249.99);
-    } else if (e.target.value === "pro") {
-      setTotalPrice(499.99);
-    } else if (e.target.value === "enterprise") {
-      setTotalPrice(749.99);
+  const plans = [
+    { 
+      name: 'Basic Plan', 
+      basePrice: 249.99,
+      posLicenses: 2,
+      powerBiType: null,
+      maxUsers: 0,
+      userPrice: 0
+    },
+    { 
+      name: 'Pro Plan', 
+      basePrice: 499.99,
+      posLicenses: 5,
+      powerBiType: 'Pro',
+      maxUsers: 10,  // Updated to 10 users
+      userPrice: 10
+    },
+    { 
+      name: 'Enterprise Plan', 
+      basePrice: 749.99,
+      posLicenses: 10,
+      powerBiType: 'Premium Per User',
+      maxUsers: 20,  // Updated to 20 users
+      userPrice: 20
     }
-  };
+  ];
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+  const features = [
+    {
+      category: 'Core Features',
+      items: [
+        { name: 'Product Management', basic: true, pro: true, enterprise: true },
+        { name: 'Customer Management', basic: true, pro: true, enterprise: true },
+        { name: 'Order Management', basic: true, pro: true, enterprise: true },
+        { name: 'Invoice Management', basic: true, pro: true, enterprise: true }
+      ]
+    },
+    {
+      category: 'Power BI Integration',
+      items: [
+        { name: 'Power BI Pro', basic: false, pro: 'Up to 10 users', enterprise: false },
+        { name: 'Power BI Premium Per User', basic: false, pro: false, enterprise: 'Up to 20 users' }
+      ]
+    },
+    {
+      category: 'Analytics & AI Features',
+      items: [
+        { name: 'Sales Analytics', basic: false, pro: true, enterprise: true },
+        { name: 'Inventory Analytics', basic: false, pro: true, enterprise: true },
+        { name: 'Predictive Inventory Analytics', basic: false, pro: false, enterprise: true },
+        { name: 'Sales Prediction', basic: false, pro: false, enterprise: true },
+        { name: 'Fraud Detection', basic: false, pro: false, enterprise: true },
+        { name: 'Demand Forecasting', basic: false, pro: false, enterprise: true },
+        { name: 'AI-Powered POS Recommendations', basic: false, pro: false, enterprise: true },
+        { name: 'Campaign Analytics', basic: false, pro: false, enterprise: true }
+      ]
+    },
+    {
+      category: 'Admin & User Features',
+      items: [
+        { name: 'Role Management', basic: false, pro: true, enterprise: true },
+        { name: 'Import Inventory', basic: false, pro: true, enterprise: true },
+        { name: 'User Settings', basic: true, pro: true, enterprise: true },
+        { name: 'Notifications', basic: true, pro: true, enterprise: true },
+        { name: 'Admin Dashboard', basic: false, pro: true, enterprise: true }
+      ]
+    }
+  ];
+
+  const chartData = [
+    {
+      name: 'Basic',
+      'Core Features': 4,
+      'Analytics & AI': 0,
+      'Admin & Support': 2
+    },
+    {
+      name: 'Pro',
+      'Core Features': 6,
+      'Analytics & AI': 3,
+      'Admin & Support': 4
+    },
+    {
+      name: 'Enterprise',
+      'Core Features': 9,
+      'Analytics & AI': 7,
+      'Admin & Support': 8
+    }
+  ];
+
+  const handlePlanChange = (planName) => {
+    const plan = plans.find(p => p.name === planName);
+    setSelectedPlan(planName.split(' ')[0].toLowerCase());
+    setUserCount(1);
+    setTotalPrice(plan.basePrice + plan.userPrice); // Include first user in base price
   };
 
   const handleUserCountChange = (e) => {
-    const count = e.target.value;
+    const plan = plans.find(p => p.name.toLowerCase().startsWith(selectedPlan));
+    const count = Math.min(Math.max(1, parseInt(e.target.value) || 1), plan.maxUsers);
     setUserCount(count);
-
-    // Adjust the price based on Power BI users
-    if (plan === "pro") {
-      setTotalPrice(499.99 + count * 10); // $10 per user for Pro Plan
-    } else if (plan === "enterprise") {
-      setTotalPrice(749.99 + count * 20); // $20 per user for Enterprise Plan
-    }
+    setTotalPrice(plan.basePrice + (count * plan.userPrice));
   };
 
-  const handleSubscription = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     if (!email) {
-      alert("Please enter your email.");
+      alert('Please enter your email address');
       return;
     }
-
-    axios
-      .post("/api/powerbi/subscribe", {
-        email: email,
-        plan: plan,
-        planPrice: totalPrice,
-        userCount: userCount,
-      })
-      .then((response) => {
-        alert(response.data.message); // Handle success
-      })
-      .catch((error) => {
-        console.error("Error subscribing:", error);
-        alert("Error subscribing, please try again.");
-      });
+    console.log({
+      email,
+      plan: selectedPlan,
+      userCount,
+      totalPrice
+    });
   };
 
-  // Chart Data for the features per plan
-  const chartData = {
-    labels: ["Basic", "Pro", "Enterprise"],
-    datasets: [
-      {
-        label: "Core Features",
-        data: [4, 6, 9], // Number of core features for each plan
-        fill: false,
-        borderColor: "rgb(75, 192, 192)",
-        tension: 0.1,
-      },
-      {
-        label: "Analytics & AI Features",
-        data: [0, 3, 7], // Number of Analytics & AI features for each plan
-        fill: false,
-        borderColor: "rgb(153, 102, 255)",
-        tension: 0.1,
-      },
-      {
-        label: "Admin & Support Features",
-        data: [2, 4, 8], // Number of Admin & Support features for each plan
-        fill: false,
-        borderColor: "rgb(255, 159, 64)",
-        tension: 0.1,
-      },
-    ],
+  const renderCell = (value) => {
+    if (typeof value === 'boolean') {
+      return value ? (
+        <Check className="mx-auto text-green-500" size={20} />
+      ) : (
+        <X className="mx-auto text-red-500" size={20} />
+      );
+    }
+    return <span className="text-sm">{value}</span>;
   };
 
   return (
-    <div>
-      <h1>Choose Your Plan</h1>
-
-      {/* Email Input */}
-      <div>
-        <label>
-          Email Address:
-          <input
-            type="email"
-            value={email}
-            onChange={handleEmailChange}
-            placeholder="Enter your email"
-            required
-          />
-        </label>
-      </div>
-
-      {/* Plan Options */}
-      <div>
-        <label>
-          Basic Plan ($249.99/month) - 2 POS Licenses (No Power BI)
-          <input
-            type="radio"
-            value="basic"
-            checked={plan === "basic"}
-            onChange={handlePlanChange}
-          />
-        </label>
-        <ul>
-          <li>Product Management</li>
-          <li>Customer Management</li>
-          <li>Order Management</li>
-          <li>Invoice Management</li>
-          <li>No Compliance Reports</li>
-          <li>No Analytics or AI features</li>
-          <li>No Power BI Integration</li>
-        </ul>
-      </div>
-
-      <div>
-        <label>
-          Pro Plan ($499.99/month) - 5 POS Licenses (Power BI Pro Included)
-          <input
-            type="radio"
-            value="pro"
-            checked={plan === "pro"}
-            onChange={handlePlanChange}
-          />
-        </label>
-        <ul>
-          <li>Product Management</li>
-          <li>Customer Management</li>
-          <li>Order Management</li>
-          <li>Invoice Management</li>
-          <li>Compliance Reports</li>
-          <li>Sales Analytics</li>
-          <li>Inventory Analytics</li>
-          <li>No Predictive Analytics, Sales Prediction, or Fraud Detection</li>
-          <li>Role Management</li>
-          <li>Import Inventory</li>
-          <li>User Settings & Notifications</li>
-          <li>Email Support</li>
-          <li>Limited API Access</li>
-          <li>No POS System Integration</li>
-          <li>Power BI Pro Integration</li>
-        </ul>
-        {/* Power BI User Count */}
-        <div>
-          <label>
-            Number of Power BI Users (Add $10 per user)
+    <div className="space-y-8 p-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid gap-4">
+          <label className="block">
+            <span className="text-gray-700">Email Address</span>
             <input
-              type="number"
-              value={userCount}
-              onChange={handleUserCountChange}
-              min="1"
-              max="10"
+              type="email"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
             />
           </label>
         </div>
-      </div>
 
-      <div>
-        <label>
-          Enterprise Plan ($749.99/month) - 10 POS Licenses (Power BI Premium Per User Included)
-          <input
-            type="radio"
-            value="enterprise"
-            checked={plan === "enterprise"}
-            onChange={handlePlanChange}
-          />
-        </label>
-        <ul>
-          <li>Product Management</li>
-          <li>Customer Management</li>
-          <li>Order Management</li>
-          <li>Invoice Management</li>
-          <li>Compliance Reports</li>
-          <li>Sales Analytics</li>
-          <li>Inventory Analytics</li>
-          <li>Predictive Inventory Analytics</li>
-          <li>Sales Prediction</li>
-          <li>Fraud Detection</li>
-          <li>Demand Forecasting</li>
-          <li>AI-Powered POS Recommendations</li>
-          <li>Campaign Analytics</li>
-          <li>Role Management</li>
-          <li>Import Inventory</li>
-          <li>User Settings & Notifications</li>
-          <li>Priority Support</li>
-          <li>Full API Access</li>
-          <li>POS System Integration</li>
-          <li>Plan Customization Options</li>
-          <li>Advanced Compliance Alerts</li>
-          <li>Power BI Premium Per User Integration (Up to 15 users)</li>
-        </ul>
-        {/* Power BI User Count */}
-        <div>
-          <label>
-            Number of Power BI Users (Add $20 per user)
-            <input
-              type="number"
-              value={userCount}
-              onChange={handleUserCountChange}
-              min="1"
-              max="15"
-            />
-          </label>
+        <Card className="w-full">
+          <CardContent className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="p-4 text-left"></th>
+                    {plans.map(plan => (
+                      <th key={plan.name} className="p-4 text-center">
+                        <div className="space-y-2">
+                          <div className="font-bold text-lg">{plan.name}</div>
+                          <div className="text-xl font-bold text-blue-600">
+                            ${plan.basePrice.toFixed(2)}
+                          </div>
+                          <div className="text-sm text-gray-500">/month</div>
+                          <div className="text-sm text-gray-600">
+                            {plan.posLicenses} POS Licenses
+                          </div>
+                          {plan.powerBiType && (
+                            <div className="text-sm text-gray-600">
+                              Power BI {plan.powerBiType}
+                              <br />
+                              <span className="text-xs">
+                                (Up to {plan.maxUsers} users, +${plan.userPrice}/user)
+                              </span>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handlePlanChange(plan.name)}
+                            className={`px-4 py-2 rounded-md ${
+                              selectedPlan === plan.name.split(' ')[0].toLowerCase()
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
+                          >
+                            Select Plan
+                          </button>
+                          {plan.maxUsers > 0 && selectedPlan === plan.name.split(' ')[0].toLowerCase() && (
+                            <div className="mt-4">
+                              <label className="block text-sm">
+                                Power BI Users
+                                <input
+                                  type="number"
+                                  value={userCount}
+                                  onChange={handleUserCountChange}
+                                  min="1"
+                                  max={plan.maxUsers}
+                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                />
+                                <span className="text-xs text-gray-500">
+                                  +${plan.userPrice}/user
+                                </span>
+                              </label>
+                            </div>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {features.map((category, categoryIndex) => (
+                    <React.Fragment key={category.category}>
+                      <tr className="bg-gray-50">
+                        <td colSpan={4} className="p-4 font-bold text-lg">
+                          {category.category}
+                        </td>
+                      </tr>
+                      {category.items.map((feature, featureIndex) => (
+                        <tr key={`${categoryIndex}-${featureIndex}`} 
+                            className="border-b border-gray-200">
+                          <td className="p-4 text-left">{feature.name}</td>
+                          <td className="p-4 text-center">{renderCell(feature.basic)}</td>
+                          <td className="p-4 text-center">{renderCell(feature.pro)}</td>
+                          <td className="p-4 text-center">{renderCell(feature.enterprise)}</td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <div className="text-2xl font-bold mb-4">
+            Total Price: ${totalPrice.toFixed(2)}/month
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Subscribe Now
+          </button>
         </div>
-      </div>
+      </form>
 
-      {/* Subscribe Button */}
-      <button onClick={handleSubscription}>Subscribe</button>
-
-      {/* Chart for Plan Features */}
-      <div>
-        <h2>Plan Features Comparison</h2>
-        <Line data={chartData} />
-      </div>
-
-      {/* Total Price */}
-      <div>
-        <h3>Total Price: ${totalPrice}</h3>
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="text-xl font-bold mb-4">Features Comparison</h2>
+          <div className="h-80">
+            <LineChart
+              width={800}
+              height={300}
+              data={chartData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="Core Features" stroke="#8884d8" />
+              <Line type="monotone" dataKey="Analytics & AI" stroke="#82ca9d" />
+              <Line type="monotone" dataKey="Admin & Support" stroke="#ffc658" />
+            </LineChart>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
-export default SubscriptionPage;
+export default PricingComparison;
