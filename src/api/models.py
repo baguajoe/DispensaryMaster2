@@ -217,3 +217,18 @@ class Invoice(db.Model):
             "total_amount": float(self.total_amount),
             "status": self.status,
         }
+ 
+class Plan(db.Model):
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    features = db.Column(db.JSON, nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "price": self.price,
+            "features": self.features,
+        }
+
