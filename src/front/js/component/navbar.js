@@ -1,32 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
-import axios from "axios";
 
-const Navbar = () => {
-  const [userPlan, setUserPlan] = useState("basic"); // Default plan
-  const [isAdmin, setIsAdmin] = useState(false); // Default admin status
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUserPlan = async () => {
-      try {
-        const response = await axios.get("/api/users/me/plan");
-        setUserPlan(response.data.plan); // e.g., "basic", "pro", "enterprise"
-        setIsAdmin(response.data.isAdmin); // Assuming the backend returns `isAdmin`
-      } catch (error) {
-        console.error("Error fetching user plan:", error);
-      } finally {
-        setLoading(false); // Ensure loading is set to false after fetch
-      }
-    };
-
-    fetchUserPlan();
-  }, []);
-
-  if (loading) {
-    return <p>Loading...</p>; // Show a loading message while fetching data
-  }
-
+const Navbar = ({ isAdmin }) => {
   return (
     <nav style={styles.navbar}>
       <div style={styles.brand}>
@@ -47,18 +22,12 @@ const Navbar = () => {
         <NavLink to="/orders" style={styles.link}>
           Orders
         </NavLink>
-
-        {userPlan !== "basic" && (
-          <>
-            <NavLink to="/invoices" style={styles.link}>
-              Invoices
-            </NavLink>
-            <NavLink to="/analytics/sales" style={styles.link}>
-              Analytics
-            </NavLink>
-          </>
-        )}
-
+        <NavLink to="/invoices" style={styles.link}>
+          Invoices
+        </NavLink>
+        <NavLink to="/analytics/sales" style={styles.link}>
+          Analytics
+        </NavLink>
         <NavLink to="/pricing" style={styles.link}>
           Pricing
         </NavLink>

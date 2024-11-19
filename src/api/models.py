@@ -11,10 +11,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password = db.Column(db.String(200), nullable=False)  # Store hashed passwords
-    plan = db.Column(db.String(20), nullable=False, default="basic")  # basic, pro, enterprise
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'user', 'admin', etc.
-    
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -233,50 +231,4 @@ class Plan(db.Model):
             "price": self.price,
             "features": self.features,
         }
-    
-class SupportTicket(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    subject = db.Column(db.String(255), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(20), nullable=False, default="open")  # 'open', 'closed'
-    created_at = db.Column(db.DateTime, default=db.func.now())
-    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
-
-    user = db.relationship('User', backref='support_tickets')
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "subject": self.subject,
-            "message": self.message,
-            "status": self.status,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-        }
-    
-class License(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    license_type = db.Column(db.String(20), nullable=False)  # 'POS' or 'Power BI'
-    license_count = db.Column(db.Integer, nullable=False)
-    plan = db.Column(db.String(20), nullable=False)  # 'basic', 'pro', 'enterprise'
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
-
-    user = db.relationship('User', backref='licenses')
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "license_type": self.license_type,
-            "license_count": self.license_count,
-            "plan": self.plan,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-        }
-
-
 
