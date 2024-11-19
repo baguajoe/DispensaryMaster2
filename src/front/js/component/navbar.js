@@ -1,81 +1,79 @@
-import React, { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { Menu, X, Home, Package, Users, ShoppingCart, ClipboardList, Settings, LogOut } from 'lucide-react';
+import React from "react";
+import { NavLink } from "react-router-dom";
 
-const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Navigation items including Home and Invoices
-  const navigationItems = [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'Products', path: '/products', icon: Package },
-    { name: 'Customers', path: '/customers', icon: Users },
-    { name: 'Orders', path: '/orders', icon: ShoppingCart },
-    { name: 'Invoices', path: '/invoices', icon: ClipboardList },
-    { name: 'Compliance', path: '/compliance', icon: ClipboardList },
-    { name: 'Settings', path: '/settings', icon: Settings },
-  ];
-
+const Navbar = ({ isAdmin }) => {
   return (
-    <header className="bg-gray-800 text-white">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Logo */}
-        <Link to="/" className="text-lg font-semibold">
-          Dispensary MS
-        </Link>
-
-        {/* Hamburger menu for mobile */}
-        <button
-          className="sm:hidden block text-white"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden sm:flex space-x-6">
-          {navigationItems.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center space-x-2 px-3 py-2 rounded-md ${
-                  isActive ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`
-              }
-            >
-              <item.icon size={18} />
-              <span>{item.name}</span>
-            </NavLink>
-          ))}
-        </nav>
+    <nav style={styles.navbar}>
+      <div style={styles.brand}>
+        <NavLink to="/" style={styles.link}>
+          MyApp
+        </NavLink>
       </div>
+      <div style={styles.links}>
+        <NavLink to="/dashboard" style={styles.link}>
+          Dashboard
+        </NavLink>
+        <NavLink to="/products" style={styles.link}>
+          Products
+        </NavLink>
+        <NavLink to="/customers" style={styles.link}>
+          Customers
+        </NavLink>
+        <NavLink to="/orders" style={styles.link}>
+          Orders
+        </NavLink>
+        <NavLink to="/invoices" style={styles.link}>
+          Invoices
+        </NavLink>
+        <NavLink to="/analytics/sales" style={styles.link}>
+          Analytics
+        </NavLink>
+        <NavLink to="/pricing" style={styles.link}>
+          Pricing
+        </NavLink>
+        <NavLink to="/user/settings" style={styles.link}>
+          Settings
+        </NavLink>
+        <NavLink to="/notifications" style={styles.link}>
+          Notifications
+        </NavLink>
 
-      {/* Mobile Navigation */}
-      {isMobileMenuOpen && (
-        <nav className="sm:hidden bg-gray-800 border-t border-gray-700">
-          {navigationItems.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.path}
-              className={({ isActive }) =>
-                `block px-4 py-2 text-sm ${
-                  isActive ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`
-              }
-              onClick={() => setIsMobileMenuOpen(false)} // Close menu after selecting an item
-            >
-              <div className="flex items-center space-x-2">
-                <item.icon size={18} />
-                <span>{item.name}</span>
-              </div>
+        {isAdmin && (
+          <>
+            <NavLink to="/admin/dashboard" style={styles.link}>
+              Admin Dashboard
             </NavLink>
-          ))}
-        </nav>
-      )}
-    </header>
+            <NavLink to="/admin/manage-roles" style={styles.link}>
+              Manage Roles
+            </NavLink>
+          </>
+        )}
+      </div>
+    </nav>
   );
+};
+
+const styles = {
+  navbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "10px 20px",
+    backgroundColor: "#333",
+    color: "#fff",
+  },
+  brand: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+  },
+  links: {
+    display: "flex",
+    gap: "15px",
+  },
+  link: {
+    color: "#fff",
+    textDecoration: "none",
+    fontSize: "1rem",
+  },
 };
 
 export default Navbar;
