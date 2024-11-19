@@ -4,32 +4,22 @@ import axios from "axios";
 
 const SalesPrediction = () => {
   const [predictionData, setPredictionData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSalesPredictions = async () => {
-      try {
-        const response = await axios.get("/api/analytics/sales/predictions");
-        setPredictionData(response.data);
-      } catch (error) {
-        console.error("Error fetching sales predictions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSalesPredictions();
+    axios
+      .get("/api/analytics/sales/predictions")
+      .then((response) => setPredictionData(response.data))
+      .catch((error) => console.error("Error fetching sales predictions:", error));
   }, []);
 
-  if (loading) return <p>Loading predictions...</p>;
-  if (!predictionData) return <p>No sales prediction data available.</p>;
+  if (!predictionData) return <p>Loading predictions...</p>;
 
   const data = {
-    labels: predictionData.future_dates, // Example: ["2024-01-01", "2024-01-02"]
+    labels: predictionData.future_dates,
     datasets: [
       {
         label: "Predicted Sales ($)",
-        data: predictionData.predictions, // Example: [500, 550, 600]
+        data: predictionData.predictions,
         borderColor: "rgba(75, 192, 192, 1)",
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         fill: true,
