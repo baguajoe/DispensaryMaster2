@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Compliance
+from api.models import db, User
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
