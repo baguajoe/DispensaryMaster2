@@ -11,7 +11,7 @@ db = SQLAlchemy()
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password = db.Column(db.String(200), nullable=False)  # Store hashed passwords
+    password = db.Column(db.String(256), nullable=False)  # Store hashed passwords
     plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"), nullable=False)  # basic, pro, enterprise
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     role_id = db.Column(db.String(20), db.ForeignKey("role.id"), nullable=False)  # 'user', 'admin', etc.
@@ -37,7 +37,7 @@ class User(db.Model):
         }
 
 class Plan(db.Model):
-    id = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
     features = db.Column(db.JSON, nullable=False)
