@@ -14,17 +14,23 @@ const Navbar = () => {
   return (
     <div>
       {/* Navbar */}
-      <nav>
-        <ul>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/dashboard">Dashboard</Link></li>
-          <li><Link to="/products">Products</Link></li>
-          <li><Link to="/inventory">Inventory</Link></li>
-          <li><Link to="/invoices">Invoices</Link></li>
-          <li><Link to="/customers">Customers</Link></li>
-          <li><Link to="/analytics">Analytics</Link></li>
-          <li><button onClick={handleSignOut} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>Sign Out</button></li>
+      <nav class="navbar navbar-light navbar navbar-expand-lg" style={{backgroundColor: "#e3f2fd"}}>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+      <div className="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li className='nav-item'><Link className='nav-link' to="/">Home</Link></li>
+          <li className='nav-item'><Link className='nav-link' to="/dashboard">Dashboard</Link></li>
+          <li className="nav-item"><Link className='nav-link' to="/products">Products</Link></li>
+          <li className='nav-item'><Link className='nav-link' to="/inventory">Inventory</Link></li>
+          <li className='nav-item'><Link className='nav-link' to="/invoices">Invoices</Link></li>
+          <li className='nav-item'><Link className='nav-link' to="/customers">Customers</Link></li>
+          <li className='nav-item'><Link className='nav-link' to="/analytics">Analytics</Link></li>
+          <li className='nav-item'><Link className='nav-link' to="/register">Register</Link></li>
+          <li className='nav-item'><button className='nav-link' onClck={handleSignOut} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>Sign Out</button></li>
         </ul>
+        </div>
       </nav>
 
       {/* Main content area */}

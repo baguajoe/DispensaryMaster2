@@ -6,9 +6,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
 from reportlab.pdfgen import canvas
-
+from flask_cors import CORS
 # Create Blueprint
 api = Blueprint('api', __name__)
+CORS(api)
 
 # ---------------------
 # Error Handling Helper
@@ -70,7 +71,7 @@ def login():
     return jsonify({"error": "Invalid email or password"}), 401
 
 @api.route('/auth/register', methods=['POST'])
-@handle_errors
+# @handle_errors
 def register():
     data = request.json
     if not data or not data.get('email') or not data.get('password'):

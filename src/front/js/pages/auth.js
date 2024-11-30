@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom'; // Example with React Router
 
 
 export const login = async (email, password) => {
-    const response = await fetch('/api/auth/login', {
+    const response = await fetch(process.env.BACKEND_URL+'/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -22,7 +22,7 @@ export const login = async (email, password) => {
   };
   
   export const register = async (email, password) => {
-    const response = await fetch('/api/auth/register', {
+    const response = await fetch(process.env.BACKEND_URL+'/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
