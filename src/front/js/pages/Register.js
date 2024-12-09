@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext, } from "react";
 import { Context } from "../store/appContext";
 import { useNavigate } from "react-router-dom";
-import { register } from "./auth";
+import { register } from "./Auth";
 
 
 const RegisterForm = () => {

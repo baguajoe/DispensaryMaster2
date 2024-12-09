@@ -1,12 +1,13 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token
 from datetime import datetime, timedelta
-from api.models import db, User
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Role
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
 from reportlab.pdfgen import canvas
 from flask_cors import CORS
+
 # Create Blueprint
 api = Blueprint('api', __name__)
 CORS(api)
@@ -31,24 +32,15 @@ def handle_errors(f):
 class ProductSchema(Schema):
     name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
     category = fields.Str(required=True)
-    strain = fields.Str(allow_none=True)
-    thc_content = fields.Float(allow_none=True)
-    cbd_content = fields.Float(allow_none=True)
     current_stock = fields.Integer(required=True, validate=validate.Range(min=0))
     reorder_point = fields.Integer(required=True, validate=validate.Range(min=0))
     unit_price = fields.Decimal(required=True, validate=validate.Range(min=0))
-    supplier = fields.Str(required=True)
-    batch_number = fields.Str(required=True)
-    test_results = fields.Str(allow_none=True)
 
 class CustomerSchema(Schema):
     first_name = fields.Str(required=True)
     last_name = fields.Str(required=True)
     email = fields.Email(required=True)
     phone = fields.Str(required=True)
-    membership_level = fields.Str(validate=validate.OneOf(['standard', 'premium', 'vip']))
-    verification_status = fields.Str(validate=validate.OneOf(['pending', 'verified', 'rejected']))
-    preferences = fields.Dict(allow_none=True)
 
 class OrderSchema(Schema):
     customer_id = fields.Integer(required=True)
@@ -70,35 +62,26 @@ def login():
         return jsonify({"message": "Login successful", "access_token": token, "user": user.serialize()}), 200
     return jsonify({"error": "Invalid email or password"}), 401
 
-@api.route('/auth/register', methods=['POST'])
-# @handle_errors
-def register():
-    data = request.json
-    if not data or not data.get('email') or not data.get('password'):
-        return jsonify({"error": "Missing required fields"}), 400
+@api.route("/signup",methods=["POST"])
+def create_signup():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+    role = request.json.get("role", None)
+    if User.query.filter_by(email=email).first():
+        return jsonify({"msg": "User already exist"}), 400
+    
+    hashed_password=generate_password_hash(password)
+    role_id = Role.query.filter_by(name=role).first()
+    new_user=User(email=email, password=hashed_password, role_id=role_id, is_active=True)
 
-    if User.query.filter_by(email=data['email']).first():
-        return jsonify({"error": "Email already exists"}), 400
-
-    user = User(email=data['email'], password=generate_password_hash(data['password']))
-    db.session.add(user)
+    db.session.add(new_user)
     db.session.commit()
-    return jsonify({"message": "User registered successfully", "user": user.serialize()}), 201
+    return jsonify({"msg": "user created successfully"}), 201
 
-#get invoices
-
-@api.route('/invoices/<int:id>/pdf', methods=['GET'])
-@jwt_required()
-def generate_invoice_pdf(id):
-    invoice = Invoice.query.get_or_404(id)
-    file_path = f"/tmp/invoice_{id}.pdf"
-    c = canvas.Canvas(file_path)
-    c.drawString(100, 750, f"Invoice #{invoice.id}")
-    c.drawString(100, 730, f"Customer: {invoice.customer.first_name} {invoice.customer.last_name}")
-    c.drawString(100, 710, f"Total Amount: ${float(invoice.total_amount):.2f}")
-    c.save()
-    return jsonify({"message": "PDF generated", "path": file_path}), 200
-
+@api.route("/role", methods=["GET"])
+def get_role():
+    roles=Role.query.all()
+    return jsonify([role.serialize() for role in roles])
 # ---------------------
 # Product Routes
 # ---------------------
@@ -178,122 +161,82 @@ def create_customer():
     db.session.commit()
     return jsonify(customer.serialize()), 201
 
-@api.route('/invoices', methods=['POST'])
+# ---------------------
+# Order Routes
+# ---------------------
+@api.route('/orders', methods=['GET'])
 @jwt_required()
-def create_invoice():
-    data = request.json
-    order = Order.query.get_or_404(data['order_id'])
-    customer = order.customer
+@handle_errors
+def get_orders():
+    orders = Order.query.all()
+    return jsonify([order.serialize() for order in orders]), 200
 
-    invoice = Invoice(
-        customer_id=customer.id,
-        order_id=order.id,
-        due_date=data.get('due_date'),
-        total_amount=order.total_amount
-    )
-    db.session.add(invoice)
+@api.route('/orders/<int:id>', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_order(id):
+    order = Order.query.get_or_404(id)
+    return jsonify(order.serialize()), 200
+
+@api.route('/orders', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_order():
+    schema = OrderSchema()
+    data = schema.load(request.json)
+    order = Order(customer_id=data['customer_id'], total_amount=0)
+    db.session.add(order)
+    db.session.flush()  # Get order ID before committing
+
+    total_amount = 0
+    for item in data['items']:
+        product = Product.query.get_or_404(item['product_id'])
+        total_price = product.unit_price * item['quantity']
+        order_item = OrderItem(order_id=order.id, product_id=product.id, quantity=item['quantity'], unit_price=total_price)
+        db.session.add(order_item)
+        total_amount += total_price
+
+    order.total_amount = total_amount
     db.session.commit()
-    return jsonify(invoice.serialize()), 201
-
+    return jsonify(order.serialize()), 201
 
 # ---------------------
 # Analytics Routes
 # ---------------------
-@api.route('/analytics/sales', methods=['GET'])
+@api.route('/analytics', methods=['GET'])
 @jwt_required()
 @handle_errors
-def get_sales_analytics():
-    start_date = request.args.get('start_date', (datetime.utcnow() - timedelta(days=30)).strftime('%Y-%m-%d'))
-    end_date = request.args.get('end_date', datetime.utcnow().strftime('%Y-%m-%d'))
-    orders = Order.query.filter(Order.created_at.between(start_date, end_date), Order.status == 'completed').all()
+def get_analytics():
+    analytics_type = request.args.get('type', 'sales')
 
-    total_sales = sum(float(order.total_amount) for order in orders)
-    order_count = len(orders)
-    sales_by_date = {}
-    for order in orders:
-        date = order.created_at.strftime('%Y-%m-%d')
-        sales_by_date[date] = sales_by_date.get(date, 0) + float(order.total_amount)
+    if analytics_type == 'sales':
+        orders = Order.query.filter(Order.status == 'completed').all()
+        total_sales = sum(float(order.total_amount) for order in orders)
+        order_count = len(orders)
+        return jsonify({"total_sales": total_sales, "order_count": order_count}), 200
 
-    return jsonify({
-        "total_sales": total_sales,
-        "order_count": order_count,
-        "average_order_value": total_sales / order_count if order_count > 0 else 0,
-        "sales_by_date": sales_by_date
-    }), 200
-
-@api.route('/analytics/inventory', methods=['GET'])
-@jwt_required()
-@handle_errors
-def get_inventory_analytics():
-    low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).all()
-    total_inventory_value = sum(float(p.unit_price) * p.current_stock for p in Product.query.all())
-
-    return jsonify({
-        "low_stock_count": len(low_stock_products),
-        "low_stock_products": [product.serialize() for product in low_stock_products],
-        "total_inventory_value": total_inventory_value
-    }), 200
-
-@api.route('/analytics/sales/predictions', methods=['GET'])
-@jwt_required()
-def get_sales_predictions():
-    predictions = predict_sales_trends()
-    if "error" in predictions:
-        return jsonify(predictions), 400
-    return jsonify(predictions), 200
-    
-@api.route('/analytics/kpis', methods=['GET'])
-@jwt_required()
-def get_kpi_metrics():
-    try:
-        total_revenue = db.session.query(db.func.sum(Order.total_amount)).scalar() or 0
-        total_orders = db.session.query(db.func.count(Order.id)).scalar() or 0
-        top_selling_products = (
-            db.session.query(Product.name, db.func.sum(OrderItem.quantity).label('total_sold'))
-            .join(OrderItem)
-            .group_by(Product.id)
-            .order_by(db.desc('total_sold'))
-            .limit(3)
-            .all()
-        )
-
-        return jsonify({
-            "total_revenue": float(total_revenue),
-            "total_orders": total_orders,
-            "top_selling_products": [{"name": product[0], "total_sold": product[1]} for product in top_selling_products],
-        }), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# ---------------------
-# Import Inventory Routes
-# ---------------------
-@api.route('/inventory/import', methods=['POST'])
-@handle_errors
-def import_inventory():
-    """
-    Import inventory from uploaded files (Excel or PDF).
-    """
-    if 'file' not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-
-    file = request.files['file']
-    filename = file.filename
-
-    if filename.endswith('.xlsx') or filename.endswith('.xls'):
-        # Save the file temporarily and import
-        file_path = f"/tmp/{filename}"
-        file.save(file_path)
-        result = import_inventory_from_excel(file_path)
-        return jsonify(result), 200 if 'message' in result else 400
-
-    elif filename.endswith('.pdf'):
-        # Save the file temporarily and import
-        file_path = f"/tmp/{filename}"
-        file.save(file_path)
-        result = import_inventory_from_pdf(file_path)
-        return jsonify(result), 200 if 'message' in result else 400
+    elif analytics_type == 'inventory':
+        low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).all()
+        return jsonify({"low_stock_count": len(low_stock_products), "low_stock_products": [p.serialize() for p in low_stock_products]}), 200
 
     else:
-        return jsonify({"error": "Unsupported file type"}), 400
+        return jsonify({"error": "Invalid analytics type"}), 400
+        
+# @api.route('/dashboard/metrics', methods=['GET'])
+# @jwt_required()
+# @handle_errors
+# def get_analytics():
+#     analytics_type = request.args.get('type', 'sales')
+
+#     if analytics_type == 'sales':
+#         orders = Order.query.filter(Order.status == 'completed').all()
+#         total_sales = sum(float(order.total_amount) for order in orders)
+#         order_count = len(orders)
+#         return jsonify({"total_sales": total_sales, "order_count": order_count}), 200
+
+#     elif analytics_type == 'inventory':
+#         low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).all()
+#         return jsonify({"low_stock_count": len(low_stock_products), "low_stock_products": [p.serialize() for p in low_stock_products]}), 200
+
+#     else:
+#         return jsonify({"error": "Invalid analytics type"}), 400

@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 53d77c853486
+Revision ID: 7ad7132a4f08
 Revises: 
-Create Date: 2024-11-26 20:55:34.090342
+Create Date: 2024-12-09 23:24:24.957253
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '53d77c853486'
+revision = '7ad7132a4f08'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -64,10 +64,20 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('role',
-    sa.Column('id', sa.String(length=50), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('description', sa.String(length=250), nullable=False),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('transaction',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('order_id', sa.String(length=100), nullable=False),
+    sa.Column('customer_name', sa.String(length=100), nullable=False),
+    sa.Column('payment_method', sa.String(length=50), nullable=True),
+    sa.Column('amount', sa.Float(), nullable=False),
+    sa.Column('date', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('order_id')
     )
     op.create_table('compliance',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -93,9 +103,9 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.Column('password', sa.String(length=256), nullable=False),
-    sa.Column('plan_id', sa.Integer(), nullable=False),
+    sa.Column('plan_id', sa.Integer(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=False),
-    sa.Column('role_id', sa.String(length=20), nullable=False),
+    sa.Column('role_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['plan_id'], ['plan.id'], ),
     sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -138,6 +148,7 @@ def downgrade():
     op.drop_table('user')
     op.drop_table('order')
     op.drop_table('compliance')
+    op.drop_table('transaction')
     op.drop_table('role')
     op.drop_table('product')
     op.drop_table('plan')

@@ -14,12 +14,11 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)  # Store hashed passwords
     plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"), nullable=True)  # basic, pro, enterprise
     is_active = db.Column(db.Boolean, nullable=False, default=True)
-    role_id = db.Column(db.String(20), db.ForeignKey("role.id"), nullable=False)  # 'user', 'admin', etc.
+    role_id = db.Column(db.Integer, db.ForeignKey("role.id"), nullable=False)  # 'user', 'admin', etc.
     plan=db.relationship("Plan",back_populates="users")
     role=db.relationship("Role",back_populates="users")
 
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
+    
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -53,7 +52,7 @@ class Plan(db.Model):
         }
     
 class Role(db.Model):
-    id = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(250), nullable=False)
     users = db.relationship("User", back_populates="role")
@@ -63,7 +62,7 @@ class Role(db.Model):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "users": [user.serialize()for user in self.users]
+            "users": [user.id for user in self.users]
         }
 # ---------------------
 # Product Model
@@ -151,6 +150,14 @@ class Order(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(100), unique=True, nullable=False)
+    customer_name = db.Column(db.String(100), nullable=False)
+    payment_method = db.Column(db.String(50))
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ---------------------
 # Customer Model
