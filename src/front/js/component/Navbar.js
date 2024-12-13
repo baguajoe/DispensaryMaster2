@@ -31,6 +31,11 @@ const Navbar = () => {
                 <a className={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" href="/">Home</a>
               </li>
               <li className="nav-item">
+                <a className={`nav-link ${isActive('/signup') ? 'active' : ''}`} href="/about-us">
+                  About Us
+                </a>
+              </li>
+              <li className="nav-item">
                 <a className={`nav-link ${isActive('/signup') ? 'active' : ''}`} href="/signup">
                   Register
                 </a>

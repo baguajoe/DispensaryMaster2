@@ -9,7 +9,7 @@ export const Sidebar = () => {
                 {/* Existing Links */}
                 <Link className="nav-link" to="/overview">Overview</Link>
                 <Link className="nav-link" to="/summary">Summary</Link>
-                <Link className="nav-link" to="/dashboards">Dashboards</Link>
+                <Link className="nav-link" to="/dashboard">Dashboard</Link>
                 <Link className="nav-link" to="/stores">Stores</Link>
                 <Link className="nav-link" to="/suppliers">Suppliers</Link>
                 <Link className="nav-link" to="/products">Products</Link>
