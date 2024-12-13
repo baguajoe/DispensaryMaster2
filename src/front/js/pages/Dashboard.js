@@ -5,18 +5,20 @@ import TableCard from "../component/TableCard";
 
 const Dashboard = () => {
   const [metrics, setMetrics] = useState([
-    { title: "Revenue", value: "$12,500", icon: "💰", trend: 8, bgColor: "bg-green-100", textColor: "text-green-900" },
-    { title: "Users", value: "1,250", icon: "👥", trend: 12, bgColor: "bg-blue-100", textColor: "text-blue-900" },
-    { title: "Orders", value: "980", icon: "📦", trend: -3, bgColor: "bg-red-100", textColor: "text-red-900" },
-    { title: "New Signups", value: "345", icon: "✍️", trend: 15, bgColor: "bg-yellow-100", textColor: "text-yellow-900" },
-    { title: "Page Views", value: "18,900", icon: "📄", trend: 5, bgColor: "bg-purple-100", textColor: "text-purple-900" },
-    { title: "Conversions", value: "3.2%", icon: "🔄", trend: 1.2, bgColor: "bg-indigo-100", textColor: "text-indigo-900" },
-    { title: "Bounce Rate", value: "45%", icon: "📉", trend: -2.5, bgColor: "bg-gray-100", textColor: "text-gray-900" },
-    { title: "Avg. Session Time", value: "5m 23s", icon: "⏱️", trend: 0.8, bgColor: "bg-orange-100", textColor: "text-orange-900" },
-    { title: "Profit Margin", value: "28%", icon: "📊", trend: 3.5, bgColor: "bg-teal-100", textColor: "text-teal-900" },
-    { title: "Refunds", value: "15", icon: "🔙", trend: -1, bgColor: "bg-pink-100", textColor: "text-pink-900" },
-    { title: "Subscribers", value: "4,500", icon: "🔔", trend: 10, bgColor: "bg-lime-100", textColor: "text-lime-900" },
-    { title: "Active Projects", value: "42", icon: "🚀", trend: 6, bgColor: "bg-cyan-100", textColor: "text-cyan-900" },
+    { title: "Total Sales", value: "$12,500", icon: "💰", trend: 8, bgColor: "bg-green-100", textColor: "text-green-900" },
+    { title: "New Products", value: "12", icon: "📦", trend: 5, bgColor: "bg-blue-100", textColor: "text-blue-900" },
+    { title: "Average Purchase Order", value: "$180", icon: "🛒", trend: 2, bgColor: "bg-yellow-100", textColor: "text-yellow-900" },
+    { title: "Users", value: "1,345", icon: "👤", trend: 15, bgColor: "bg-purple-100", textColor: "text-purple-900" },
+    { title: "Refunds", value: "$320", icon: "💸", trend: -3, bgColor: "bg-red-100", textColor: "text-red-900" },
+    { title: "Product Availability", value: "93%", icon: "📊", trend: 1, bgColor: "bg-teal-100", textColor: "text-teal-900" },
+    { title: "Supply Below Safety Stock", value: "8", icon: "📉", trend: -2, bgColor: "bg-gray-100", textColor: "text-gray-900" },
+    { title: "Invoices", value: "295", icon: "🧾", trend: 7, bgColor: "bg-indigo-100", textColor: "text-indigo-900" },
+    { title: "Today's Invoice", value: "28", icon: "📆", trend: 3, bgColor: "bg-orange-100", textColor: "text-orange-900" },
+    { title: "Current Monthly", value: "$22,560", icon: "📅", trend: 10, bgColor: "bg-green-100", textColor: "text-green-900" },
+    { title: "Inventory", value: "965", icon: "📦", trend: 4, bgColor: "bg-blue-100", textColor: "text-blue-900" },
+    { title: "Stores", value: "4", icon: "🏬", trend: 0, bgColor: "bg-yellow-100", textColor: "text-yellow-900" },
+    { title: "Top Categories", value: "Electronics, Clothing", icon: "📂", trend: 6, bgColor: "bg-purple-100", textColor: "text-purple-900" },
+    { title: "Sales Performance", value: "Trending Up", icon: "📈", trend: 12, bgColor: "bg-teal-100", textColor: "text-teal-900" },
   ]);
   const [topCategories, setTopCategories] = useState([]);
   const [salesPerformance, setSalesPerformance] = useState({
