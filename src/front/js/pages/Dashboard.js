@@ -4,7 +4,20 @@ import ChartCard from "../component/ChartCard";
 import TableCard from "../component/TableCard";
 
 const Dashboard = () => {
-  const [metrics, setMetrics] = useState([]);
+  const [metrics, setMetrics] = useState([
+    { title: "Revenue", value: "$12,500", icon: "💰", trend: 8, bgColor: "bg-green-100", textColor: "text-green-900" },
+    { title: "Users", value: "1,250", icon: "👥", trend: 12, bgColor: "bg-blue-100", textColor: "text-blue-900" },
+    { title: "Orders", value: "980", icon: "📦", trend: -3, bgColor: "bg-red-100", textColor: "text-red-900" },
+    { title: "New Signups", value: "345", icon: "✍️", trend: 15, bgColor: "bg-yellow-100", textColor: "text-yellow-900" },
+    { title: "Page Views", value: "18,900", icon: "📄", trend: 5, bgColor: "bg-purple-100", textColor: "text-purple-900" },
+    { title: "Conversions", value: "3.2%", icon: "🔄", trend: 1.2, bgColor: "bg-indigo-100", textColor: "text-indigo-900" },
+    { title: "Bounce Rate", value: "45%", icon: "📉", trend: -2.5, bgColor: "bg-gray-100", textColor: "text-gray-900" },
+    { title: "Avg. Session Time", value: "5m 23s", icon: "⏱️", trend: 0.8, bgColor: "bg-orange-100", textColor: "text-orange-900" },
+    { title: "Profit Margin", value: "28%", icon: "📊", trend: 3.5, bgColor: "bg-teal-100", textColor: "text-teal-900" },
+    { title: "Refunds", value: "15", icon: "🔙", trend: -1, bgColor: "bg-pink-100", textColor: "text-pink-900" },
+    { title: "Subscribers", value: "4,500", icon: "🔔", trend: 10, bgColor: "bg-lime-100", textColor: "text-lime-900" },
+    { title: "Active Projects", value: "42", icon: "🚀", trend: 6, bgColor: "bg-cyan-100", textColor: "text-cyan-900" },
+  ]);
   const [topCategories, setTopCategories] = useState([]);
   const [salesPerformance, setSalesPerformance] = useState({
     labels: [],
@@ -40,7 +53,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex">
-     
+
       {/* Main Content */}
       <div className="flex-1 p-6 bg-gray-100">
         {/* Header */}
@@ -75,32 +88,34 @@ const Dashboard = () => {
           {metrics.map((metric, index) => (
             <MetricCard
               key={index}
-              title={metric.label}
+              title={metric.title} // Fixed to use the correct property name
               value={metric.value}
+              icon={metric.icon} // Added the icon property
               trend={metric.trend}
-              bgColor={index % 2 === 0 ? "bg-black text-white" : "bg-white"}
+              bgColor={metric.bgColor} // Use bgColor from the array
+              textColor={metric.textColor} // Use textColor from the array
             />
           ))}
         </div>
 
         {/* Sales Performance Chart */}
-        <div className="mb-6" style={{
-                        width: "18rem",
-                        height: "auto", // Adjust height if needed; auto keeps content fit
-                    }}>
-          <h2 className="text-xl font-semibold mb-4">Sales Performance</h2>
-          {loading ? (
-            <p>Loading chart...</p>
-          ) : (
-            <ChartCard data={salesPerformance} type="line" />
-          )}
+        <div className="d-flex gap-4">
+          <div className="mb-6 col-6">
+            <h2 className="text-xl font-semibold mb-4">Sales Performance</h2>
+            {loading ? (
+              <p>Loading chart...</p>
+            ) : (
+              <ChartCard data={salesPerformance} type="line" />
+            )}
+          </div>
+
+          {/* Top Categories Table */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4" >Top Categories</h2>
+            <TableCard data={topCategories} columns={["Category", "Sales", "Revenue"]} />
+          </div>
         </div>
 
-        {/* Top Categories Table */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4" >Top Categories</h2>
-          <TableCard data={topCategories} columns={["Category", "Sales", "Revenue"]} />
-        </div>
       </div>
     </div>
   );
