@@ -17,14 +17,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+
 # Set environment
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# Enable Cross-Origin Resource Sharing (CORS)
-CORS(app)
+# Enable Cross-Origin Resource Sharing (CORS) with specific origin
+CORS(app, resources={r"/*": {"origins": "https://shiny-broccoli-q79pvgr4wqp72qx9-3000.app.github.dev"}})
 
 # JWT Configuration
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 7 * 24 * 60 * 60  # 7 days
@@ -52,6 +53,7 @@ setup_commands(app)
 
 # Register Blueprints
 app.register_blueprint(api, url_prefix='/api')
+
 
 # Error Handling
 @app.errorhandler(APIException)

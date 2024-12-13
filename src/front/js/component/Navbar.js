@@ -1,10 +1,11 @@
 // src/Layout.js
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import "../../styles/navbar.css"
+import logo from "../../../../docs/assets/logo.jpg"
 
 const Navbar = () => {
-  // const navigate = useNavigate();
+  const laoction = useLocation();
 
   const handleSignOut = () => {
     // Clear user session (e.g., remove token from localStorage)
@@ -19,22 +20,46 @@ const Navbar = () => {
   return (
     <div>
       {/* Navbar */}
-      <nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">Navbar</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-link active" aria-current="page" href="#">Home</a>
-        <a class="nav-link" href="#">Features</a>
-        <a class="nav-link" href="#">Pricing</a>
-        <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-      </div>
-    </div>
-  </div>
-</nav>
+      <nav className="navbar navbar-expand-lg bg-body-tertiary">
+        <div className="container-fluid mx-5">
+          <img src={logo} alt="logo" style= {{height: "90px"}}/>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span className="navbar-toggler-icon"><i className="fa-solid fa-bars"></i></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul className="navbar-nav ms-auto">
+              <li className="nav-item">
+                <a className={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" href="/">Home</a>
+              </li>
+              <li className="nav-item">
+                <a className={`nav-link ${isActive('/register') ? 'active' : ''}`} href="/register">
+                  Register
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className={`nav-link ${isActive('/login') ? 'active' : ''}`} href="#">Login</a>
+              </li>
+              <li className="nav-item">
+                <a className={`nav-link ${isActive('/logout') ? 'active' : ''}`} href="#" onClick={(e) => {
+                    e.preventDefault();
+                    handleSignOut();
+                  }}>Logout</a>
+              </li>
+              <li className="nav-item dropdown">
+                <a className={`nav-link dropdown-toggle ${isActive('/change-password') || isActive('/profile') ? 'active' : ''}`} href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Settings
+                </a>
+                <ul className="dropdown-menu">
+                  <li><a className="dropdown-item" href="#">light dark mode</a></li>
+                  <li><a className="dropdown-item" href="#">Change Password</a></li>
+                  <li><a className="dropdown-item" href="#">update account/profile </a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
 
 
     </div>
@@ -42,3 +67,8 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+
+
+
+

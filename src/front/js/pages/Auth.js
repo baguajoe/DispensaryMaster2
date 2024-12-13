@@ -1,32 +1,43 @@
-// For API calls to login or register users
+import { Login } from "./Login.js";
+import { Signup } from "./Signup.js";
+
+const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+
+// Reusable API request function
+const apiRequest = async (endpoint, method, body) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        console.log("response", response)
+        const data = await response.json();
+        console.log("data", data)
 
 
-// For form handling (e.g., React, plain JS, or any framework)
-import React, { useState } from 'react';
+        return {
+            success: response.ok, 
+            data: data,
+            status: response.status,
+            error: response.error
+        }
 
-// Optional: Add routing if needed
-import { useNavigate } from 'react-router-dom'; // Example with React Router
+    } catch (error) {
+        console.error('API request error:', error);
+        return { 
+            success: false,
+            data: null,
 
 
-export const login = async (email, password) => {
-    const response = await fetch(process.env.BACKEND_URL+'/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
-    if (response.ok) {
-      localStorage.setItem('token', data.access_token);
+            error: error.message 
+
+        };
     }
-    return data;
-  };
-  
-  export const register = async (email, password) => {
-    const response = await fetch(process.env.BACKEND_URL+'/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    return await response.json();
-  };
-  
+};
+
+// Login function
+export const login = (email, password) => apiRequest('/api/login', 'POST', { email, password });
+
+// Signup function
+export const signup = (email, password) => apiRequest('/api/signup', 'POST', { email, password });
