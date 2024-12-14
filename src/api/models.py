@@ -59,6 +59,8 @@ class Plan(db.Model):
 # ---------------------
 # Product Model
 # ---------------------
+from datetime import datetime
+
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -73,6 +75,7 @@ class Product(db.Model):
     batch_number = db.Column(db.String(50), nullable=False)
     medical_benefits = db.Column(db.Text, nullable=True)
     test_results = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # New column
 
     def __repr__(self):
         return f'<Product {self.name}>'
@@ -91,6 +94,7 @@ class Product(db.Model):
             "supplier": self.supplier,
             "batch_number": self.batch_number,
             "test_results": self.test_results,
+            "created_at": self.created_at.isoformat() if self.created_at else None  # Include in serialization
         }
 
 # ---------------------

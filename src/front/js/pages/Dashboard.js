@@ -29,7 +29,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Fetch metrics from the backend
-    fetch(process.env.BACKEND_URL + "/api/dashboard/metrics")
+    fetch(process.env.BACKEND_URL + "/api/dashboard/metrics", { headers: { "Content-Type": "application/json","Authorization": "Bearer " + sessionStorage.getItem("token") } })
       .then((response) => response.json())
       .then((data) => {
         setMetrics(data);
@@ -86,7 +86,7 @@ const Dashboard = () => {
         </div>
 
         {/* Metrics Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+        <div className="d-flex flex-wrap gap-4">
           {metrics.map((metric, index) => (
             <MetricCard
               key={index}

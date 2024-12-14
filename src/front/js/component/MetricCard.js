@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 
 const MetricCard = ({ title, value, icon, trend, bgColor = "bg-white", textColor = "text-gray-900" }) => (
-  <div className={`${bgColor} shadow-lg rounded-lg p-4 flex items-center space-x-4`}>
+  <div style={{borderRadius :"20px"}} className={`${bgColor} shadow-lg p-4 flex items-center space-x-4 col-3`}>
     {icon && <div className="text-blue-500 text-3xl">{icon}</div>}
     <div>
       <h3 className={`text-lg font-semibold ${textColor}`}>{title}</h3>

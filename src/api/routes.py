@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient 
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
@@ -58,7 +58,7 @@ def login():
 
     user = User.query.filter_by(email=data['email']).first()
     if user and check_password_hash(user.password, data['password']):
-        token = create_access_token(identity=user.id)
+        token = create_access_token(identity=str(user.id))
         return jsonify({"message": "Login successful", "access_token": token, "user": user.serialize()}), 200
     return jsonify({"error": "Invalid email or password"}), 401
 
@@ -365,21 +365,61 @@ def get_medical_analytics():
     
 
         
-# @api.route('/dashboard/metrics', methods=['GET'])
-# @jwt_required()
+@api.route('/dashboard/metrics', methods=['GET'])
+@jwt_required()
 # @handle_errors
-# def get_analytics():
-#     analytics_type = request.args.get('type', 'sales')
+def get_dashboard_metrics():
+    try:
+        # Fetching data for metrics
+        orders = Order.query.filter(Order.status == 'completed').all()
+        total_sales = sum(float(order.total_amount) for order in orders)
+        order_count = len(orders)
+        average_purchase_order = total_sales / order_count if order_count > 0 else 0
+        
+        new_products_count = Product.query.filter(Product.created_at >= datetime.now().replace(day=1)).count()  # New products added this month
+        
+        users_count = User.query.count()
+        
+        refunds = Order.query.filter(Order.status == 'refunded').all()
+        total_refunds = sum(float(order.total_amount) for order in refunds)
+        
+        product_availability = (Product.query.filter(Product.current_stock > 0).count() / Product.query.count()) * 100 if Product.query.count() > 0 else 0
+        
+        low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).count()
+        
+        invoices_count = Invoice.query.count()
+        todays_invoices = Invoice.query.filter(db.func.date(Invoice.issue_date) == datetime.today().date()).count()
+        
+        current_month_sales = sum(float(order.total_amount) for order in orders if order.created_at.month == datetime.now().month)
+        
+        total_inventory = Product.query.count()
+        
+        stores_count = Business.query.count()
+        
+        # Mock data for top categories and sales performance
+        top_categories = "Electronics, Clothing"  # Placeholder
+        sales_performance = "Trending Up"  # Placeholder trend
 
-#     if analytics_type == 'sales':
-#         orders = Order.query.filter(Order.status == 'completed').all()
-#         total_sales = sum(float(order.total_amount) for order in orders)
-#         order_count = len(orders)
-#         return jsonify({"total_sales": total_sales, "order_count": order_count}), 200
+        # Returning all metrics
+        metrics = [
+            {"title": "Total Sales", "value": f"${total_sales:,.2f}", "icon": "💰", "trend": 8, "bgColor": "bg-green-100", "textColor": "text-green-900"},
+            {"title": "New Products", "value": str(new_products_count), "icon": "📦", "trend": 5, "bgColor": "bg-blue-100", "textColor": "text-blue-900"},
+            {"title": "Average Purchase Order", "value": f"${average_purchase_order:,.2f}", "icon": "🛒", "trend": 2, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900"},
+            {"title": "Users", "value": f"{users_count:,}", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900"},
+            {"title": "Refunds", "value": f"${total_refunds:,.2f}", "icon": "💸", "trend": -3, "bgColor": "bg-red-100", "textColor": "text-red-900"},
+            {"title": "Product Availability", "value": f"{product_availability:.0f}%", "icon": "📊", "trend": 1, "bgColor": "bg-teal-100", "textColor": "text-teal-900"},
+            {"title": "Supply Below Safety Stock", "value": str(low_stock_products), "icon": "📉", "trend": -2, "bgColor": "bg-gray-100", "textColor": "text-gray-900"},
+            {"title": "Invoices", "value": str(invoices_count), "icon": "🧾", "trend": 7, "bgColor": "bg-indigo-100", "textColor": "text-indigo-900"},
+            {"title": "Today's Invoice", "value": str(todays_invoices), "icon": "📆", "trend": 3, "bgColor": "bg-orange-100", "textColor": "text-orange-900"},
+            {"title": "Current Monthly", "value": f"${current_month_sales:,.2f}", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900"},
+            {"title": "Inventory", "value": str(total_inventory), "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900"},
+            {"title": "Stores", "value": str(stores_count), "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900"},
+            {"title": "Top Categories", "value": top_categories, "icon": "📂", "trend": 6, "bgColor": "bg-purple-100", "textColor": "text-purple-900"},
+            {"title": "Sales Performance", "value": sales_performance, "icon": "📈", "trend": 12, "bgColor": "bg-teal-100", "textColor": "text-teal-900"}
+        ]
+        
+        return jsonify(metrics), 200
 
-#     elif analytics_type == 'inventory':
-#         low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).all()
-#         return jsonify({"low_stock_count": len(low_stock_products), "low_stock_products": [p.serialize() for p in low_stock_products]}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-#     else:
-#         return jsonify({"error": "Invalid analytics type"}), 400
