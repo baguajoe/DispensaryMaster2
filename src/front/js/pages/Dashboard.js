@@ -87,7 +87,7 @@ const Dashboard = () => {
 
         {/* Metrics Section */}
         <div className="d-flex flex-wrap gap-4">
-          {metrics.map((metric, index) => (
+          {metrics&&metrics.map((metric, index) => (
             <MetricCard
               key={index}
               title={metric.title} // Fixed to use the correct property name

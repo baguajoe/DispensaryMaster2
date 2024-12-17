@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, create_access_token
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient 
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store 
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
@@ -419,6 +419,79 @@ def get_dashboard_metrics():
         ]
         
         return jsonify(metrics), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# GET Route - Fetch All Stores or a Single Store by ID
+@api.route('/store', methods=['GET'])
+@api.route('/store/<int:store_id>', methods=['GET'])
+@jwt_required()
+def get_store(store_id=None):
+    try:
+        user_id = int(get_jwt_identity())
+        
+        # If store_id is provided, fetch a single store
+        if store_id:
+            store = Store.query.filter_by(id=store_id, user_id=user_id).first()
+            if not store:
+                return jsonify({"error": "Store not found"}), 404
+            return jsonify(store), 200
+
+        # If no store_id, fetch all stores for the user
+        stores = Store.query.filter_by(user_id=user_id).all()
+        return jsonify([store.serialize() for store in stores]), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# PUT Route - Update a Store by ID
+@api.route('/store/<int:store_id>', methods=['PUT'])
+@jwt_required()
+def update_store(store_id):
+    try:
+        user_id = int(get_jwt_identity())
+        request_body = request.json
+
+        # Find the store to update
+        store = Store.query.filter_by(id=store_id, user_id=user_id).first()
+        if not store:
+            return jsonify({"error": "Store not found or unauthorized"}), 404
+        
+        # Update fields if provided
+        store.name = request_body.get("name", store.name)
+        store.location = request_body.get("location", store.location)
+        store.store_manager = request_body.get("store_manager", store.store_manager)
+        store.phone = request_body.get("phone", store.phone)
+        store.status = request_body.get("status", store.status)
+        store.employee_count = request_body.get("employee_count", store.employee_count)
+
+        db.session.commit()
+        return jsonify(store.serialize()), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api.route('/store', methods=['POST'])
+@jwt_required()
+def create_store():
+    try:
+        user_id=int(get_jwt_identity())
+        request_body=request.json
+        name=request_body.get("name")
+        location=request_body.get("location")
+        store_manager=request_body.get("store_manager")
+        phone=request_body.get("phone")
+        status=request_body.get("status")
+        employee_count=request_body.get("employee_count")
+
+        new_store=Store(user_id=user_id, name=name, location=location, store_manager=store_manager, phone=phone, status=status, employee_count=employee_count)
+
+        db.session.add(new_store)
+        db.session.commit()
+        return jsonify(new_store.serialize()), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

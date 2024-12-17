@@ -316,3 +316,25 @@ class Education(db.Model):
             "content": self.content,
             "category": self.category,
         }
+    
+class Store(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    name = db.Column(db.String(200), nullable=False)
+    location = db.Column(db.String, nullable=False)
+    store_manager = db.Column(db.String(50), nullable=False)  # e.g., "Dosing", "Strains"
+    phone = db.Column(db.String, nullable=False)  # e.g., "Dosing", "Strains"
+    status = db.Column(db.String(50), nullable=False)  # e.g., "Dosing", "Strains"
+    employee_count = db.Column(db.Integer, nullable=False)  # e.g., "Dosing", "Strains"
+     
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "location": self.location,
+            "store_manager": self.store_manager,
+            "phone": self.phone,
+            "status": self.status,
+            "employee_count": self.employee_count,
+        }
