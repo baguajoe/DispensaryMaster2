@@ -21,7 +21,10 @@ import CartManagement from "./pages/CartManagement";
 import Users from "./pages/Users";
 import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
+import Leads from "./pages/Leads"; // Import the Leads page
 import BarcodeScanner from "./pages/BarcodeScanner";
+import CampaignManagement from "./pages/CampaignManagement"
+import TaskManagement from "./pages/TaskManagement"
 import Navbar from "./component/Navbar";
 import Sidebar from "./component/Sidebar";
 import { Footer } from "./component/footer";
@@ -51,6 +54,7 @@ const Layout = () => {
 
                             {/* Protected Routes */}
                             <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/leads" element={<Leads />} /> {/* Add the Leads route */}
                             <Route path="/products" element={<Products />} />
                             <Route path="/inventory" element={<Inventory />} />
                             <Route path="/invoices" element={<Invoices />} />
@@ -63,6 +67,9 @@ const Layout = () => {
                             <Route path="/analytics" element={<Analytics />} />
                             <Route path="/reports" element={<Reports />} />
                             <Route path="/barcode-scanner" element={<BarcodeScanner />} />
+                            <Route path="/campaignmanagement" element={<CampaignManagement />} />
+                            <Route path="/taskmanagement" element={<TaskManagement />} />
+
 
                             {/* Fallback Route */}
                             <Route path="*" element={<h1>Page Not Found</h1>} />

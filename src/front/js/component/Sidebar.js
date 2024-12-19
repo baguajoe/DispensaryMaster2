@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 export const Sidebar = () => {
     return (
         <div className="d-flex flex-column bg-light" style={{ height: "100vh", width: "250px" }}>
-           
             <nav className="nav flex-column px-3">
                 {/* Existing Links */}
                 <Link className="nav-link" to="/overview">Overview</Link>
@@ -21,11 +20,18 @@ export const Sidebar = () => {
                 <Link className="nav-link" to="/analytics">Analytics</Link>
                 <Link className="nav-link" to="/reports">Reports</Link>
                 <Link className="nav-link" to="/barcode-scanner">Barcode Scanner</Link>
+                <Link className="nav-link" to="/campaigns">Campaign Management</Link>
+                <Link className="nav-link" to="/tasks">Task Management</Link>
+
 
                 {/* Divider */}
                 <hr className="my-3" />
 
-                {/* New Feature Links */}
+                {/* Leads Link */}
+                <h5 className="px-3 mt-3 text-secondary">Sales Features</h5>
+                <Link className="nav-link" to="/leads">Leads</Link>
+
+                {/* Medical Features */}
                 <h5 className="px-3 mt-3 text-secondary">Medical Features</h5>
                 <Link className="nav-link" to="/medical-dashboard">Medical Dashboard</Link>
                 <Link className="nav-link" to="/patient-management">Patient Management</Link>

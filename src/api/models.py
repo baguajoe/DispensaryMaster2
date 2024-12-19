@@ -338,3 +338,107 @@ class Store(db.Model):
             "status": self.status,
             "employee_count": self.employee_count,
         }
+
+# class Lead(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     first_name = db.Column(db.String(50), nullable=False)
+#     last_name = db.Column(db.String(50), nullable=False)
+#     email = db.Column(db.String(120), unique=True, nullable=False)
+#     phone = db.Column(db.String(20), nullable=True)
+#     status = db.Column(db.String(20), default="new")  # e.g., new, contacted, qualified, closed
+#     notes = db.Column(db.Text, nullable=True)
+#     created_at = db.Column(db.DateTime, server_default=db.func.now())
+#     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+
+#     def serialize(self):
+#         return {
+#             "id": self.id,
+#             "first_name": self.first_name,
+#             "last_name": self.last_name,
+#             "email": self.email,
+#             "phone": self.phone,
+#             "status": self.status,
+#             "notes": self.notes,
+#             "created_at": self.created_at.isoformat() if self.created_at else None,
+#             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+#         }
+    
+from enum import Enum
+
+class LeadStatus(Enum):
+    NEW = "new"
+    CONTACTED = "contacted"
+    QUALIFIED = "qualified"
+    CLOSED = "closed"
+
+class Lead(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    status = db.Column(db.Enum(LeadStatus), default=LeadStatus.NEW)
+    notes = db.Column(db.Text, nullable=True)
+    score = db.Column(db.Integer, nullable=False, default=0)  # Lead scoring
+    source = db.Column(db.String(50), nullable=True)  # Lead source
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user = db.relationship('User', backref='leads', lazy=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "phone": self.phone,
+            "status": self.status.value if self.status else None,
+            "notes": self.notes,
+            "score": self.score,
+            "source": self.source,
+            "assigned_to": self.assigned_to,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class Campaign(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default="draft")  # e.g., draft, active, completed
+    metrics = db.Column(db.JSON, nullable=True)  # Tracks performance data like open rates, clicks, etc.
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+            "status": self.status,
+            "metrics": self.metrics,
+        }
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    due_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default="pending")  # e.g., pending, in progress, completed
+    user = db.relationship('User', backref='tasks')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "assigned_to": self.assigned_to,
+            "due_date": self.due_date.isoformat() if self.due_date else None,
+            "status": self.status,
+        }
+
