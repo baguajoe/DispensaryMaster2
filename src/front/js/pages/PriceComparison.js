@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SearchBar from "../component/SearchBar";
 import Pagination from "../component/Pagination";
+import "../../styles/PriceComparison.css"; // Importing the CSS file
 
 const PriceComparison = () => {
     const [results, setResults] = useState([]);

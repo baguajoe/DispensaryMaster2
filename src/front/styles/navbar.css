@@ -1,11 +1,124 @@
+/* General Navbar Styles */
 .navbar {
-    .nav-link {
-        color: black;
-        position: relative;
-        padding-bottom: 5px;
+    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
+    padding: 16px 0;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Navbar Toggler */
+.navbar-toggler {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.navbar-toggler:hover {
+    color: #cbd5e0; /* Light Gray on Hover */
+}
+
+/* Navigation Links */
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.2); /* Light Overlay on Hover */
+    color: white;
+}
+
+/* Dropdown Toggle */
+.dropdown-toggle {
+    color: white;
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.dropdown-toggle:hover {
+    color: #cbd5e0; /* Light Gray on Hover */
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    background: #285e61; /* Matches Sidebar and Product Background */
+    color: white;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    padding: 8px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.dropdown-menu a {
+    color: white;
+    padding: 8px 16px;
+    display: block;
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+    background: rgba(255, 255, 255, 0.1); /* Light Overlay on Hover */
+    color: #cbd5e0; /* Matches Sidebar Link Hover */
+}
+
+.dropdown-toggle:hover + .dropdown-menu,
+.dropdown-menu:hover {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .navbar-toggler {
+        display: block;
     }
 
-    .nav-link.active {
-        border-bottom: 2px solid #333;
+    .navbar .md\\:flex {
+        display: none;
+    }
+
+    .dropdown-menu {
+        position: static;
+        margin-top: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+}
+
+/* Additional Adjustments for Extra Small Screens */
+@media (max-width: 576px) {
+    .nav-link {
+        padding: 8px;
+        font-size: 0.9rem; /* Slightly smaller font for smaller screens */
+    }
+
+    .dropdown-menu a {
+        padding: 8px 12px; /* Smaller padding for smaller screens */
     }
 }

@@ -1,25 +1,15 @@
+// import React from "react";
 
-import React, { useEffect, useState } from 'react';
+// const DashboardMetrics = ({ title, value, icon }) => {
+//   return (
+//     <div className="bg-white shadow rounded-lg p-4 flex items-center">
+//       <div className="text-3xl text-gray-800 font-bold mr-4">{value}</div>
+//       <div>
+//         <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
+//       </div>
+//       <div className="ml-auto">{icon && React.createElement(icon, { size: 24, className: "text-green-500" })}</div>
+//     </div>
+//   );
+// };
 
-import BatchTable from '../../component/GrowFarmComponent/BatchTable';
-
-const GrowFarmDashboard = () => {
-  const [batches, setBatches] = useState([]);
-
-  useEffect(() => {
-    // Fetch recent batches
-    fetch('/api/recent_batches')
-      .then((res) => res.json())
-      .then((data) => setBatches(data))
-      .catch((err) => console.error(err));
-  }, []);
-
-  return (
-    <div className="grow-farm-dashboard">
-      <h2>Grow Farm Dashboard</h2>
-      <BatchTable batches={batches} />
-    </div>
-  );
-};
-
-export default GrowFarmDashboard;
+// export default DashboardMetrics;

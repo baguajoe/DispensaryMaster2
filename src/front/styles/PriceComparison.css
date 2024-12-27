@@ -1,0 +1,164 @@
+/* General Page Style */
+.price-comparison-page {
+    padding: 24px;
+    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
+    color: white; /* Matches the sidebar theme */
+    min-height: calc(100vh - 90px); /* Adjust for navbar height */
+    margin-left: 16rem; /* Leaves space for the sidebar */
+    transition: margin-left 0.3s ease; /* Smooth transition for sidebar collapse */
+}
+
+/* Adjust margin when sidebar is collapsed */
+.sidebar-collapsed + .price-comparison-page {
+    margin-left: 4rem; /* Adjusts for collapsed sidebar width */
+}
+
+/* Header Styles */
+.price-comparison-page h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 24px;
+    color: #cbd5e0; /* Matches sidebar headings */
+}
+
+/* Table Styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #2a4365; /* Matches sidebar background */
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 16px;
+}
+
+.table th,
+.table td {
+    padding: 16px;
+    text-align: left;
+    color: #cbd5e0; /* Matches sidebar text color */
+}
+
+.table thead {
+    background: #1e3a4c; /* Dark Blue Teal */
+    color: white; /* Header text color */
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #285e61; /* Slightly lighter teal for alternating rows */
+}
+
+.table tbody tr:hover {
+    background: #1e3a4c; /* Darker teal on hover */
+}
+
+.table tbody td {
+    vertical-align: middle;
+}
+
+/* Pagination Component Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 24px;
+}
+
+.pagination-button {
+    background-color: #2a4365; /* Matches sidebar background */
+    color: white;
+    padding: 8px 16px;
+    margin: 0 4px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.pagination-button:hover {
+    background-color: #1e3a4c; /* Darker Blue Teal on Hover */
+    transform: scale(1.05);
+}
+
+.pagination-button.disabled {
+    background-color: #a0aec0; /* Gray for Disabled Button */
+    cursor: not-allowed;
+}
+
+/* Search Bar Styles */
+.search-bar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.search-bar-container input,
+.search-bar-container select {
+    padding: 12px 16px;
+    margin-right: 16px;
+    border: 1px solid #cbd5e0; /* Matches sidebar text color */
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.search-bar-container button {
+    background-color: #2a4365; /* Matches sidebar background */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.search-bar-container button:hover {
+    background-color: #1e3a4c; /* Darker Blue Teal on Hover */
+    transform: scale(1.05);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .price-comparison-page {
+        margin-left: 4rem; /* Adjust for collapsed sidebar on smaller screens */
+    }
+
+    .price-comparison-page h1 {
+        font-size: 1.5rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 12px;
+    }
+
+    .pagination-container {
+        flex-direction: column;
+    }
+
+    .pagination-button {
+        margin: 8px 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .price-comparison-page {
+        margin-left: 0; /* No margin for sidebar on very small screens */
+    }
+
+    .search-bar-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-bar-container input,
+    .search-bar-container select {
+        margin-bottom: 16px;
+        margin-right: 0;
+    }
+
+    .search-bar-container button {
+        width: 100%;
+    }
+}

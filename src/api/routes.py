@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+# from flask_login import current_user
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  Recommendation, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review                                
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  Recommendation, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message                                
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
@@ -1735,3 +1736,68 @@ class PricingSchema(Schema):
     dispensary_id = fields.Int(required=True)
     price = fields.Float(required=True)
     availability = fields.Bool(required=True, default=True)
+
+# new pages
+
+# @api.route('/settings', methods=['GET', 'POST'])
+# def settings():
+#     if request.method == 'GET':
+#         user_settings = Settings.query.filter_by(user_id=current_user.id).first()
+#         return jsonify(user_settings.serialize() if user_settings else {})
+#     if request.method == 'POST':
+#         data = request.json
+#         user_settings = Settings.query.filter_by(user_id=current_user.id).first()
+#         if not user_settings:
+#             user_settings = Settings(user_id=current_user.id, theme=data.get('theme'))
+#             db.session.add(user_settings)
+#         else:
+#             user_settings.theme = data.get('theme')
+#         db.session.commit()
+#         return jsonify({"message": "Settings updated successfully"})
+
+# @api.route('/accounts', methods=['GET', 'POST', 'DELETE'])
+# def accounts():
+#     if request.method == 'GET':
+#         users = User.query.all()
+#         return jsonify([user.serialize() for user in users])
+#     if request.method == 'POST':
+#         data = request.json
+#         new_user = User(username=data['username'], email=data['email'])
+#         db.session.add(new_user)
+#         db.session.commit()
+#         return jsonify({"message": "Account created successfully"})
+#     if request.method == 'DELETE':
+#         data = request.json
+#         user = User.query.get(data['user_id'])
+#         if user:
+#             db.session.delete(user)
+#             db.session.commit()
+#             return jsonify({"message": "Account deleted successfully"})
+#         return jsonify({"error": "User not found"}), 404
+    
+# @api.route('/profile', methods=['GET', 'POST'])
+# def profile():
+#     if request.method == 'GET':
+#         return jsonify(current_user.serialize())
+#     if request.method == 'POST':
+#         data = request.json
+#         current_user.name = data.get('name', current_user.name)
+#         current_user.email = data.get('email', current_user.email)
+#         db.session.commit()
+#         return jsonify({"message": "Profile updated successfully"})
+
+# @api.route('/messages', methods=['GET', 'POST'])
+# def messages():
+#     if request.method == 'GET':
+#         messages = Message.query.filter_by(receiver_id=current_user.id).all()
+#         return jsonify([message.serialize() for message in messages])
+#     if request.method == 'POST':
+#         data = request.json
+#         new_message = Message(
+#             sender_id=current_user.id,
+#             receiver_id=data['receiver_id'],
+#             content=data['content']
+#         )
+#         db.session.add(new_message)
+#         db.session.commit()
+#         return jsonify({"message": "Message sent successfully"})

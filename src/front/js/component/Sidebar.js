@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import "../../styles/sidebar.css";
 
 export const Sidebar = () => {
-    const [isCollapsed, setIsCollapsed] = useState(false); // Collapsible state
+    const [isCollapsed, setIsCollapsed] = useState(false);
     const [collapsedSections, setCollapsedSections] = useState({
-        sales: false,
+        nonMedical: false,
         medical: false,
-        settings: false,
+        growFarms: false,
+        seedBanks: false,
     });
 
     const location = useLocation();
@@ -19,196 +21,275 @@ export const Sidebar = () => {
     };
 
     return (
-        <div
-            className={`d-flex flex-column bg-light ${
-                isCollapsed ? "w-16" : "w-64"
-            } transition-all duration-300`}
-            style={{ height: "100vh" }}
-        >
+        <div className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""}`}>
             {/* Toggle Sidebar Collapse */}
             <button
-                className="p-3 text-gray-500 hover:text-gray-900"
+                className="sidebar-toggle"
                 onClick={() => setIsCollapsed((prev) => !prev)}
             >
                 {isCollapsed ? "→" : "←"}
             </button>
 
-            <nav className="nav flex-column px-3">
-                {/* Existing Links */}
-                {[
-                    { path: "/overview", label: "Overview" },
-                    { path: "/summary", label: "Summary" },
-                    { path: "/dashboard", label: "Dashboard" },
-                    { path: "/stores", label: "Stores" },
-                    { path: "/suppliers", label: "Suppliers" },
-                    { path: "/products", label: "Products" },
-                    { path: "/price-comparison", label: "Price Comparison" }, // New Price Comparison Link
-                    { path: "/category", label: "Category" },
-                    { path: "/pos", label: "POS" },
-                    { path: "/orders", label: "Orders" },
-                    { path: "/cart-management", label: "Cart Management" },
-                    { path: "/inventory", label: "Inventory" },
-                    { path: "/users", label: "Users" },
-                    { path: "/analytics", label: "Analytics" },
-                    { path: "/reports", label: "Reports" },
-                    { path: "/barcode-scanner", label: "Barcode Scanner" },
-                    { path: "/campaigns", label: "Campaign Management" },
-                    { path: "/tasks", label: "Task Management" },
-                ].map(({ path, label }) => (
-                    <Link
-                        key={path}
-                        className={`nav-link ${
-                            location.pathname === path ? "bg-blue-500 text-white" : ""
-                        }`}
-                        to={path}
-                    >
-                        {label}
-                    </Link>
-                ))}
+            
 
-                {/* Divider */}
-                <hr className="my-3" />
-
-                {/* Collapsible Sales Features */}
+            <nav className="sidebar-nav">
+                {/* Non-Medical Features */}
                 <h5
-                    className="px-3 mt-3 text-secondary cursor-pointer"
-                    onClick={() => toggleSection("sales")}
+                    className="sidebar-heading"
+                    onClick={() => toggleSection("nonMedical")}
                 >
-                    Sales Features
+                    Non-Medical Features
                 </h5>
-                {!collapsedSections.sales && (
-                    <>
-                        <Link
-                            className={`nav-link ${
-                                location.pathname === "/leads" ? "bg-blue-500 text-white" : ""
-                            }`}
-                            to="/leads"
-                        >
-                            Leads
+                {collapsedSections.nonMedical && (
+                    <div className="dropdown-content">
+                        <Link className={`nav-link ${location.pathname === "/" ? "active" : ""}`} to="/">
+                            Home
                         </Link>
-                    </>
+                        <Link className={`nav-link ${location.pathname === "/about-us" ? "active" : ""}`} to="/about-us">
+                            About Us
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/shop" ? "active" : ""}`} to="/shop">
+                            Shop
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/deals" ? "active" : ""}`} to="/deals">
+                            Deals
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/contact-us" ? "active" : ""}`} to="/contact-us">
+                            Contact Us
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/login" ? "active" : ""}`} to="/login">
+                            Login
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/signup" ? "active" : ""}`} to="/signup">
+                            Signup
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/dashboard" ? "active" : ""}`} to="/dashboard">
+                            Dashboard
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/products" ? "active" : ""}`} to="/products">
+                            Products
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/price-comparison" ? "active" : ""}`} to="/price-comparison">
+                            Price Comparison
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/inventory" ? "active" : ""}`} to="/inventory">
+                            Inventory
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/invoices" ? "active" : ""}`} to="/invoices">
+                            Invoices
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/stores" ? "active" : ""}`} to="/stores">
+                            Stores
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/stores/add" ? "active" : ""}`} to="/stores/add">
+                            Add Store
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/suppliers" ? "active" : ""}`} to="/suppliers">
+                            Suppliers
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/orders" ? "active" : ""}`} to="/orders">
+                            Orders
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos" ? "active" : ""}`} to="/pos">
+                            POS
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/cart-management" ? "active" : ""}`} to="/cart-management">
+                            Cart Management
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/users" ? "active" : ""}`} to="/users">
+                            Users
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/analytics" ? "active" : ""}`} to="/analytics">
+                            Analytics
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/reports" ? "active" : ""}`} to="/reports">
+                            Reports
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/barcode-scanner" ? "active" : ""}`} to="/barcode-scanner">
+                            Barcode Scanner
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/campaign" ? "active" : ""}`} to="/campaign">
+                            Campaign
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/task" ? "active" : ""}`} to="/task">
+                            Task
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/sales-pipeline" ? "active" : ""}`} to="/sales-pipeline">
+                            Sales Pipeline
+                        </Link>
+                    </div>
                 )}
 
-                {/* Collapsible Medical Features */}
+                {/* Divider */}
+                <hr className="sidebar-divider" />
+
+                {/* Medical Features */}
                 <h5
-                    className="px-3 mt-3 text-secondary cursor-pointer"
+                    className="sidebar-heading"
                     onClick={() => toggleSection("medical")}
                 >
                     Medical Features
                 </h5>
-                {!collapsedSections.medical && (
-                    <>
-                        <Link
-                            className={`nav-link ${
-                                location.pathname === "/medical-dashboard"
-                                    ? "bg-blue-500 text-white"
-                                    : ""
-                            }`}
-                            to="/medical-dashboard"
-                        >
-                            Medical Dashboard
+                {collapsedSections.medical && (
+                    <div className="dropdown-content">
+                        <Link className={`nav-link ${location.pathname === "/medical/compliance-dashboard" ? "active" : ""}`} to="/medical/compliance-dashboard">
+                            Compliance Dashboard
                         </Link>
-                        <Link
-                            className={`nav-link ${
-                                location.pathname === "/patient-management"
-                                    ? "bg-blue-500 text-white"
-                                    : ""
-                            }`}
-                            to="/patient-management"
-                        >
-                            Patient Management
+                        <Link className={`nav-link ${location.pathname === "/medical/compliance-reports" ? "active" : ""}`} to="/medical/compliance-reports">
+                            Compliance Reports
                         </Link>
-                        <Link
-                            className={`nav-link ${
-                                location.pathname === "/prescription-tracking"
-                                    ? "bg-blue-500 text-white"
-                                    : ""
-                            }`}
-                            to="/prescription-tracking"
-                        >
-                            Prescription Tracking
+                        <Link className={`nav-link ${location.pathname === "/medical/medical-analytics" ? "active" : ""}`} to="/medical/medical-analytics">
+                            Medical Analytics
                         </Link>
-                        <Link
-                            className={`nav-link ${
-                                location.pathname === "/medical-reports"
-                                    ? "bg-blue-500 text-white"
-                                    : ""
-                            }`}
-                            to="/medical-reports"
-                        >
-                            Medical Reports
+                        <Link className={`nav-link ${location.pathname === "/medical/patient-dashboard" ? "active" : ""}`} to="/medical/patient-dashboard">
+                            Patient Dashboard
                         </Link>
-                    </>
+                        <Link className={`nav-link ${location.pathname === "/medical/patient-list" ? "active" : ""}`} to="/medical/patient-list">
+                            Patient List
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/medical/patient-profile" ? "active" : ""}`} to="/medical/patient-profile">
+                            Patient Profile
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/medical/patient-registration" ? "active" : ""}`} to="/medical/patient-registration">
+                            Patient Registration
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/medical/prescription-creation" ? "active" : ""}`} to="/medical/prescription-creation">
+                            Prescription Creation
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/medical/prescription-management" ? "active" : ""}`} to="/medical/prescription-management">
+                            Prescription Management
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/medical/recommendations" ? "active" : ""}`} to="/medical/recommendations">
+                            Recommendations
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/medical/resource-detail" ? "active" : ""}`} to="/medical/resource-detail">
+                            Resource Detail
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/medical/symptom-tracker" ? "active" : ""}`} to="/medical/symptom-tracker">
+                            Symptom Tracker
+                        </Link>
+                    </div>
                 )}
 
-                {/* Collapsible Settings Section */}
+                {/* Divider */}
+                <hr className="sidebar-divider" />
+
+                {/* GrowFarms Features */}
                 <h5
-                    className="px-3 mt-3 text-secondary cursor-pointer"
-                    onClick={() => toggleSection("settings")}
+                    className="sidebar-heading"
+                    onClick={() => toggleSection("growFarms")}
                 >
-                    Settings
+                    GrowFarms
                 </h5>
-                {!collapsedSections.settings && (
-                    <>
-                        <Link
-                            className={`nav-link ${
-                                location.pathname === "/profile-settings"
-                                    ? "bg-blue-500 text-white"
-                                    : ""
-                            }`}
-                            to="/profile-settings"
-                        >
-                            Profile Settings
+                {collapsedSections.growFarms && (
+                    <div className="dropdown-content">
+                        <Link className={`nav-link ${location.pathname === "/growfarms/add-grow-task" ? "active" : ""}`} to="/growfarms/add-grow-task">
+                            Add Grow Task
                         </Link>
-                        <Link
-                            className={`nav-link ${
-                                location.pathname === "/system-settings"
-                                    ? "bg-blue-500 text-white"
-                                    : ""
-                            }`}
-                            to="/system-settings"
-                        >
-                            System Settings
+                        <Link className={`nav-link ${location.pathname === "/growfarms/add-plant-batch" ? "active" : ""}`} to="/growfarms/add-plant-batch">
+                            Add Plant Batch
                         </Link>
-                        <Link
-                            className={`nav-link ${
-                                location.pathname === "/notifications"
-                                    ? "bg-blue-500 text-white"
-                                    : ""
-                            }`}
-                            to="/notifications"
-                        >
-                            Notifications
+                        <Link className={`nav-link ${location.pathname === "/growfarms/alert-threshold" ? "active" : ""}`} to="/growfarms/alert-threshold">
+                            Alert Threshold
                         </Link>
-                    </>
+                        <Link className={`nav-link ${location.pathname === "/growfarms/batch" ? "active" : ""}`} to="/growfarms/batch">
+                            Batch
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/growfarms/dashboard" ? "active" : ""}`} to="/growfarms/dashboard">
+                            Dashboard
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/growfarms/task-list" ? "active" : ""}`} to="/growfarms/task-list">
+                            Task List
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/growfarms/plant-batch-details" ? "active" : ""}`} to="/growfarms/plant-batch-details">
+                            Plant Batch Details
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/growfarms/plant-batch-list" ? "active" : ""}`} to="/growfarms/plant-batch-list">
+                            Plant Batch List
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/growfarms/grow-reports" ? "active" : ""}`} to="/growfarms/grow-reports">
+                            Grow Reports
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/growfarms/settings" ? "active" : ""}`} to="/growfarms/settings">
+                            Settings
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/growfarms/yield-prediction" ? "active" : ""}`} to="/growfarms/yield-prediction">
+                            Yield Prediction
+                        </Link>
+                    </div>
                 )}
 
-                {/* Help and Logout */}
-                <hr className="my-3" />
-                <Link
-                    className={`nav-link ${
-                        location.pathname === "/help" ? "bg-blue-500 text-white" : ""
-                    }`}
-                    to="/help"
+                {/* Divider */}
+                <hr className="sidebar-divider" />
+
+                {/* SeedBanks Features */}
+                <h5
+                    className="sidebar-heading"
+                    onClick={() => toggleSection("seedBanks")}
                 >
-                    Help
-                </Link>
-                <Link
-                    className={`nav-link ${
-                        location.pathname === "/contact-us"
-                            ? "bg-blue-500 text-white"
-                            : ""
-                    }`}
-                    to="/contact-us"
+                    SeedBanks
+                </h5>
+                {collapsedSections.seedBanks && (
+                    <div className="dropdown-content">
+                        <Link className={`nav-link ${location.pathname === "/seedbanks/add-seed-batch" ? "active" : ""}`} to="/seedbanks/add-seed-batch">
+                            Add Seed Batch
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/seedbanks/dashboard" ? "active" : ""}`} to="/seedbanks/dashboard">
+                            Dashboard
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/seedbanks/settings" ? "active" : ""}`} to="/seedbanks/settings">
+                            Settings
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/seedbanks/batch-details" ? "active" : ""}`} to="/seedbanks/batch-details">
+                            Batch Details
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/seedbanks/batch-list" ? "active" : ""}`} to="/seedbanks/batch-list">
+                            Batch List
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/seedbanks/inventory" ? "active" : ""}`} to="/seedbanks/inventory">
+                            Inventory
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/seedbanks/reports" ? "active" : ""}`} to="/seedbanks/reports">
+                            Reports
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/seedbanks/storage-conditions" ? "active" : ""}`} to="/seedbanks/storage-conditions">
+                            Storage Conditions
+                        </Link>
+                    </div>
+                )}
+
+                {/* Divider */}
+                <hr className="sidebar-divider" />
+
+                {/* User Management & Utilities */}
+                <h5
+                    className="sidebar-heading"
+                    onClick={() => toggleSection("utilities")}
                 >
-                    Contact Us
-                </Link>
-                <Link
-                    className="nav-link text-danger mt-3"
-                    to="/logout"
-                >
-                    Logout
-                </Link>
+                    User Management & Utilities
+                </h5>
+                {collapsedSections.utilities && (
+                    <div className="dropdown-content">
+                        <Link className={`nav-link ${location.pathname === "/settings" ? "active" : ""}`} to="/settings">
+                            Settings
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/accounts" ? "active" : ""}`} to="/accounts">
+                            Accounts
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/profile" ? "active" : ""}`} to="/profile">
+                            Profile
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/messaging" ? "active" : ""}`} to="/messaging">
+                            Messaging
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/help" ? "active" : ""}`} to="/help">
+                            Help
+                        </Link>
+                        <Link className="nav-link text-danger" to="/logout">
+                            Logout
+                        </Link>
+                    </div>
+                )}
             </nav>
         </div>
     );

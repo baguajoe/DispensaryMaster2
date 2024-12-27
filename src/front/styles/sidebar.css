@@ -1,0 +1,130 @@
+/* Sidebar Container */
+.sidebar {
+    position: fixed; /* Keeps the sidebar fixed on the page */
+    top: 140px; /* Aligns the sidebar just below the navbar */
+    left: 0;
+    width: 16rem; /* Sidebar width */
+    height: calc(100vh - 140px); /* Adjusts height to account for the navbar */
+    background: linear-gradient(to bottom, #2a4365, #285e61); /* Blue to Teal Gradient */
+    color: white;
+    padding: 1rem;
+    overflow-y: auto; /* Enable vertical scrolling for long content */
+    transition: width 0.3s ease; /* Smooth transition for sidebar toggle */
+    z-index: 1000; /* Ensure it stays on top of other elements */
+}
+
+/* Collapsed Sidebar */
+.sidebar-collapsed {
+    width: 4rem; /* Reduced width for collapsed sidebar */
+    overflow: hidden; /* Hide overflowing content */
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+    transform: scale(1.1); /* Slightly enlarges the button on hover */
+}
+
+/* Sidebar Heading */
+.sidebar-heading {
+    font-size: 1.1rem;
+    margin: 1rem 0 0.5rem;
+    color: #cbd5e0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-heading:hover {
+    color: white; /* Changes color to white on hover */
+}
+
+/* Dropdown Content */
+.dropdown-content {
+    margin-left: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* Navigation Links */
+.nav-link {
+    display: block;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem 0;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9); /* White with some transparency */
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.2); /* Light white overlay on hover or active */
+    color: white;
+}
+
+/* Sidebar Divider */
+.sidebar-divider {
+    border-color: rgba(255, 255, 255, 0.2);
+    margin: 1rem 0;
+}
+
+/* Responsive Sidebar */
+@media (max-height: 768px) {
+    .sidebar {
+        overflow-y: auto; /* Enable scrolling for smaller screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: absolute;
+        top: 140px; /* Keeps it aligned below the navbar */
+        width: 100%;
+        height: calc(100vh - 140px); /* Adjusts height for navbar */
+        z-index: 1000; /* Ensure visibility on top */
+    }
+
+    .sidebar-collapsed {
+        height: auto;
+    }
+}
+
+/* Adjustments for Small Screens */
+@media (max-width: 576px) {
+    .sidebar {
+        width: 14rem; /* Slightly narrower sidebar for smaller screens */
+    }
+
+    .sidebar-collapsed {
+        width: 3.5rem; /* Narrower collapsed sidebar */
+    }
+}
+
+/* Scrollbar Styles for Sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1); /* Track color */
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5); /* Thumb color */
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.7); /* Thumb hover color */
+}

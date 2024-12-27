@@ -67,92 +67,92 @@
 #     socketio.run(app, debug=True)
 
 # --------------------------------------------
-# import os
-# from flask import Flask, jsonify, send_from_directory, request
-# from flask_migrate import Migrate
-# from flask_jwt_extended import JWTManager
-# from flask_cors import CORS
-# from dotenv import load_dotenv
-
-# from api.extensions import db, socketio  # Import extensions
-# from api.utils import APIException, generate_sitemap  # Import utilities
-# from api.routes import api  # Import the API blueprint
-# from api.admin import setup_admin  # Import admin setup function
-
-
-# load_dotenv()
-
-# app = Flask(__name__)
-
-# # Configurations
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
-
-# # Initialize extensions
-# db.init_app(app)
-# migrate = Migrate(app, db)  # Migrate setup
-# socketio.init_app(app, cors_allowed_origins="*")
-# jwt = JWTManager(app)
-# CORS(app)
-
-# # Import and setup admin after initializing the database
-# from api.admin import setup_admin  # Import after db.init_app(app)
-# setup_admin(app)
-
-# # Register API blueprint
-# app.register_blueprint(api, url_prefix='/api')
-
-# @app.errorhandler(APIException)
-# def handle_api_exception(error):
-#     return jsonify(error.to_dict()), error.status_code
-
-# @app.route('/')
-# def sitemap():
-#     return generate_sitemap(app)
-
-# if __name__ == '__main__':
-#     socketio.run(app, debug=True)
-
-
 import os
-from flask import Flask
+from flask import Flask, jsonify, send_from_directory, request
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-from api.extensions import db, socketio
-from api.models import *  # Import all models
-from api import api  # Import the blueprint
+from api.extensions import db, socketio  # Import extensions
+from api.utils import APIException, generate_sitemap  # Import utilities
+from api.routes import api  # Import the API blueprint
+from api.admin import setup_admin  # Import admin setup function
+
 
 load_dotenv()
 
-def create_app():
-    app = Flask(__name__)
-    
-    # Configurations
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
+app = Flask(__name__)
 
-    # Initialize extensions
-    db.init_app(app)
-    migrate = Migrate(app, db)
-    jwt = JWTManager(app)
-    CORS(app)
-    socketio.init_app(app, cors_allowed_origins="*")
+# Configurations
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
 
-    # Register blueprint
-    app.register_blueprint(api, url_prefix='/api')
+# Initialize extensions
+db.init_app(app)
+migrate = Migrate(app, db)  # Migrate setup
+socketio.init_app(app, cors_allowed_origins="*")
+jwt = JWTManager(app)
+CORS(app)
 
-    # Import and setup admin after initializing database
-    from api.admin import setup_admin
-    setup_admin(app)
+# Import and setup admin after initializing the database
+from api.admin import setup_admin  # Import after db.init_app(app)
+setup_admin(app)
 
-    return app
+# Register API blueprint
+app.register_blueprint(api, url_prefix='/api')
 
-app = create_app()
+@app.errorhandler(APIException)
+def handle_api_exception(error):
+    return jsonify(error.to_dict()), error.status_code
+
+@app.route('/')
+def sitemap():
+    return generate_sitemap(app)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
+
+
+# import os
+# from flask import Flask 
+# from flask_migrate import Migrate
+# from flask_jwt_extended import JWTManager
+# from flask_cors import CORS
+# from dotenv import load_dotenv
+
+# from api.extensions import db, socketio
+# from api.models import *  # Import all models
+# from api import api  # Import the blueprint
+
+# load_dotenv()
+
+# def create_app():
+#     app = Flask(__name__)
+    
+#     # Configurations
+#     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
+#     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
+
+#     # Initialize extensions
+#     db.init_app(app)
+#     migrate = Migrate(app, db)
+#     jwt = JWTManager(app)
+#     CORS(app)
+#     socketio.init_app(app, cors_allowed_origins="*")
+
+#     # Register blueprint
+#     app.register_blueprint(api, url_prefix='/api')
+
+#     # Import and setup admin after initializing database
+#     from api.admin import setup_admin
+#     setup_admin(app)
+
+#     return app
+
+# app = create_app()
+
+# if __name__ == '__main__':
+#     socketio.run(app, debug=True)

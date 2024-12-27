@@ -71,6 +71,7 @@ import StorageConditions from "./pages/SeedBanks/StorageConditions";
 import Navbar from "./component/Navbar";
 import Sidebar from "./component/Sidebar";
 import { Footer } from "./component/footer";
+// import { Settings, Accounts, Profile, Messaging, Help } from "./pages/NewPages";
 
 const Layout = () => {
     const basename = process.env.BASENAME || "";
@@ -146,6 +147,13 @@ const Layout = () => {
                             <Route path="/seedbanks/inventory" element={<SeedInventory />} />
                             <Route path="/seedbanks/reports" element={<SeedReports />} />
                             <Route path="/seedbanks/storage-conditions" element={<StorageConditions />} />
+
+                            {/* // Add these routes
+                            <Route path="/settings" element={<Settings />} />
+                            <Route path="/accounts" element={<Accounts />} />
+                            <Route path="/profile" element={<Profile />} />
+                            <Route path="/messaging" element={<Messaging />} />
+                            <Route path="/help" element={<Help />} /> */}
 
                             {/* Fallback Route */}
                             <Route path="*" element={<h1>Page Not Found</h1>} />

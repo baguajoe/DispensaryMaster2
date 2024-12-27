@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: f5b83e57424d
+Revision ID: 07d96c2dbd5c
 Revises: 
-Create Date: 2024-12-27 00:54:49.882669
+Create Date: 2024-12-27 15:59:00.376870
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f5b83e57424d'
+revision = '07d96c2dbd5c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -335,6 +335,16 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
+    op.create_table('message',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('sender_id', sa.Integer(), nullable=True),
+    sa.Column('receiver_id', sa.Integer(), nullable=True),
+    sa.Column('content', sa.Text(), nullable=True),
+    sa.Column('timestamp', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['receiver_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('order_item',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('order_id', sa.Integer(), nullable=False),
@@ -391,6 +401,14 @@ def upgrade():
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('settings',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('theme', sa.String(length=50), nullable=True),
+    sa.Column('notifications_enabled', sa.Boolean(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('store',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -431,11 +449,13 @@ def downgrade():
     op.drop_table('yield_prediction')
     op.drop_table('task')
     op.drop_table('store')
+    op.drop_table('settings')
     op.drop_table('review')
     op.drop_table('recommendation')
     op.drop_table('pricing')
     op.drop_table('prescription')
     op.drop_table('order_item')
+    op.drop_table('message')
     op.drop_table('lead')
     op.drop_table('invoice')
     op.drop_table('inventory_log')

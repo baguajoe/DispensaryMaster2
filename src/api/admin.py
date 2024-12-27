@@ -2,11 +2,15 @@ import os
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from .models import db, User, Plan, Product, OrderItem, Order, Customer, Business, Compliance, Invoice, Store, Lead, Campaign, Task, Transaction, GrowFarm, Seedbank
+from .extensions import db
+
+
 
 def setup_admin(app):
     app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
     admin = Admin(app, name='DispenseMaster Admin', template_mode='bootstrap3')
+
 
     # Add models to the admin interface
     admin.add_view(ModelView(User, db.session))

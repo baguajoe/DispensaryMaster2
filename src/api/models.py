@@ -4,7 +4,10 @@ from datetime import datetime
 from enum import Enum
 from sqlalchemy import Enum as qenum
 
-db = SQLAlchemy()
+from .extensions import db
+
+
+# db = SQLAlchemy()
 
 # ---------------------
 # Non-Medical Models
@@ -868,6 +871,38 @@ class SeedReport(db.Model):
             "parameters": self.parameters,
             "report_data": self.report_data,
             "generated_at": self.generated_at.isoformat() if self.generated_at else None
+        }
+
+# new pages
+
+class Settings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    theme = db.Column(db.String(50))
+    notifications_enabled = db.Column(db.Boolean, default=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "theme": self.theme,
+            "notifications_enabled": self.notifications_enabled
+        }
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    content = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "sender_id": self.sender_id,
+            "receiver_id": self.receiver_id,
+            "content": self.content,
+            "timestamp": self.timestamp.isoformat()
         }
 
 
