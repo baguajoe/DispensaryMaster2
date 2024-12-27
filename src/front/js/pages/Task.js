@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const Tasks = () => {
+const TaskManagement = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -119,4 +119,4 @@ const Tasks = () => {
   );
 };
 
-export default Tasks;
+export default TaskManagement;

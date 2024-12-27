@@ -31,23 +31,26 @@ import PropTypes from "prop-types";
 
 
 const MetricCard = ({ title, value, icon, trend }) => {
-  // Determine color and icon for trend
-  const trendColor = trend === "up" ? "text-green-500" : "text-red-500";
-  const trendIcon =
-    trend === "up" ? "↑" : trend === "down" ? "↓" : null;
+  // Determine colors and trend indicators
+  const trendColor = trend > 0 ? "text-green-500" : "text-red-500";
+  const trendIcon = trend > 0 ? "↑" : "↓";
+
+  // Determine background color dynamically
+  const bgColor =
+    trend > 0
+      ? "bg-green-100"
+      : trend < 0
+      ? "bg-red-100"
+      : "bg-gray-100";
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-4 flex items-center space-x-4">
+    <div className={`${bgColor} shadow-lg rounded-lg p-4 flex items-center space-x-4`}>
       {icon && <div className="text-blue-500 text-3xl">{icon}</div>}
       <div className="flex-grow">
         <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
         <p className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
           {value}
-          {trendIcon && (
-            <span className={`${trendColor} text-lg ml-2`}>
-              {trendIcon}
-            </span>
-          )}
+          <span className={`${trendColor} text-lg ml-2`}>{trendIcon}</span>
         </p>
       </div>
     </div>
@@ -57,8 +60,8 @@ const MetricCard = ({ title, value, icon, trend }) => {
 MetricCard.propTypes = {
   title: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  icon: PropTypes.element,
-  trend: PropTypes.oneOf(["up", "down", null]), // Trend can be "up", "down", or null
+  icon: PropTypes.node,
+  trend: PropTypes.number, // Positive or negative trend
 };
 
 export default MetricCard;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const Campaigns = () => {
+const Campaign = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [newCampaign, setNewCampaign] = useState({
     name: "",
@@ -108,4 +108,4 @@ const Campaigns = () => {
   );
 };
 
-export default Campaigns;
+export default Campaign;

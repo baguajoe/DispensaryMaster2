@@ -1,29 +1,31 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from enum import Enum
+from sqlalchemy import Enum as qenum
 
 db = SQLAlchemy()
 
 # ---------------------
-# User Model
+# Non-Medical Models
 # ---------------------
 
+# User Model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password = db.Column(db.String(256), nullable=False)  # Store hashed passwords
-    plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"), nullable=True)  # basic, pro, enterprise
+    password = db.Column(db.String(256), nullable=False)
+    plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"), nullable=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
-    role = db.Column(db.String(20), nullable=False, default="customer") # 'user', 'admin', etc.
-    plan=db.relationship("Plan",back_populates="users")
-  
+    role = db.Column(db.String(20), nullable=False, default="customer")
+    plan = db.relationship("Plan", back_populates="users")
+
     __table_args__ = (
         db.CheckConstraint(
             role.in_(['admin', 'owner', 'manager', 'employee', 'customer']),
             name='valid_roles'
         ),
     )
-    
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -40,6 +42,7 @@ class User(db.Model):
             "role": self.role
         }
 
+# Plan Model
 class Plan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -53,14 +56,10 @@ class Plan(db.Model):
             "name": self.name,
             "price": self.price,
             "features": self.features,
-            "users": [user.serialize()for user in self.users]
+            "users": [user.serialize() for user in self.users]
         }
-    
-# ---------------------
-# Product Model
-# ---------------------
-from datetime import datetime
 
+# Product Model
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -75,7 +74,11 @@ class Product(db.Model):
     batch_number = db.Column(db.String(50), nullable=False)
     medical_benefits = db.Column(db.Text, nullable=True)
     test_results = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # New column
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Add relationship to dispensary
+    dispensary_id = db.Column(db.Integer, db.ForeignKey('dispensary.id'), nullable=False)
+    dispensary = db.relationship('Dispensary', backref='products')
 
     def __repr__(self):
         return f'<Product {self.name}>'
@@ -94,12 +97,61 @@ class Product(db.Model):
             "supplier": self.supplier,
             "batch_number": self.batch_number,
             "test_results": self.test_results,
-            "created_at": self.created_at.isoformat() if self.created_at else None  # Include in serialization
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "dispensary": self.dispensary.serialize() if self.dispensary else None
         }
 
-# ---------------------
+class Dispensary(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(255), nullable=False)
+    contact_info = db.Column(db.JSON, nullable=False)
+
+    def __repr__(self):
+        return f'<Dispensary {self.name}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "location": self.location,
+            "contact_info": self.contact_info
+        }
+    
+
+
+
+
+
+
+# Pricing Model
+class Pricing(db.Model):
+    __tablename__ = 'pricing'
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    dispensary_id = db.Column(db.Integer, db.ForeignKey('dispensary.id'), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    availability = db.Column(db.Boolean, default=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    product = db.relationship('Product', backref='pricings')
+    dispensary = db.relationship('Dispensary', backref='pricings')
+
+    def __repr__(self):
+        return f'<Pricing Product: {self.product.name}, Dispensary: {self.dispensary.name}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "product": self.product.serialize(),
+            "dispensary": self.dispensary.serialize(),
+            "price": self.price,
+            "availability": self.availability,
+            "updated_at": self.updated_at.isoformat()
+        }
+
 # OrderItem Model
-# ---------------------
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
@@ -122,14 +174,12 @@ class OrderItem(db.Model):
             "unit_price": float(self.unit_price),
         }
 
-# ---------------------
 # Order Model
-# ---------------------
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
-    status = db.Column(db.String(20), nullable=False, default='pending')  # 'pending', 'completed', etc.
+    status = db.Column(db.String(20), nullable=False, default='pending')
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
@@ -147,53 +197,22 @@ class Order(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
-    
-    #PRESCRIPTION MANAGEMENT
 
-class Prescription(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    dosage = db.Column(db.String(50), nullable=False)
-    frequency = db.Column(db.String(50), nullable=False)
-    prescribed_date = db.Column(db.Date, default=datetime.utcnow)
-
-    patient = db.relationship('Patient', backref='prescriptions')
-    product = db.relationship('Product', backref='prescriptions')
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "patient_id": self.patient_id,
-            "product_id": self.product_id,
-            "dosage": self.dosage,
-            "frequency": self.frequency,
-            "prescribed_date": self.prescribed_date.isoformat(),
-        }
-
-class Transaction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.String(100), unique=True, nullable=False)
-    customer_name = db.Column(db.String(100), nullable=False)
-    payment_method = db.Column(db.String(50))
-    amount = db.Column(db.Float, nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-
-# ---------------------
 # Customer Model
-# ---------------------
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     phone = db.Column(db.String(20), nullable=False)
-    membership_level = db.Column(db.String(20), nullable=False, default='standard')  # 'standard', 'premium', etc.
-    verification_status = db.Column(db.String(20), nullable=False, default='pending')  # 'pending', 'verified'
+    membership_level = db.Column(db.String(20), nullable=False, default='standard')
+    verification_status = db.Column(db.String(20), nullable=False, default='pending')
     preferences = db.Column(db.JSON, nullable=True)
-
-    def __repr__(self):
-        return f'<Customer {self.first_name} {self.last_name}>'
+    loyalty_points = db.Column(db.Integer, nullable=False, default=0)
+    date_of_birth = db.Column(db.Date, nullable=True)  # New field
+    preferred_products = db.Column(db.JSON, nullable=True)  # New field
+    last_purchase_date = db.Column(db.DateTime, nullable=True)  # New field
+    lifecycle_stage = db.Column(db.String(20), nullable=False, default='lead')  # New field
 
     def serialize(self):
         return {
@@ -205,8 +224,261 @@ class Customer(db.Model):
             "membership_level": self.membership_level,
             "verification_status": self.verification_status,
             "preferences": self.preferences,
+            "loyalty_points": self.loyalty_points,
+            "date_of_birth": self.date_of_birth.isoformat() if self.date_of_birth else None,
+            "preferred_products": self.preferred_products,
+            "last_purchase_date": self.last_purchase_date.isoformat() if self.last_purchase_date else None,
+            "lifecycle_stage": self.lifecycle_stage,
+        }
+
+
+class CustomerInteraction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    interaction_type = db.Column(db.String(50))  # Example: "purchase", "support", "feedback"
+    notes = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    customer = db.relationship('Customer', backref='interactions')
+
+
+
+# Business Model
+class Business(db.Model):
+    __tablename__ = 'business'
+    __table_args__ = {'extend_existing': True}  # Allows redefinition
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    state = db.Column(db.String(50), nullable=False)
+    zip_code = db.Column(db.String(20), nullable=False)
+    phone = db.Column(db.String(15), nullable=False)
+    email = db.Column(db.String(100), nullable=True)
+    license_number = db.Column(db.String(100), nullable=False, unique=True)
+    license_expiry = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), default="active")  # active, inactive, suspended
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "city": self.city,
+            "state": self.state,
+            "zip_code": self.zip_code,
+            "phone": self.phone,
+            "email": self.email,
+            "license_number": self.license_number,
+            "license_expiry": self.license_expiry.isoformat() if self.license_expiry else None,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+# Compliance Model
+class Compliance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    business_id = db.Column(db.Integer, db.ForeignKey('business.id'), nullable=False)
+    licenses = db.Column(db.JSON, nullable=False, default={})
+    test_results = db.Column(db.JSON, nullable=False, default={})
+    reports = db.Column(db.JSON, nullable=False, default={})
+    audits = db.Column(db.JSON, nullable=False, default={})
+
+    business = db.relationship('Business', backref='compliance', lazy=True)
+
+    def __repr__(self):
+        return f'<Compliance for Business {self.business.name}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "business_id": self.business_id,
+            "licenses": self.licenses,
+            "test_results": self.test_results,
+            "reports": self.reports,
+            "audits": self.audits,
+        }
+
+# Transaction Model
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(100), unique=True, nullable=False)
+    customer_name = db.Column(db.String(100), nullable=False)
+    payment_method = db.Column(db.String(50))
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Education Model
+class Education(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "category": self.category,
+        }
+
+# Store Model
+class Store(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    name = db.Column(db.String(200), nullable=False)
+    location = db.Column(db.String, nullable=False)
+    store_manager = db.Column(db.String(50), nullable=False)
+    phone = db.Column(db.String, nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    employee_count = db.Column(db.Integer, nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "location": self.location,
+            "store_manager": self.store_manager,
+            "phone": self.phone,
+            "status": self.status,
+            "employee_count": self.employee_count,
+        }
+
+# Lead Status Enum
+class LeadStatus(Enum):
+    NEW = "new"
+    CONTACTED = "contacted"
+    QUALIFIED = "qualified"
+    CLOSED = "closed"
+
+# Lead Model
+class Lead(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    status = db.Column(db.Enum(LeadStatus), default=LeadStatus.NEW)
+    notes = db.Column(db.Text, nullable=True)
+    score = db.Column(db.Integer, nullable=False, default=0)
+    source = db.Column(db.String(50), nullable=True)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user = db.relationship('User', backref='leads', lazy=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "phone": self.phone,
+            "status": self.status.value if self.status else None,
+            "notes": self.notes,
+            "score": self.score,
+            "source": self.source,
+            "assigned_to": self.assigned_to,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+# Campaign Model
+class Campaign(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default="draft")
+    metrics = db.Column(db.JSON, nullable=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+            "status": self.status,
+            "metrics": self.metrics,
+        }
+
+# Task Model
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    due_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default="pending")
+    user = db.relationship('User', backref='tasks')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "assigned_to": self.assigned_to,
+            "due_date": self.due_date.isoformat() if self.due_date else None,
+            "status": self.status,
         }
     
+# deals
+
+class Deal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    stage = db.Column(db.String(50), nullable=False, default="new")  # Example stages: "new", "negotiation", "closed"
+    value = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Relationships
+    customer = db.relationship('Customer', backref='deals')
+    assigned_user = db.relationship('User', backref='assigned_deals')
+
+    def __repr__(self):
+        return f'<Deal {self.name} - Stage: {self.stage}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "stage": self.stage,
+            "value": float(self.value),
+            "customer_id": self.customer_id,
+            "assigned_to": self.assigned_to,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+    
+
+class InventoryLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    transaction_type = db.Column(db.String(20), nullable=False)  # 'restock', 'sale', 'adjustment'
+    quantity = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    reason = db.Column(db.String(200), nullable=True)
+
+    product = db.relationship('Product', backref='inventory_logs')
+
+
+
+# ---------------------
+# Medical Models
+# ---------------------
+
+# Patient Model
 class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(50), nullable=False)
@@ -231,214 +503,371 @@ class Patient(db.Model):
             "conditions": self.conditions,
         }
 
-# ---------------------
-# Business Model
-# ---------------------
-class Business(db.Model):
+# Prescription Model
+class Prescription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    dosage = db.Column(db.String(50), nullable=False)
+    frequency = db.Column(db.String(50), nullable=False)
+    prescribed_date = db.Column(db.Date, default=datetime.utcnow)
+
+    patient = db.relationship('Patient', backref='prescriptions')
+    product = db.relationship('Product', backref='prescriptions')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "product_id": self.product_id,
+            "dosage": self.dosage,
+            "frequency": self.frequency,
+            "prescribed_date": self.prescribed_date.isoformat(),
+        }
+
+# Symptom Model
+class Symptom(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    city = db.Column(db.String(100), nullable=False)
-    state = db.Column(db.String(50), nullable=False)
-    zip_code = db.Column(db.String(20), nullable=False)
+    severity = db.Column(db.String(20), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    recorded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __repr__(self):
-        return f'<Business {self.name}>'
+    patient = db.relationship('Patient', backref='symptoms')
 
     def serialize(self):
         return {
             "id": self.id,
+            "patient_id": self.patient_id,
             "name": self.name,
-            "address": self.address,
-            "city": self.city,
-            "state": self.state,
-            "zip_code": self.zip_code,
+            "severity": self.severity,
+            "description": self.description,
+            "recorded_at": self.recorded_at.isoformat() if self.recorded_at else None,
         }
 
-# ---------------------
-# Compliance Model
-# ---------------------
-class Compliance(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    business_id = db.Column(db.Integer, db.ForeignKey('business.id'), nullable=False)
-    licenses = db.Column(db.JSON, nullable=False, default={})
-    test_results = db.Column(db.JSON, nullable=False, default={})
-    reports = db.Column(db.JSON, nullable=False, default={})
-    audits = db.Column(db.JSON, nullable=False, default={})
-
-    business = db.relationship('Business', backref='compliance', lazy=True)
-
-    def __repr__(self):
-        return f'<Compliance for Business {self.business.name}>'
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "business_id": self.business_id,
-            "licenses": self.licenses,
-            "test_results": self.test_results,
-            "reports": self.reports,
-            "audits": self.audits,
-        }
-class Invoice(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
-    issue_date = db.Column(db.DateTime, default=db.func.now())
-    due_date = db.Column(db.DateTime, nullable=True)
-    total_amount = db.Column(db.Numeric(10, 2), nullable=False)
-    status = db.Column(db.String(20), default="unpaid")  # Example: unpaid, paid, overdue
-
-    customer = db.relationship('Customer', backref='invoices')
-    order = db.relationship('Order', backref='invoice')
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "customer_id": self.customer_id,
-            "order_id": self.order_id,
-            "issue_date": self.issue_date,
-            "due_date": self.due_date,
-            "total_amount": float(self.total_amount),
-            "status": self.status,
-        }
-    
-class Education(db.Model):
+# Medical Resource Model
+class MedicalResource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    category = db.Column(db.String(50), nullable=False)  # e.g., "Dosing", "Strains"
+    type = db.Column(db.String(50), nullable=False)
+    link = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def serialize(self):
         return {
             "id": self.id,
             "title": self.title,
             "content": self.content,
-            "category": self.category,
+            "type": self.type,
+            "link": self.link,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
-    
-class Store(db.Model):
+
+
+# Recommendation Model
+class Recommendation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    name = db.Column(db.String(200), nullable=False)
-    location = db.Column(db.String, nullable=False)
-    store_manager = db.Column(db.String(50), nullable=False)  # e.g., "Dosing", "Strains"
-    phone = db.Column(db.String, nullable=False)  # e.g., "Dosing", "Strains"
-    status = db.Column(db.String(50), nullable=False)  # e.g., "Dosing", "Strains"
-    employee_count = db.Column(db.Integer, nullable=False)  # e.g., "Dosing", "Strains"
-     
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Relationships
+    patient = db.relationship('Patient', backref='recommendations')
+    product = db.relationship('Product', backref='recommendations')
+
+    def __repr__(self):
+        return f'<Recommendation {self.id} for Patient {self.patient_id}>'
 
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name,
-            "location": self.location,
-            "store_manager": self.store_manager,
-            "phone": self.phone,
-            "status": self.status,
-            "employee_count": self.employee_count,
+            "patient_id": self.patient_id,
+            "product_id": self.product_id,
+            "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "patient": self.patient.serialize() if self.patient else None,
+            "product": self.product.serialize() if self.product else None
         }
 
-# class Lead(db.Model):
+
+class CashDrawer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    total_cash = db.Column(db.Float, nullable=False, default=0.0)
+    start_balance = db.Column(db.Float, nullable=False, default=0.0)
+    end_balance = db.Column(db.Float, nullable=True)
+    logs = db.relationship('CashLog', backref='drawer')
+
+class CashLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    drawer_id = db.Column(db.Integer, db.ForeignKey('cash_drawer.id'), nullable=False)
+    type = db.Column(db.String(50), nullable=False)  # "deposit", "withdrawal"
+    amount = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    issue_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    due_date = db.Column(db.DateTime, nullable=True)
+    total_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    status = db.Column(db.String(20), default="unpaid")  # unpaid, paid, overdue
+    payment_method = db.Column(db.String(50), nullable=True)  # e.g., cash, card, digital wallet
+    notes = db.Column(db.Text, nullable=True)  # Optional notes for the invoice
+
+    # Relationships
+    customer = db.relationship('Customer', backref='invoices')
+    order = db.relationship('Order', backref='invoice')
+
+    def __repr__(self):
+        return f'<Invoice {self.id} - {self.status}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "order_id": self.order_id,
+            "issue_date": self.issue_date.isoformat() if self.issue_date else None,
+            "due_date": self.due_date.isoformat() if self.due_date else None,
+            "total_amount": float(self.total_amount),
+            "status": self.status,
+            "payment_method": self.payment_method,
+            "notes": self.notes,
+        }
+
+# class Business(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
-#     first_name = db.Column(db.String(50), nullable=False)
-#     last_name = db.Column(db.String(50), nullable=False)
-#     email = db.Column(db.String(120), unique=True, nullable=False)
-#     phone = db.Column(db.String(20), nullable=True)
-#     status = db.Column(db.String(20), default="new")  # e.g., new, contacted, qualified, closed
-#     notes = db.Column(db.Text, nullable=True)
+#     name = db.Column(db.String(100), nullable=False)
+#     address = db.Column(db.String(200), nullable=False)
+#     city = db.Column(db.String(100), nullable=False)
+#     state = db.Column(db.String(50), nullable=False)
+#     zip_code = db.Column(db.String(20), nullable=False)
+#     phone = db.Column(db.String(15), nullable=False)
+#     email = db.Column(db.String(100), nullable=True)
+#     license_number = db.Column(db.String(100), nullable=False, unique=True)
+#     license_expiry = db.Column(db.Date, nullable=False)
+#     status = db.Column(db.String(20), default="active")  # active, inactive, suspended
 #     created_at = db.Column(db.DateTime, server_default=db.func.now())
 #     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+
+#     # Relationships
+#     compliance = db.relationship("Compliance", backref="business", lazy=True)
+
+#     def __repr__(self):
+#         return f"<Business {self.name}>"
 
 #     def serialize(self):
 #         return {
 #             "id": self.id,
-#             "first_name": self.first_name,
-#             "last_name": self.last_name,
-#             "email": self.email,
+#             "name": self.name,
+#             "address": self.address,
+#             "city": self.city,
+#             "state": self.state,
+#             "zip_code": self.zip_code,
 #             "phone": self.phone,
+#             "email": self.email,
+#             "license_number": self.license_number,
+#             "license_expiry": self.license_expiry.isoformat() if self.license_expiry else None,
 #             "status": self.status,
-#             "notes": self.notes,
 #             "created_at": self.created_at.isoformat() if self.created_at else None,
 #             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
 #         }
-    
-from enum import Enum
 
-class LeadStatus(Enum):
-    NEW = "new"
-    CONTACTED = "contacted"
-    QUALIFIED = "qualified"
-    CLOSED = "closed"
-
-class Lead(db.Model):
+class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=True)
-    status = db.Column(db.Enum(LeadStatus), default=LeadStatus.NEW)
-    notes = db.Column(db.Text, nullable=True)
-    score = db.Column(db.Integer, nullable=False, default=0)  # Lead scoring
-    source = db.Column(db.String(50), nullable=True)  # Lead source
-    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    user = db.relationship('User', backref='leads', lazy=True)
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    dispensary_id = db.Column(db.Integer, db.ForeignKey('dispensary.id'), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1 to 5
+    comment = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    product = db.relationship('Product', backref='reviews')
+    dispensary = db.relationship('Dispensary', backref='reviews')
+    customer = db.relationship('Customer', backref='reviews')
 
     def serialize(self):
         return {
             "id": self.id,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "email": self.email,
-            "phone": self.phone,
-            "status": self.status.value if self.status else None,
-            "notes": self.notes,
-            "score": self.score,
-            "source": self.source,
-            "assigned_to": self.assigned_to,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "product_id": self.product_id,
+            "dispensary_id": self.dispensary_id,
+            "customer_id": self.customer_id,
+            "rating": self.rating,
+            "comment": self.comment,
+            "created_at": self.created_at.isoformat()
         }
+    
+    # grow farms
 
+class GrowFarm(db.Model):
+    __tablename__ = 'grow_farms'
 
-class Campaign(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    start_date = db.Column(db.DateTime, nullable=False)
-    end_date = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(20), default="draft")  # e.g., draft, active, completed
-    metrics = db.Column(db.JSON, nullable=True)  # Tracks performance data like open rates, clicks, etc.
+    location = db.Column(db.String(200))
+    contact_info = db.Column(db.JSON)  # JSONB equivalent in SQLAlchemy
+    status = db.Column(db.String(20), default='active', nullable=False)
+
+    # crops = db.relationship('Crop', backref='grow_farm', lazy=True)
+
+class PlantBatch(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    strain = db.Column(db.String(100), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=True)
+    status = db.Column(db.String(50), nullable=False, default="Growing")
+    yield_amount = db.Column(db.Float, nullable=True)  # Actual or predicted yield in grams
+    environment_id = db.Column(db.Integer, db.ForeignKey('environment_data.id'), nullable=True)
 
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name,
-            "description": self.description,
+            "strain": self.strain,
             "start_date": self.start_date.isoformat() if self.start_date else None,
             "end_date": self.end_date.isoformat() if self.end_date else None,
             "status": self.status,
-            "metrics": self.metrics,
+            "yield_amount": self.yield_amount
         }
 
-class Task(db.Model):
+class EnvironmentData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    due_date = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(20), default="pending")  # e.g., pending, in progress, completed
-    user = db.relationship('User', backref='tasks')
+    temperature = db.Column(db.Float, nullable=False)
+    humidity = db.Column(db.Float, nullable=False)
+    light_intensity = db.Column(db.Float, nullable=True)
+    timestamp = db.Column(db.DateTime, default=db.func.now())
+
+    plant_batch = db.relationship('PlantBatch', backref='environment_data')
 
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name,
-            "description": self.description,
+            "plant_batch_id": self.plant_batch_id,
+            "temperature": self.temperature,
+            "humidity": self.humidity,
+            "light_intensity": self.light_intensity,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None
+        }
+
+
+class GrowTask(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task_name = db.Column(db.String(100), nullable=False)
+    task_description = db.Column(db.Text, nullable=True)
+    assigned_to = db.Column(db.String(100), nullable=True)
+    priority = db.Column(db.String(20), nullable=False, default="Medium")
+    due_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default="Pending")
+    plant_batch_id = db.Column(db.Integer, db.ForeignKey('plant_batch.id'), nullable=True)
+
+    plant_batch = db.relationship('PlantBatch', backref='grow_tasks')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "task_name": self.task_name,
+            "task_description": self.task_description,
             "assigned_to": self.assigned_to,
+            "priority": self.priority,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "status": self.status,
+            "plant_batch_id": self.plant_batch_id
         }
+
+class YieldPrediction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    plant_batch_id = db.Column(db.Integer, db.ForeignKey('plant_batch.id'), nullable=False)
+    predicted_yield = db.Column(db.Float, nullable=False)
+    actual_yield = db.Column(db.Float, nullable=True)
+    accuracy = db.Column(db.Float, nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    plant_batch = db.relationship('PlantBatch', backref='yield_predictions')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "plant_batch_id": self.plant_batch_id,
+            "predicted_yield": self.predicted_yield,
+            "actual_yield": self.actual_yield,
+            "accuracy": self.accuracy,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
+
+
+# seedbank
+
+class Seedbank(db.Model):
+    __tablename__ = 'seedbanks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(200))
+    contact_info = db.Column(db.JSON)  # JSONB equivalent in SQLAlchemy
+    status = db.Column(db.String(20), default='active', nullable=False)
+
+    # seeds = db.relationship('Seed', backref='seedbank', lazy=True)
+
+class SeedBatch(db.Model):
+    __tablename__ = 'seed_batches'
+
+    id = db.Column(db.Integer, primary_key=True)
+    strain = db.Column(db.String(100), nullable=False)
+    batch_number = db.Column(db.String(50), unique=True, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    storage_location = db.Column(db.String(200), nullable=True)
+    expiration_date = db.Column(db.Date, nullable=True)
+    status = db.Column(db.String(20), default='active')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "strain": self.strain,
+            "batch_number": self.batch_number,
+            "quantity": self.quantity,
+            "storage_location": self.storage_location,
+            "expiration_date": self.expiration_date.isoformat() if self.expiration_date else None,
+            "status": self.status
+        }
+
+class StorageConditions(db.Model):
+    __tablename__ = 'storage_conditions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    location = db.Column(db.String(100), nullable=False)
+    temperature = db.Column(db.Float, nullable=False)
+    humidity = db.Column(db.Float, nullable=False)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "location": self.location,
+            "temperature": self.temperature,
+            "humidity": self.humidity,
+            "last_updated": self.last_updated.isoformat() if self.last_updated else None
+        }
+
+class SeedReport(db.Model):
+    __tablename__ = 'seed_reports'
+
+    id = db.Column(db.Integer, primary_key=True)
+    report_type = db.Column(db.String(50), nullable=False)
+    parameters = db.Column(db.JSON, nullable=True)
+    report_data = db.Column(db.JSON, nullable=False)
+    generated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "report_type": self.report_type,
+            "parameters": self.parameters,
+            "report_data": self.report_data,
+            "generated_at": self.generated_at.isoformat() if self.generated_at else None
+        }
+
 
