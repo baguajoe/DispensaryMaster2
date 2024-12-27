@@ -20,8 +20,10 @@ socketio = SocketIO()
 
 
 # Create Blueprint
-api = Blueprint('api', __name__)
-CORS(api, resources={r"/api/*": {"origins": "https://shiny-broccoli-q79pvgr4wqp72qx9-3000.app.github.dev"}})
+# api = Blueprint('api', __name__)
+# CORS(api, resources={r"/api/*": {"origins": "https://shiny-broccoli-q79pvgr4wqp72qx9-3000.app.github.dev"}})
+
+
 
 # Error Handling Helper
 # ---------------------
@@ -75,7 +77,8 @@ def create_signup():
 
         return jsonify({"message": "User created successfully", "user": new_user.serialize()}), 201
     except Exception as e:
-        return jsonify({"error": "Internal Server Error"}), 500
+        print(f"signup error: {str(e)}")
+        return jsonify({"error":f"Internal Server Error: {str(e)}"}), 500
     
 @api.route('/products', methods=['GET'])
 @jwt_required()
