@@ -25,6 +25,10 @@ reportlab = "*"
 scikit-learn = "*"
 numpy = "*"
 flask-socketio = "*"
+textblob = "*"
+fbprophet = "*"
+pandas = "*"
+prophet = "*"
 
 [requires]
 python_version = "3.10"

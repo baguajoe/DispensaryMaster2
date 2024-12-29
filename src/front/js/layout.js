@@ -22,6 +22,7 @@ import Orders from "./pages/Orders";
 import CartManagement from "./pages/CartManagement";
 import Users from "./pages/Users";
 import Analytics from "./pages/Analytics";
+import AdvancedAnalytics from "./pages/AdvancedAnalytics";
 import Reports from "./pages/Reports";
 import Leads from "./pages/Leads";
 import BarcodeScanner from "./pages/BarcodeScanner";
@@ -105,6 +106,8 @@ const Layout = () => {
                             <Route path="/cart-management" element={<CartManagement />} />
                             <Route path="/users" element={<Users />} />
                             <Route path="/analytics" element={<Analytics />} />
+                            <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
+
                             <Route path="/reports" element={<Reports />} />
                             <Route path="/barcode-scanner" element={<BarcodeScanner />} />
                             <Route path="/campaign" element={<Campaign />} />

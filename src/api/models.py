@@ -204,6 +204,7 @@ class Order(db.Model):
 # Customer Model
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.column(db.Integer, db.ForeignKey("user.id"))    
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
@@ -242,6 +243,57 @@ class CustomerInteraction(db.Model):
     notes = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     customer = db.relationship('Customer', backref='interactions')
+
+class LoyaltyProgram(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    points = db.Column(db.Integer, nullable=False, default=0)
+    rewards = db.Column(db.JSON, nullable=True)  # e.g., discounts, free items
+    customer = db.relationship('Customer', backref='loyalty_program')
+
+    def __repr__(self):
+        return f'<LoyaltyProgram {self.customer_id} - {self.points} points>'
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "points": self.points,
+            "rewards": self.rewards,
+        }
+class Reward(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    point_cost = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "point_cost": self.point_cost,
+            "description": self.description
+        }
+
+class Badge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    image_url = db.Column(db.String(255), nullable=True)
+
+    def serialize(self):
+        return {"id": self.id, "name": self.name, "description": self.description, "image_url": self.image_url}
+    
+class LoyaltyTier(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    required_points = db.Column(db.Integer, nullable=False)
+    benefits = db.Column(db.JSON, nullable=True)
+    
+    def serialize(self):
+        return {"id": self.id, "name": self.name, "required_points": self.required_points, "benefits": self.benefits}
+
+
 
 
 
@@ -905,4 +957,23 @@ class Message(db.Model):
             "timestamp": self.timestamp.isoformat()
         }
 
+class CustomerAnalytics(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    total_spent = db.Column(db.Float, nullable=False, default=0.0)
+    purchase_frequency = db.Column(db.Float, nullable=False, default=0.0)
+    last_purchase_date = db.Column(db.DateTime, nullable=True)
+    churn_probability = db.Column(db.Float, nullable=True)
+
+    customer = db.relationship('Customer', backref='analytics')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "total_spent": self.total_spent,
+            "purchase_frequency": self.purchase_frequency,
+            "last_purchase_date": self.last_purchase_date.isoformat() if self.last_purchase_date else None,
+            "churn_probability": self.churn_probability,
+        }
 

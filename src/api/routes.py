@@ -16,6 +16,9 @@ from flask_socketio import SocketIO, emit
 from flask import jsonify, send_file
 from io import BytesIO
 from . import api  # Import the blueprint
+from textblob import TextBlob
+import pandas as pd
+from prophet import Prophet
 
 socketio = SocketIO()
 
@@ -155,6 +158,18 @@ def update_product(id):
 
     for key, value in product_data.items():
         setattr(product, key, value)
+
+@api.route('/products/demand-forecast', methods=['GET'])
+def demand_forecast():
+    sales_data = pd.read_csv('sales_data.csv')  # Replace with actual data source
+    sales_data.rename(columns={'date': 'ds', 'sales': 'y'}, inplace=True)
+
+    model = Prophet()
+    model.fit(sales_data)
+    future = model.make_future_dataframe(periods=30)
+    forecast = model.predict(future)
+
+    return forecast[['ds', 'yhat']].to_json(orient='records'), 200
 
     # Update Pricing Information
     pricing_data = request.json.get("pricings", [])
@@ -323,6 +338,40 @@ def delete_recommendation(id):
     db.session.delete(recommendation)
     db.session.commit()
     return jsonify({"message": "Recommendation deleted successfully"}), 200
+
+# Personalized Recommendations Route
+
+@api.route('/recommendations/personalized', methods=['POST'])
+def personalized_recommendations():
+    customer_id = request.json.get('customer_id')  # Get customer ID from request
+    customer = Customer.query.get(customer_id)
+
+    if not customer:
+        return jsonify({"error": "Customer not found"}), 404
+
+    # Fetch customer's purchase history using Order and OrderItem
+    purchased_product_ids = [
+        item.product_id
+        for item in OrderItem.query.join(Order).filter(Order.customer_id == customer.id).all()
+    ]
+
+    if not purchased_product_ids:
+        return jsonify({"message": "No purchase history found for this customer"}), 200
+
+    # Get product categories based on purchased product IDs
+    purchased_categories = [
+        product.category
+        for product in Product.query.filter(Product.id.in_(purchased_product_ids)).all()
+    ]
+
+    # Recommend products in the same categories, excluding already purchased ones
+    recommendations = Product.query.filter(
+        Product.category.in_(purchased_categories),
+        ~Product.id.in_(purchased_product_ids)
+    ).limit(10).all()
+
+    return jsonify([product.serialize() for product in recommendations]), 200
+
 
 # analytic routes
 
@@ -870,6 +919,71 @@ def upgrade_tier(customer_id):
     return jsonify({"message": "Tier upgraded successfully", "customer": customer.serialize()}), 200
 
 
+
+@api.route('/loyalty/add-points', methods=['POST'])
+@jwt_required()
+@handle_errors
+def add_loyalty_points():
+    data = request.json
+    customer_id = data['customer_id']
+    points = data['points']
+    loyalty = LoyaltyProgram.query.filter_by(customer_id=customer_id).first()
+    
+    if not loyalty:
+        loyalty = LoyaltyProgram(customer_id=customer_id, points=0)
+        db.session.add(loyalty)
+    
+    loyalty.points += points
+    db.session.commit()
+    return jsonify({"message": "Points added successfully", "points": loyalty.points}), 200
+
+@api.route('/loyalty/rewards', methods=['GET'])
+@jwt_required()
+def get_rewards():
+    rewards = Reward.query.all()
+    return jsonify([reward.serialize() for reward in rewards]), 200
+
+@api.route('/loyalty/rewards/redeem', methods=['POST'])
+@jwt_required()
+def redeem_reward():
+    data = request.json
+    customer = Customer.query.get_or_404(data['customer_id'])
+    reward = Reward.query.get_or_404(data['reward_id'])
+    
+    if customer.loyalty_points < reward.point_cost:
+        return jsonify({"error": "Insufficient points"}), 400
+    
+    customer.loyalty_points -= reward.point_cost
+    db.session.commit()
+    return jsonify({"message": f"Redeemed {reward.name}", "remaining_points": customer.loyalty_points}), 200
+
+@api.route('/loyalty/expire-points', methods=['POST'])
+def expire_loyalty_points():
+    now = datetime.utcnow()
+    expired_customers = Customer.query.filter(Customer.points_expiry <= now).all()
+    for customer in expired_customers:
+        customer.loyalty_points = 0
+    db.session.commit()
+    return jsonify({"message": "Expired points cleaned up"}), 200
+
+@api.route('/loyalty/transfer-points', methods=['POST'])
+@jwt_required()
+def transfer_points():
+    data = request.json
+    sender = Customer.query.get_or_404(data['sender_id'])
+    receiver = Customer.query.get_or_404(data['receiver_id'])
+    points = data['points']
+    
+    if sender.loyalty_points < points:
+        return jsonify({"error": "Insufficient points"}), 400
+    
+    sender.loyalty_points -= points
+    receiver.loyalty_points += points
+    db.session.commit()
+    return jsonify({"message": f"{points} points transferred.", "sender_points": sender.loyalty_points, "receiver_points": receiver.loyalty_points}), 200J
+
+
+
 @api.route('/cash/drawer', methods=['POST'])
 @jwt_required()
 def create_cash_drawer():
@@ -1401,6 +1515,22 @@ def create_review():
     db.session.commit()
     return jsonify(review.serialize()), 201
 
+@api.route('/reviews/sentiment', methods=['POST'])
+def analyze_sentiment():
+    reviews = request.json.get('reviews', [])
+    sentiment_results = []
+
+    for review in reviews:
+        analysis = TextBlob(review)
+        sentiment_results.append({
+            'review': review,
+            'polarity': analysis.sentiment.polarity,
+            'subjectivity': analysis.sentiment.subjectivity,
+            'sentiment': 'positive' if analysis.sentiment.polarity > 0 else 'negative' if analysis.sentiment.polarity < 0 else 'neutral'
+        })
+
+    return jsonify(sentiment_results), 200
+
 
 # grow farm routes
 
@@ -1696,108 +1826,109 @@ def get_crm_metrics():
     return jsonify(metrics), 200
 
 
-# ---------------------
-# Validation Schemas
-# ---------------------
+# # ---------------------
+# # Validation Schemas
+# # ---------------------
 
 
-class ProductSchema(Schema):
-    name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
-    category = fields.Str(required=True)
-    current_stock = fields.Integer(required=True, validate=validate.Range(min=0))
-    reorder_point = fields.Integer(required=True, validate=validate.Range(min=0))
-    unit_price = fields.Decimal(required=True, validate=validate.Range(min=0))
-    strain = fields.Str(required=False)
-    thc_content = fields.Float(required=False)
-    cbd_content = fields.Float(required=False)
-    is_organic = db.Column(db.Boolean, default=False)  # New field
-    medical_benefits = db.Column(db.Text, nullable=True)  # New field
+# class ProductSchema(Schema):
+#     name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
+#     category = fields.Str(required=True)
+#     current_stock = fields.Integer(required=True, validate=validate.Range(min=0))
+#     reorder_point = fields.Integer(required=True, validate=validate.Range(min=0))
+#     unit_price = fields.Decimal(required=True, validate=validate.Range(min=0))
+#     strain = fields.Str(required=False)
+#     thc_content = fields.Float(required=False)
+#     cbd_content = fields.Float(required=False)
+#     is_organic = db.Column(db.Boolean, default=False)  # New field
+#     medical_benefits = db.Column(db.Text, nullable=True)  # New field
 
-class CustomerSchema(Schema):
-    first_name = fields.Str(required=True)
-    last_name = fields.Str(required=True)
-    email = fields.Email(required=True)
-    phone = fields.Str(required=True)
+# class CustomerSchema(Schema):
+#     first_name = fields.Str(required=True)
+#     last_name = fields.Str(required=True)
+#     email = fields.Email(required=True)
+#     phone = fields.Str(required=True)
 
-class OrderSchema(Schema):
-    customer_id = fields.Integer(required=True)
-    items = fields.List(fields.Dict(keys=fields.Str(), values=fields.Int()), required=True)
+# class OrderSchema(Schema):
+#     customer_id = fields.Integer(required=True)
+#     items = fields.List(fields.Dict(keys=fields.Str(), values=fields.Int()), required=True)
 
-class StoreSchema(Schema):
-    name = fields.Str(required=True, validate=validate.Length(min=1, max=200))
-    location = fields.Str(required=True)
-    store_manager = fields.Str(required=True)
-    phone = fields.Str(required=True, validate=validate.Length(min=10, max=15))
-    status = fields.Str(required=True)
-    employee_count = fields.Int(required=True, validate=validate.Range(min=0))
+# class StoreSchema(Schema):
+#     name = fields.Str(required=True, validate=validate.Length(min=1, max=200))
+#     location = fields.Str(required=True)
+#     store_manager = fields.Str(required=True)
+#     phone = fields.Str(required=True, validate=validate.Length(min=10, max=15))
+#     status = fields.Str(required=True)
+#     employee_count = fields.Int(required=True, validate=validate.Range(min=0))
 
-# Pricing Schema for Validation
-class PricingSchema(Schema):
-    dispensary_id = fields.Int(required=True)
-    price = fields.Float(required=True)
-    availability = fields.Bool(required=True, default=True)
+# # Pricing Schema for Validation
+# class PricingSchema(Schema):
+#     dispensary_id = fields.Int(required=True)
+#     price = fields.Float(required=True)
+#     availability = fields.Bool(required=True, default=True)
 
-# new pages
 
-# @api.route('/settings', methods=['GET', 'POST'])
-# def settings():
-#     if request.method == 'GET':
-#         user_settings = Settings.query.filter_by(user_id=current_user.id).first()
-#         return jsonify(user_settings.serialize() if user_settings else {})
-#     if request.method == 'POST':
-#         data = request.json
-#         user_settings = Settings.query.filter_by(user_id=current_user.id).first()
-#         if not user_settings:
-#             user_settings = Settings(user_id=current_user.id, theme=data.get('theme'))
-#             db.session.add(user_settings)
-#         else:
-#             user_settings.theme = data.get('theme')
-#         db.session.commit()
-#         return jsonify({"message": "Settings updated successfully"})
+@api.route('/analytics/customer-segmentation', methods=['GET'])
+@jwt_required()
+def customer_segmentation():
+    customers = Customer.query.all()
+    analytics_data = []
 
-# @api.route('/accounts', methods=['GET', 'POST', 'DELETE'])
-# def accounts():
-#     if request.method == 'GET':
-#         users = User.query.all()
-#         return jsonify([user.serialize() for user in users])
-#     if request.method == 'POST':
-#         data = request.json
-#         new_user = User(username=data['username'], email=data['email'])
-#         db.session.add(new_user)
-#         db.session.commit()
-#         return jsonify({"message": "Account created successfully"})
-#     if request.method == 'DELETE':
-#         data = request.json
-#         user = User.query.get(data['user_id'])
-#         if user:
-#             db.session.delete(user)
-#             db.session.commit()
-#             return jsonify({"message": "Account deleted successfully"})
-#         return jsonify({"error": "User not found"}), 404
-    
-# @api.route('/profile', methods=['GET', 'POST'])
-# def profile():
-#     if request.method == 'GET':
-#         return jsonify(current_user.serialize())
-#     if request.method == 'POST':
-#         data = request.json
-#         current_user.name = data.get('name', current_user.name)
-#         current_user.email = data.get('email', current_user.email)
-#         db.session.commit()
-#         return jsonify({"message": "Profile updated successfully"})
+    for customer in customers:
+        # Example: Calculate total spent, purchase frequency, and churn probability
+        total_spent = sum(order.total_amount for order in customer.orders)
+        purchase_frequency = len(customer.orders) / (datetime.utcnow() - customer.created_at).days
+        last_purchase_date = max(order.created_at for order in customer.orders) if customer.orders else None
+        churn_probability = 1 - purchase_frequency if purchase_frequency < 0.05 else 0.0
 
-# @api.route('/messages', methods=['GET', 'POST'])
-# def messages():
-#     if request.method == 'GET':
-#         messages = Message.query.filter_by(receiver_id=current_user.id).all()
-#         return jsonify([message.serialize() for message in messages])
-#     if request.method == 'POST':
-#         data = request.json
-#         new_message = Message(
-#             sender_id=current_user.id,
-#             receiver_id=data['receiver_id'],
-#             content=data['content']
-#         )
-#         db.session.add(new_message)
-#         db.session.commit()
-#         return jsonify({"message": "Message sent successfully"})
+        analytics_data.append({
+            "customer_id": customer.id,
+            "total_spent": total_spent,
+            "purchase_frequency": purchase_frequency,
+            "last_purchase_date": last_purchase_date,
+            "churn_probability": churn_probability,
+        })
+
+    return jsonify(analytics_data), 200
+
+# predictive analytics
+
+@api.route('/analytics/clv-prediction', methods=['POST'])
+def predict_clv():
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
+
+    # Example data: Replace with your database query
+    customers = Customer.query.all()
+    data = np.array([[c.total_spent, c.purchase_frequency] for c in customers])
+    labels = np.array([c.total_spent * 1.2 for c in customers])  # Mock future value
+
+    # Train linear regression model
+    model = LinearRegression().fit(data, labels)
+    predictions = model.predict(data)
+
+    # Update customer CLV predictions
+    for customer, prediction in zip(customers, predictions):
+        customer.clv_prediction = prediction
+        db.session.commit()
+
+    return jsonify({"message": "CLV prediction completed"}), 200
+
+
+@api.route('/analytics/inventory-forecast', methods=['POST'])
+def inventory_forecast():
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
+
+    # Fetch sales data
+    sales = db.session.query(Product.id, func.sum(OrderItem.quantity)).group_by(Product.id).all()
+    product_ids = [s[0] for s in sales]
+    quantities = [s[1] for s in sales]
+
+    # Train model to forecast future sales
+    model = LinearRegression().fit(np.arange(len(quantities)).reshape(-1, 1), quantities)
+    predictions = model.predict(np.arange(len(quantities) + 5).reshape(-1, 1))
+
+    # Return forecasted inventory levels
+    forecast = [{"product_id": pid, "predicted_quantity": q} for pid, q in zip(product_ids, predictions)]
+    return jsonify(forecast), 200
