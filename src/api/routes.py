@@ -19,6 +19,7 @@ from . import api  # Import the blueprint
 from textblob import TextBlob
 import pandas as pd
 from prophet import Prophet
+# from your_project.tasks import generate_report
 
 socketio = SocketIO()
 
@@ -196,6 +197,16 @@ def demand_forecast():
 
     db.session.commit()
     return jsonify(product.serialize()), 200
+
+@api.route('/products/customer-recommendations/<int:customer_id>', methods=['GET'])
+@jwt_required()
+def recommend_products_by_customer(customer_id):
+    customer_orders = Order.query.filter_by(customer_id=customer_id).all()
+    # Example: Recommend products from the same category as previous orders
+    recommended_products = Product.query.filter(Product.category.in_(
+        [order_item.product.category for order in customer_orders for order_item in order.order_items])).all()
+    return jsonify([product.serialize() for product in recommended_products])
+
 
 # customer routes
 
@@ -1497,6 +1508,62 @@ def get_real_time_prices():
 
     return jsonify(response), 200
 
+@api.route('/products/compare-prices', methods=['GET'])
+def compare_prices():
+    product_name = request.args.get('product_name', None)
+    location = request.args.get('location', None)
+    sort_by = request.args.get('sort_by', 'price')  # Default sort by price
+
+    if not product_name:
+        return jsonify({"error": "Product name is required for price comparison"}), 400
+
+    query = db.session.query(
+        Product.name.label('product_name'),
+        Product.strain,
+        Product.thc_content,
+        Product.cbd_content,
+        Pricing.price,
+        Pricing.availability,
+        Dispensary.name.label('dispensary_name'),
+        Dispensary.location
+    ).join(Pricing, Product.id == Pricing.product_id)\
+     .join(Dispensary, Dispensary.id == Pricing.dispensary_id)\
+     .filter(Product.name.ilike(f"%{product_name}%"))
+
+    if location:
+        query = query.filter(Dispensary.location.ilike(f"%{location}%"))
+
+    if sort_by == 'price':
+        query = query.order_by(Pricing.price.asc())
+    elif sort_by == 'thc_content':
+        query = query.order_by(Product.thc_content.desc())
+
+    results = query.all()
+    if not results:
+        return jsonify({"message": "No products found for comparison"}), 404
+
+    # Group by dispensary and highlight the lowest price
+    response = []
+    for row in results:
+        response.append({
+            "product_name": row.product_name,
+            "strain": row.strain,
+            "thc_content": row.thc_content,
+            "cbd_content": row.cbd_content,
+            "price": float(row.price),
+            "availability": row.availability,
+            "dispensary_name": row.dispensary_name,
+            "location": row.location
+        })
+
+    # Optionally highlight the lowest price
+    lowest_price = min(response, key=lambda x: x['price'])
+    return jsonify({
+        "lowest_price": lowest_price,
+        "all_prices": response
+    }), 200
+
+
 
 
 
@@ -1932,3 +1999,8 @@ def inventory_forecast():
     # Return forecasted inventory levels
     forecast = [{"product_id": pid, "predicted_quantity": q} for pid, q in zip(product_ids, predictions)]
     return jsonify(forecast), 200
+
+@api.route('/reports/generate', methods=['POST'])
+def trigger_report():
+    generate_report.delay()  # Triggers the Celery task asynchronously
+    return jsonify({"message": "Report generation task started."}), 202

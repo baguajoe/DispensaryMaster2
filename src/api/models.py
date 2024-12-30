@@ -127,32 +127,36 @@ class Dispensary(db.Model):
 
 
 
-# Pricing Model
 class Pricing(db.Model):
     __tablename__ = 'pricing'
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     dispensary_id = db.Column(db.Integer, db.ForeignKey('dispensary.id'), nullable=False)
-    price = db.Column(db.Float, nullable=False)
+    price = db.Column(db.Numeric(8, 2), nullable=False)
+    promotional_price = db.Column(db.Numeric(8, 2), nullable=True)
     availability = db.Column(db.Boolean, default=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    stock_quantity = db.Column(db.Integer, default=0)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     product = db.relationship('Product', backref='pricings')
     dispensary = db.relationship('Dispensary', backref='pricings')
 
     def __repr__(self):
-        return f'<Pricing Product: {self.product.name}, Dispensary: {self.dispensary.name}>'
+        return f'<Pricing Product: {self.product.name if self.product else "Unknown"}, Dispensary: {self.dispensary.name if self.dispensary else "Unknown"}>'
 
     def serialize(self):
         return {
             "id": self.id,
-            "product": self.product.serialize(),
-            "dispensary": self.dispensary.serialize(),
-            "price": self.price,
+            "product": self.product.serialize() if self.product else None,
+            "dispensary": self.dispensary.serialize() if self.dispensary else None,
+            "price": float(self.price),
+            "promotional_price": float(self.promotional_price) if self.promotional_price else None,
             "availability": self.availability,
+            "stock_quantity": self.stock_quantity,
             "updated_at": self.updated_at.isoformat()
         }
+
 
 # OrderItem Model
 class OrderItem(db.Model):
@@ -516,6 +520,23 @@ class Deal(db.Model):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
     
+class PromotionalDeal(db.Model):  # Previously "Deal"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    discount = db.Column(db.Float, nullable=False)
+    tier = db.Column(db.String(20), default='All')  # Bronze, Silver, Gold
+
+    def __repr__(self):
+        return f'<PromotionalDeal {self.title} - Discount: {self.discount}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "discount": self.discount,
+            "tier": self.tier,
+        }
+
 
 class InventoryLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -976,4 +997,13 @@ class CustomerAnalytics(db.Model):
             "last_purchase_date": self.last_purchase_date.isoformat() if self.last_purchase_date else None,
             "churn_probability": self.churn_probability,
         }
+
+# delivery
+
+class Delivery(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    status = db.Column(db.String(50), default='Pending')  # Pending, Dispatched, Delivered
+    estimated_time = db.Column(db.DateTime, nullable=True)
+    order = db.relationship('Order', backref='delivery')
 
