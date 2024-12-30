@@ -1007,3 +1007,33 @@ class Delivery(db.Model):
     estimated_time = db.Column(db.DateTime, nullable=True)
     order = db.relationship('Order', backref='delivery')
 
+# Employee Time Log
+class TimeLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    clock_in_time = db.Column(db.DateTime, nullable=True)
+    clock_out_time = db.Column(db.DateTime, nullable=True)
+    total_hours = db.Column(db.Float, nullable=True, default=0.0)  # Hours worked in this session
+    status = db.Column(db.String(20), default="clocked_out")  # clocked_in, clocked_out
+
+    employee = db.relationship('User', backref='time_logs')
+
+    def calculate_hours(self):
+        if self.clock_in_time and self.clock_out_time:
+            delta = self.clock_out_time - self.clock_in_time
+            self.total_hours = delta.total_seconds() / 3600  # Convert seconds to hours
+
+# Payroll
+class Payroll(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    pay_period_start = db.Column(db.Date, nullable=False)
+    pay_period_end = db.Column(db.Date, nullable=False)
+    total_hours = db.Column(db.Float, nullable=False, default=0.0)
+    hourly_rate = db.Column(db.Float, nullable=False)
+    total_pay = db.Column(db.Float, nullable=False, default=0.0)
+
+    employee = db.relationship('User', backref='payrolls')
+
+    def calculate_pay(self):
+        self.total_pay = self.total_hours * self.hourly_rate

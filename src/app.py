@@ -5,17 +5,17 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from dotenv import load_dotenv
-
+from celery import Celery
 from api.extensions import db, socketio  # Import extensions
 from api.utils import APIException, generate_sitemap  # Import utilities
 from api.routes import api  # Import the API blueprint
 from api.admin import setup_admin  # Import admin setup function
-
+from api.config import config_by_name
 
 load_dotenv()
 
 app = Flask(__name__)
-
+app.config.from_object(config_by_name["development"])
 # Configurations
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -34,6 +34,14 @@ setup_admin(app)
 
 # Register API blueprint
 app.register_blueprint(api, url_prefix='/api')
+
+def make_celery(app):
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    return celery
+
+# In your app initialization:
+celery = make_celery(app)
 
 @app.errorhandler(APIException)
 def handle_api_exception(error):

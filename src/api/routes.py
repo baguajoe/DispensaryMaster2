@@ -1,21 +1,23 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 # from flask_login import current_user
+from flask_login import login_required
+
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  Recommendation, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message                                
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  Recommendation, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll                                
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
 from reportlab.pdfgen import canvas
 from flask_cors import CORS
 from sqlalchemy import func
+
 # from api.utils import role_required, APIException, generate_sitemap
 from sklearn.linear_model import LinearRegression
 import numpy as np
 from flask_socketio import SocketIO, emit
 from flask import jsonify, send_file
 from io import BytesIO
-from . import api  # Import the blueprint
 from textblob import TextBlob
 import pandas as pd
 from prophet import Prophet
@@ -25,8 +27,8 @@ socketio = SocketIO()
 
 
 # Create Blueprint
-# api = Blueprint('api', __name__)
-# CORS(api, resources={r"/api/*": {"origins": "https://shiny-broccoli-q79pvgr4wqp72qx9-3000.app.github.dev"}})
+api = Blueprint('api', __name__)
+CORS(api, resources={r"/api/*": {"origins": "https://shiny-broccoli-q79pvgr4wqp72qx9-3000.app.github.dev"}})
 
 
 
@@ -84,6 +86,8 @@ def create_signup():
     except Exception as e:
         print(f"signup error: {str(e)}")
         return jsonify({"error":f"Internal Server Error: {str(e)}"}), 500
+    
+    # products
     
 @api.route('/products', methods=['GET'])
 @jwt_required()
@@ -418,6 +422,8 @@ def predict_sales():
     prediction = model.predict([[next_month.timestamp()]])
     return jsonify({"predicted_sales": prediction[0]}), 200
 
+# dashboard
+
 @api.route('/dashboard/metrics', methods=['GET'])
 @jwt_required()
 def get_dashboard_metrics():
@@ -460,6 +466,30 @@ def get_dashboard_analytics():
         return jsonify(response), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@api.route('/dashboard/layout', methods=['POST'])
+@login_required
+def save_layout():
+    data = request.json
+    user_id = current_user.id
+    layout = data.get('layout')
+    # Save the layout to the database
+    db.session.execute(
+        "UPDATE user_settings SET dashboard_layout = :layout WHERE user_id = :user_id",
+        {"layout": json.dumps(layout), "user_id": user_id},
+    )
+    db.session.commit()
+    return jsonify({"message": "Layout saved successfully"}), 200
+
+@api.route('/dashboard/layout', methods=['GET'])
+@login_required
+def get_layout():
+    user_id = current_user.id
+    layout = db.session.execute(
+        "SELECT dashboard_layout FROM user_settings WHERE user_id = :user_id",
+        {"user_id": user_id},
+    ).fetchone()
+    return jsonify({"layout": layout}), 200
 
 
 # store routes
@@ -2004,3 +2034,44 @@ def inventory_forecast():
 def trigger_report():
     generate_report.delay()  # Triggers the Celery task asynchronously
     return jsonify({"message": "Report generation task started."}), 202
+
+# Clock-In Route
+@api.route('/clock-in', methods=['POST'])
+def clock_in():
+    employee_id = request.json.get('employee_id')
+    # Check if the employee is already clocked in
+    time_log = TimeLog.query.filter_by(employee_id=employee_id, status='clocked_in').first()
+
+    if time_log:
+        return jsonify({"error": "Employee is already clocked in"}), 400
+
+    # Create a new time log entry
+    new_log = TimeLog(employee_id=employee_id, clock_in_time=datetime.utcnow(), status='clocked_in')
+    db.session.add(new_log)
+    db.session.commit()
+    return jsonify({"message": "Clock-in successful", "time_log": new_log.id}), 200
+
+# Clock-Out Route
+@api.route('/clock-out', methods=['POST'])
+def clock_out():
+    employee_id = request.json.get('employee_id')
+    # Check if the employee is clocked in
+    time_log = TimeLog.query.filter_by(employee_id=employee_id, status='clocked_in').first()
+
+    if not time_log:
+        return jsonify({"error": "Employee is not clocked in"}), 400
+
+    # Update the time log entry
+    time_log.clock_out_time = datetime.utcnow()
+    time_log.calculate_hours()
+    time_log.status = 'clocked_out'
+    db.session.commit()
+
+    return jsonify({"message": "Clock-out successful", "total_hours": time_log.total_hours}), 200
+
+# Retrieve Payroll Data Route
+@api.route('/payroll', methods=['GET'])
+def get_payroll():
+    employee_id = request.args.get('employee_id')
+    payroll = Payroll.query.filter_by(employee_id=employee_id).all()
+    return jsonify([p.serialize() for p in payroll]), 200

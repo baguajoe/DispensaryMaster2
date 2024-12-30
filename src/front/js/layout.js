@@ -12,6 +12,7 @@ import ContactUs from "./pages/ContactUs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Products from "./pages/Products";
 import Inventory from "./pages/Inventory";
 import Invoices from "./pages/Invoices";
@@ -94,6 +95,7 @@ const Layout = () => {
                             <Route path="/login" element={<Login />} />
                             <Route path="/signup" element={<Signup />} />
                             <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/employee-dashboard" element={<EmployeeDashboard employeeId={1} />} />
                             <Route path="/products" element={<Products />} />
                             <Route path="/price-comparison" element={<PriceComparison />} />
                             <Route path="/inventory" element={<Inventory />} />
