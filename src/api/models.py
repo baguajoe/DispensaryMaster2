@@ -1037,3 +1037,10 @@ class Payroll(db.Model):
 
     def calculate_pay(self):
         self.total_pay = self.total_hours * self.hourly_rate
+
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    action = db.Column(db.String(50), nullable=False)  # e.g., "viewed", "purchased"
+    timestamp = db.Column(db.DateTime, default=db.func.now())

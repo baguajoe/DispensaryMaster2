@@ -1,35 +1,50 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 # from flask_login import current_user
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  Recommendation, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll                                
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  Recommendation, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback                                
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
 from reportlab.pdfgen import canvas
 from flask_cors import CORS
 from sqlalchemy import func
+# from .services.predictive import predict_restock
+from twilio.jwt.access_token import AccessToken
+from twilio.jwt.access_token.grants import ChatGrant
+
+
 
 # from api.utils import role_required, APIException, generate_sitemap
 from sklearn.linear_model import LinearRegression
 import numpy as np
+import os
+import json
 from flask_socketio import SocketIO, emit
 from flask import jsonify, send_file
 from io import BytesIO
 from textblob import TextBlob
 import pandas as pd
 from prophet import Prophet
+from celery import shared_task
 # from your_project.tasks import generate_report
+# TODO: work on getting these project.tasks/generate_report working versus line 43-47
 
 socketio = SocketIO()
 
 
 # Create Blueprint
 api = Blueprint('api', __name__)
-CORS(api, resources={r"/api/*": {"origins": "https://shiny-broccoli-q79pvgr4wqp72qx9-3000.app.github.dev"}})
+CORS(api, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
 
+
+# TODO: take care of this generate report logic/function later...
+@shared_task
+def generate_report():
+    # Your report generation logic here
+    pass
 
 
 # Error Handling Helper
@@ -202,15 +217,6 @@ def demand_forecast():
     db.session.commit()
     return jsonify(product.serialize()), 200
 
-@api.route('/products/customer-recommendations/<int:customer_id>', methods=['GET'])
-@jwt_required()
-def recommend_products_by_customer(customer_id):
-    customer_orders = Order.query.filter_by(customer_id=customer_id).all()
-    # Example: Recommend products from the same category as previous orders
-    recommended_products = Product.query.filter(Product.category.in_(
-        [order_item.product.category for order in customer_orders for order_item in order.order_items])).all()
-    return jsonify([product.serialize() for product in recommended_products])
-
 
 # customer routes
 
@@ -306,6 +312,17 @@ def create_order():
 
 # recommendation routes
 
+
+@api.route('/products/customer-recommendations/<int:customer_id>', methods=['GET'])
+@jwt_required()
+def recommend_products_by_customer(customer_id):
+    customer_orders = Order.query.filter_by(customer_id=customer_id).all()
+    # Example: Recommend products from the same category as previous orders
+    recommended_products = Product.query.filter(Product.category.in_(
+        [order_item.product.category for order in customer_orders for order_item in order.order_items])).all()
+    return jsonify([product.serialize() for product in recommended_products])
+
+
 @api.route('/recommendations', methods=['POST'])
 def recommend_products():
     symptoms = request.json.get('symptoms', [])
@@ -379,13 +396,20 @@ def personalized_recommendations():
         for product in Product.query.filter(Product.id.in_(purchased_product_ids)).all()
     ]
 
-    # Recommend products in the same categories, excluding already purchased ones
+    # Fetch feedback for this customer
+    feedback_data = Feedback.query.filter_by(customer_id=customer.id).all()
+    viewed_product_ids = [feedback.product_id for feedback in feedback_data if feedback.action == "viewed"]
+    purchased_feedback_ids = [feedback.product_id for feedback in feedback_data if feedback.action == "purchased"]
+
+    # Recommend products based on feedback, purchase history, and categories
     recommendations = Product.query.filter(
         Product.category.in_(purchased_categories),
-        ~Product.id.in_(purchased_product_ids)
+        ~Product.id.in_(purchased_product_ids),  # Exclude already purchased products
+        ~Product.id.in_(viewed_product_ids)  # Optionally exclude previously viewed products
     ).limit(10).all()
 
     return jsonify([product.serialize() for product in recommendations]), 200
+
 
 
 # analytic routes
@@ -1928,27 +1952,27 @@ def get_crm_metrics():
 # # ---------------------
 
 
-# class ProductSchema(Schema):
-#     name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
-#     category = fields.Str(required=True)
-#     current_stock = fields.Integer(required=True, validate=validate.Range(min=0))
-#     reorder_point = fields.Integer(required=True, validate=validate.Range(min=0))
-#     unit_price = fields.Decimal(required=True, validate=validate.Range(min=0))
-#     strain = fields.Str(required=False)
-#     thc_content = fields.Float(required=False)
-#     cbd_content = fields.Float(required=False)
-#     is_organic = db.Column(db.Boolean, default=False)  # New field
-#     medical_benefits = db.Column(db.Text, nullable=True)  # New field
+class ProductSchema(Schema):
+    name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
+    category = fields.Str(required=True)
+    current_stock = fields.Integer(required=True, validate=validate.Range(min=0))
+    reorder_point = fields.Integer(required=True, validate=validate.Range(min=0))
+    unit_price = fields.Decimal(required=True, validate=validate.Range(min=0))
+    strain = fields.Str(required=False)
+    thc_content = fields.Float(required=False)
+    cbd_content = fields.Float(required=False)
+    is_organic = db.Column(db.Boolean, default=False)  # New field
+    medical_benefits = db.Column(db.Text, nullable=True)  # New field
 
-# class CustomerSchema(Schema):
-#     first_name = fields.Str(required=True)
-#     last_name = fields.Str(required=True)
-#     email = fields.Email(required=True)
-#     phone = fields.Str(required=True)
+class CustomerSchema(Schema):
+    first_name = fields.Str(required=True)
+    last_name = fields.Str(required=True)
+    email = fields.Email(required=True)
+    phone = fields.Str(required=True)
 
-# class OrderSchema(Schema):
-#     customer_id = fields.Integer(required=True)
-#     items = fields.List(fields.Dict(keys=fields.Str(), values=fields.Int()), required=True)
+class OrderSchema(Schema):
+    customer_id = fields.Integer(required=True)
+    items = fields.List(fields.Dict(keys=fields.Str(), values=fields.Int()), required=True)
 
 # class StoreSchema(Schema):
 #     name = fields.Str(required=True, validate=validate.Length(min=1, max=200))
@@ -1958,11 +1982,11 @@ def get_crm_metrics():
 #     status = fields.Str(required=True)
 #     employee_count = fields.Int(required=True, validate=validate.Range(min=0))
 
-# # Pricing Schema for Validation
-# class PricingSchema(Schema):
-#     dispensary_id = fields.Int(required=True)
-#     price = fields.Float(required=True)
-#     availability = fields.Bool(required=True, default=True)
+# Pricing Schema for Validation
+class PricingSchema(Schema):
+    dispensary_id = fields.Int(required=True)
+    price = fields.Float(required=True)
+    availability = fields.Bool(required=True, default=True)
 
 
 @api.route('/analytics/customer-segmentation', methods=['GET'])
@@ -2075,3 +2099,49 @@ def get_payroll():
     employee_id = request.args.get('employee_id')
     payroll = Payroll.query.filter_by(employee_id=employee_id).all()
     return jsonify([p.serialize() for p in payroll]), 200
+
+@api.route('/predict-restock/<int:product_id>', methods=['GET'])
+def get_restock_prediction(product_id):
+    reorder_point = request.args.get('reorder_point', default=10, type=int)
+    try:
+        restock_date = predict_restock(db, product_id, reorder_point)
+        return jsonify({"product_id": product_id, "restock_date": restock_date}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/update-stock/<int:product_id>', methods=['POST'])
+def update_stock(product_id):
+    data = request.json
+    product = Product.query.get_or_404(product_id)
+    product.current_stock = data['current_stock']
+    db.session.commit()
+
+    # Emit WebSocket event
+    socketio.emit('inventory_updated', {
+        'product_id': product.id,
+        'current_stock': product.current_stock
+    }, broadcast=True)
+
+    return jsonify({"message": "Stock updated"}), 200
+
+
+@api.route('/get-stock/<int:product_id>', methods=['GET'])
+def get_stock(product_id):
+    product = Product.query.get(product_id)
+    return jsonify(product.serialize()), 200
+
+@api.route('/get-chat-token', methods=['POST'])
+def get_chat_token():
+    data = request.json
+    identity = data.get('identity')
+
+    twilio_account_sid = 'your_account_sid'
+    twilio_api_key = 'your_api_key'
+    twilio_api_secret = 'your_api_secret'
+    chat_service_sid = 'your_chat_service_sid'
+
+    token = AccessToken(twilio_account_sid, twilio_api_key, twilio_api_secret, identity=identity)
+    chat_grant = ChatGrant(service_sid=chat_service_sid)
+    token.add_grant(chat_grant)
+
+    return jsonify({'token': token.to_jwt().decode('utf-8')}), 200

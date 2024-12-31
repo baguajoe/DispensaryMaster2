@@ -1,0 +1,46 @@
+/* Custom styles for GridLayoutComponent */
+
+/* Grid layout container */
+.grid-layout {
+    background: #f8f9fa; /* Light gray background */
+    border: 1px solid #e9ecef; /* Subtle border */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px; /* Inner spacing */
+    overflow: hidden; /* Prevent overflow issues */
+  }
+  
+  /* Individual grid items (widgets) */
+  .widget {
+    background: #ffffff; /* White background for widgets */
+    border: 1px solid #dee2e6; /* Light border around each widget */
+    border-radius: 8px; /* Rounded corners */
+    display: flex; /* Center the widget's content */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    padding: 20px; /* Inner spacing */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  }
+  
+  /* Hover effect for widgets */
+  .widget:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+  }
+  
+  /* Resize handles (provided by react-resizable) */
+  .react-resizable-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    bottom: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.2); /* Semi-transparent handle */
+    cursor: se-resize; /* Cursor for resizing */
+  }
+  
+  /* Optional: Adjust grid layout breakpoints */
+  @media (max-width: 768px) {
+    .grid-layout {
+      padding: 5px; /* Smaller padding for smaller screens */
+    }
+  }
+  

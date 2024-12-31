@@ -1,6 +1,9 @@
 import React from "react";
+import ChatBox from "../component/Chatbox"; // Adjust the path based on your file structure
 
 const ContactUs = () => {
+  const userIdentity = "guestUser"; // Replace with dynamic identity if available
+
   return (
     <div className="p-6 md:p-12 bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -152,6 +155,12 @@ const ContactUs = () => {
               Send Message
             </button>
           </form>
+
+          {/* ChatBox Component */}
+          <div className="mt-12">
+            <h2 className="text-lg font-bold mb-4">Need immediate help?</h2>
+            <ChatBox identity={userIdentity} />
+          </div>
         </div>
       </div>
     </div>

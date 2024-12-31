@@ -32,6 +32,8 @@ import Task from "./pages/Task";
 import SalesPipeline from "./pages/SalesPipeline";
 import POS from "./pages/POS";
 import PriceComparison from "./pages/PriceComparison";
+import PersonalizedRecommendations from "./pages/PersonalizedRecommendations";
+import ChatPage from './pages/ChatPage';
 
 // Medical Pages
 import ComplianceDashboard from "./pages/Medical/ComplianceDashboard";
@@ -98,6 +100,7 @@ const Layout = () => {
                             <Route path="/employee-dashboard" element={<EmployeeDashboard employeeId={1} />} />
                             <Route path="/products" element={<Products />} />
                             <Route path="/price-comparison" element={<PriceComparison />} />
+                            <Route path="/recommendations" element={<PersonalizedRecommendations customerId={1} />} />
                             <Route path="/inventory" element={<Inventory />} />
                             <Route path="/invoices" element={<Invoices />} />
                             <Route path="/stores" element={<Stores />} />
@@ -115,6 +118,7 @@ const Layout = () => {
                             <Route path="/campaign" element={<Campaign />} />
                             <Route path="/task" element={<Task />} />
                             <Route path="/sales-pipeline" element={<SalesPipeline />} />
+                            <Route path="/chat" element={<ChatPage />} />
 
                             {/* Medical Routes */}
                             <Route path="/medical/compliance-dashboard" element={<ComplianceDashboard />} />
