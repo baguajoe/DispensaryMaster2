@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Products from "./pages/Products";
 import Inventory from "./pages/Inventory";
+import InventoryPage from "./pages/InventoryPage";
 import Invoices from "./pages/Invoices";
 import Stores from "./pages/Stores";
 import AddStore from "./pages/AddStore";
@@ -26,6 +27,7 @@ import Analytics from "./pages/Analytics";
 import AdvancedAnalytics from "./pages/AdvancedAnalytics";
 import Reports from "./pages/Reports";
 import Leads from "./pages/Leads";
+import CheckoutPage from "./pages/CheckoutPage";
 import BarcodeScanner from "./pages/BarcodeScanner";
 import Campaign from "./pages/Campaign";
 import Task from "./pages/Task";
@@ -102,6 +104,7 @@ const Layout = () => {
                             <Route path="/price-comparison" element={<PriceComparison />} />
                             <Route path="/recommendations" element={<PersonalizedRecommendations customerId={1} />} />
                             <Route path="/inventory" element={<Inventory />} />
+                            <Route path="/inventory" element={<InventoryPage />} />;
                             <Route path="/invoices" element={<Invoices />} />
                             <Route path="/stores" element={<Stores />} />
                             <Route path="/stores/add" element={<AddStore />} />
@@ -109,6 +112,7 @@ const Layout = () => {
                             <Route path="/orders" element={<Orders />} />
                             <Route path="/pos" element={<POS />} />
                             <Route path="/cart-management" element={<CartManagement />} />
+                            <Route path="/checkout" element={<CheckoutPage />} />
                             <Route path="/users" element={<Users />} />
                             <Route path="/analytics" element={<Analytics />} />
                             <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />

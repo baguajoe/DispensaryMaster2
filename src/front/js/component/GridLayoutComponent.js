@@ -12,6 +12,7 @@ const GridLayoutComponent = () => {
     { i: "sales", x: 0, y: 0, w: 4, h: 2 },
     { i: "inventory", x: 4, y: 0, w: 4, h: 2 },
     { i: "compliance", x: 8, y: 0, w: 4, h: 2 },
+    { i: "heatmap", x: 0, y: 18, w: 6, h: 4 }, // Add this line for the heatmap
   ]);
 
   const handleLayoutChange = (newLayout) => {

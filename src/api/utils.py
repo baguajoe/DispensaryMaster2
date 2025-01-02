@@ -1,7 +1,70 @@
 from flask import jsonify, url_for
 from flask_jwt_extended import get_jwt_identity
+from sqlalchemy import func
 from functools import wraps
-from api.models import User
+from api.models import User, Order, OrderItem, SalesHistory, Product
+from api.extensions import socketio 
+
+from prophet import Prophet
+import pandas as pd
+from datetime  import timedelta
+
+def calculate_lead_time(db, product_id):
+    # Fetch past order and delivery data to compute average lead time
+    lead_times = db.session.query(Order.delivery_date - Order.order_date).filter(
+        Order.product_id == product_id
+    ).all()
+    return sum(lead_times, timedelta(0)) / len(lead_times) if lead_times else timedelta(days=7)
+
+def calculate_sales_velocity(db, product_id):
+    # Fetch recent sales data to compute the average sales velocity
+    sales = db.session.query(func.sum(OrderItem.quantity)).filter(
+        OrderItem.product_id == product_id,
+        OrderItem.date >= datetime.utcnow() - timedelta(days=30)
+    ).scalar()
+    return sales / 30 if sales else 0
+
+def predict_restock(db, product_id, reorder_point):
+    # Fetch sales data for the product
+    sales_data = db.session.query(SalesHistory).filter_by(product_id=product_id).all()
+    df = pd.DataFrame([(s.date_sold, s.quantity_sold) for s in sales_data], columns=["ds", "y"])
+
+    # Train Prophet model
+    model = Prophet()
+    model.fit(df)
+
+    # Predict next 30 days
+    future = model.make_future_dataframe(periods=30)
+    forecast = model.predict(future)
+
+    # Find the day where stock reaches the reorder point
+    reorder_date = forecast[forecast['yhat'] <= reorder_point].iloc[0]['ds']
+    return reorder_date
+
+def check_and_alert_low_stock():
+    """
+    Checks inventory levels for all products and emits alerts for low stock.
+    """
+    # Define the threshold for low stock
+    low_stock_threshold = 10  # Adjust this value based on your needs
+
+    # Query products with stock below the threshold
+    low_stock_products = Product.query.filter(Product.current_stock <= low_stock_threshold).all()
+
+    # Emit alerts for each low-stock product
+    for product in low_stock_products:
+        alert_message = {
+            "product_id": product.id,
+            "product_name": product.name,
+            "current_stock": product.current_stock,
+            "message": f"Low stock alert: {product.name} has only {product.current_stock} items left!"
+        }
+
+        # Emit WebSocket event for low stock
+        socketio.emit('low_stock_alert', alert_message, broadcast=True)
+
+        # Optionally, log or store the alert in the database (e.g., Notifications table)
+        print(alert_message)  # For debugging purposes
 
 # ---------------------
 # Role-Based Access Control
@@ -73,3 +136,5 @@ def generate_sitemap(app):
         <p>Start working on your project by following the <a href="https://start.4geeksacademy.com/starters/full-stack" target="_blank">Quick Start</a></p>
         <p>Remember to specify a real endpoint path like: </p>
         <ul style="text-align: left;">""" + links_html + "</ul></div>"
+
+

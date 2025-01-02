@@ -2,9 +2,10 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 # from flask_login import current_user
 from flask_login import login_required, current_user
+from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  Recommendation, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback                                
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback                                
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
@@ -23,6 +24,7 @@ import numpy as np
 import os
 import json
 from flask_socketio import SocketIO, emit
+from api.extensions import socketio
 from flask import jsonify, send_file
 from io import BytesIO
 from textblob import TextBlob
@@ -724,6 +726,25 @@ def update_deal_stage(deal_id):
     db.session.commit()
     return jsonify(deal.serialize()), 200
 
+@api.route('/promotions/apply', methods=['POST'])
+def apply_promotion():
+    data = request.json
+    original_price = data.get("original_price")
+    promotion_id = data.get("promotion_id")
+
+    promotion = PromotionalDeal.query.get_or_404(promotion_id)
+    discounted_price = promotion.calculate_discount(original_price)
+    final_price = promotion.calculate_tax(discounted_price)
+
+    return jsonify({
+        "original_price": original_price,
+        "discounted_price": discounted_price,
+        "final_price": final_price,
+        "discount": promotion.discount,
+        "tax_rate": promotion.tax_rate
+    }), 200
+
+
 # inventory logs
 
 @api.route('/inventory/logs', methods=['POST'])
@@ -741,12 +762,116 @@ def log_inventory():
     return jsonify(log.serialize()), 201
 
 
+@api.route('/predict-restock/<int:product_id>', methods=['GET'])
+def get_restock_prediction(product_id):
+    reorder_point = request.args.get('reorder_point', 10, type=int)
+    
+    # Calculate additional factors for prediction
+    lead_time = calculate_lead_time(product_id)
+    sales_velocity = calculate_sales_velocity(product_id)
+    
+    try:
+        # Predict the restock date using available data
+        restock_date = predict_restock(
+            db=db,
+            product_id=product_id,
+            reorder_point=reorder_point,
+            lead_time=lead_time,
+            sales_velocity=sales_velocity
+        )
+        return jsonify({
+            "product_id": product_id,
+            "restock_date": restock_date,
+            "lead_time": lead_time,
+            "sales_velocity": sales_velocity
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/update-stock/<int:product_id>', methods=['POST'])
+def update_stock(product_id):
+    data = request.json
+    product = Product.query.get_or_404(product_id)
+    product.current_stock = data['current_stock']
+    db.session.commit()
+
+    # Emit WebSocket event for inventory update
+    socketio.emit('inventory_updated', {
+        'product_id': product.id,
+        'current_stock': product.current_stock
+    }, broadcast=True)
+
+    # Check for low stock and send alerts
+    check_and_alert_low_stock()
+
+    return jsonify({"message": "Stock updated"}), 200
+
+@api.route('/inventory/<int:location_id>', methods=['GET'])
+def get_inventory(location_id):
+    inventories = Inventory.query.filter_by(location_id=location_id).all()
+    return jsonify([inventory.serialize() for inventory in inventories]), 200
+
 @api.route('/inventory/update', methods=['POST'])
 def update_inventory():
     data = request.json
-    # Update inventory logic...
-    socketio.emit('inventory_update', {'product_id': data['product_id'], 'new_stock': data['new_stock']})
-    return jsonify({"message": "Inventory updated"}), 200
+    location_id = data.get("location_id")
+    product_id = data.get("product_id")
+    stock = data.get("current_stock")
+
+    inventory = Inventory.query.filter_by(location_id=location_id, product_id=product_id).first()
+    if not inventory:
+        inventory = Inventory(product_id=product_id, location_id=location_id, current_stock=stock, reorder_point=10)
+        db.session.add(inventory)
+    else:
+        inventory.current_stock = stock
+    db.session.commit()
+
+    return jsonify({"message": "Inventory updated successfully."}), 200
+
+
+@api.route('/get-stock/<int:product_id>', methods=['GET'])
+def get_stock(product_id):
+    product = Product.query.get(product_id)
+    return jsonify(product.serialize()), 200
+
+@api.route('/get-chat-token', methods=['POST'])
+def get_chat_token():
+    data = request.json
+    identity = data.get('identity')
+
+    twilio_account_sid = 'your_account_sid'
+    twilio_api_key = 'your_api_key'
+    twilio_api_secret = 'your_api_secret'
+    chat_service_sid = 'your_chat_service_sid'
+
+    token = AccessToken(twilio_account_sid, twilio_api_key, twilio_api_secret, identity=identity)
+    chat_grant = ChatGrant(service_sid=chat_service_sid)
+    token.add_grant(chat_grant)
+
+    return jsonify({'token': token.to_jwt().decode('utf-8')}), 200
+
+@socketio.on('custom_event')
+def handle_custom_event(data):
+    print(f"Received event data: {data}")
+    socketio.emit('response_event', {'message': 'Response data'})
+
+@api.route('/analytics/inventory-forecast', methods=['POST'])
+def inventory_forecast():
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
+
+    # Fetch sales data
+    sales = db.session.query(Product.id, func.sum(OrderItem.quantity)).group_by(Product.id).all()
+    product_ids = [s[0] for s in sales]
+    quantities = [s[1] for s in sales]
+
+    # Train model to forecast future sales
+    model = LinearRegression().fit(np.arange(len(quantities)).reshape(-1, 1), quantities)
+    predictions = model.predict(np.arange(len(quantities) + 5).reshape(-1, 1))
+
+    # Return forecasted inventory levels
+    forecast = [{"product_id": pid, "predicted_quantity": q} for pid, q in zip(product_ids, predictions)]
+    return jsonify(forecast), 200
 
 
 
@@ -1517,12 +1642,8 @@ def get_medical_prices():
 
     return jsonify(response), 200
 
-@api.route('/prices', methods=['GET'])
-def get_real_time_prices():
-    product_name = request.args.get('product_name', None)
-    location = request.args.get('location', None)
-    sort_by = request.args.get('sort_by', 'price')  # Default sort by price
-
+# Helper Function for Query Logic
+def fetch_prices(product_name=None, location=None, sort_by='price'):
     query = db.session.query(
         Product.name.label('product_name'),
         Product.strain,
@@ -1545,7 +1666,16 @@ def get_real_time_prices():
     elif sort_by == 'thc_content':
         query = query.order_by(Product.thc_content.desc())
 
-    results = query.all()
+    return query.all()
+
+# HTTP Endpoint for Initial Data Fetch
+@api.route('/prices', methods=['GET'])
+def get_real_time_prices():
+    product_name = request.args.get('product_name', None)
+    location = request.args.get('location', None)
+    sort_by = request.args.get('sort_by', 'price')
+
+    results = fetch_prices(product_name, location, sort_by)
     response = [
         {
             "product_name": row.product_name,
@@ -1562,44 +1692,16 @@ def get_real_time_prices():
 
     return jsonify(response), 200
 
-@api.route('/products/compare-prices', methods=['GET'])
-def compare_prices():
-    product_name = request.args.get('product_name', None)
-    location = request.args.get('location', None)
-    sort_by = request.args.get('sort_by', 'price')  # Default sort by price
+# WebSocket Endpoint for Real-Time Updates
+@socketio.on('request_real_time_prices')
+def handle_real_time_prices(data):
+    product_name = data.get('product_name', None)
+    location = data.get('location', None)
+    sort_by = data.get('sort_by', 'price')
 
-    if not product_name:
-        return jsonify({"error": "Product name is required for price comparison"}), 400
-
-    query = db.session.query(
-        Product.name.label('product_name'),
-        Product.strain,
-        Product.thc_content,
-        Product.cbd_content,
-        Pricing.price,
-        Pricing.availability,
-        Dispensary.name.label('dispensary_name'),
-        Dispensary.location
-    ).join(Pricing, Product.id == Pricing.product_id)\
-     .join(Dispensary, Dispensary.id == Pricing.dispensary_id)\
-     .filter(Product.name.ilike(f"%{product_name}%"))
-
-    if location:
-        query = query.filter(Dispensary.location.ilike(f"%{location}%"))
-
-    if sort_by == 'price':
-        query = query.order_by(Pricing.price.asc())
-    elif sort_by == 'thc_content':
-        query = query.order_by(Product.thc_content.desc())
-
-    results = query.all()
-    if not results:
-        return jsonify({"message": "No products found for comparison"}), 404
-
-    # Group by dispensary and highlight the lowest price
-    response = []
-    for row in results:
-        response.append({
+    results = fetch_prices(product_name, location, sort_by)
+    response = [
+        {
             "product_name": row.product_name,
             "strain": row.strain,
             "thc_content": row.thc_content,
@@ -1608,15 +1710,52 @@ def compare_prices():
             "availability": row.availability,
             "dispensary_name": row.dispensary_name,
             "location": row.location
-        })
+        }
+        for row in results
+    ]
 
-    # Optionally highlight the lowest price
+    # Emit the response back to the client
+    socketio.emit('real_time_price_update', response)
+
+@api.route('/products/compare-prices', methods=['GET'])
+def compare_prices():
+    product_name = request.args.get('product_name', None)
+    location = request.args.get('location', None)
+    sort_by = request.args.get('sort_by', 'price')
+
+    if not product_name:
+        return jsonify({"error": "Product name is required for price comparison"}), 400
+
+    results = fetch_prices(product_name, location, sort_by)
+    if not results:
+        return jsonify({"message": "No products found for comparison"}), 404
+
+    response = [
+        {
+            "product_name": row.product_name,
+            "strain": row.strain,
+            "thc_content": row.thc_content,
+            "cbd_content": row.cbd_content,
+            "price": float(row.price),
+            "availability": row.availability,
+            "dispensary_name": row.dispensary_name,
+            "location": row.location
+        }
+        for row in results
+    ]
+
     lowest_price = min(response, key=lambda x: x['price'])
+
+    # Emit real-time updates if WebSocket is implemented
+    socketio.emit('real_time_price_update', {
+        "lowest_price": lowest_price,
+        "all_prices": response
+    })
+
     return jsonify({
         "lowest_price": lowest_price,
         "all_prices": response
     }), 200
-
 
 
 
@@ -2035,24 +2174,23 @@ def predict_clv():
 
     return jsonify({"message": "CLV prediction completed"}), 200
 
+@api.route('/complete-order', methods=['POST'])
+def complete_order():
+    order_data = request.json
+    order_id = order_data.get("order_id")
+    order_items = OrderItem.query.filter_by(order_id=order_id).all()
 
-@api.route('/analytics/inventory-forecast', methods=['POST'])
-def inventory_forecast():
-    import numpy as np
-    from sklearn.linear_model import LinearRegression
+    for item in order_items:
+        sale = SalesHistory(
+            product_id=item.product_id,
+            date_sold=datetime.utcnow().date(),
+            quantity_sold=item.quantity,
+        )
+        db.session.add(sale)
 
-    # Fetch sales data
-    sales = db.session.query(Product.id, func.sum(OrderItem.quantity)).group_by(Product.id).all()
-    product_ids = [s[0] for s in sales]
-    quantities = [s[1] for s in sales]
+    db.session.commit()
+    return jsonify({"message": "Order completed and sales history updated."}), 200
 
-    # Train model to forecast future sales
-    model = LinearRegression().fit(np.arange(len(quantities)).reshape(-1, 1), quantities)
-    predictions = model.predict(np.arange(len(quantities) + 5).reshape(-1, 1))
-
-    # Return forecasted inventory levels
-    forecast = [{"product_id": pid, "predicted_quantity": q} for pid, q in zip(product_ids, predictions)]
-    return jsonify(forecast), 200
 
 @api.route('/reports/generate', methods=['POST'])
 def trigger_report():
@@ -2100,48 +2238,3 @@ def get_payroll():
     payroll = Payroll.query.filter_by(employee_id=employee_id).all()
     return jsonify([p.serialize() for p in payroll]), 200
 
-@api.route('/predict-restock/<int:product_id>', methods=['GET'])
-def get_restock_prediction(product_id):
-    reorder_point = request.args.get('reorder_point', default=10, type=int)
-    try:
-        restock_date = predict_restock(db, product_id, reorder_point)
-        return jsonify({"product_id": product_id, "restock_date": restock_date}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@api.route('/update-stock/<int:product_id>', methods=['POST'])
-def update_stock(product_id):
-    data = request.json
-    product = Product.query.get_or_404(product_id)
-    product.current_stock = data['current_stock']
-    db.session.commit()
-
-    # Emit WebSocket event
-    socketio.emit('inventory_updated', {
-        'product_id': product.id,
-        'current_stock': product.current_stock
-    }, broadcast=True)
-
-    return jsonify({"message": "Stock updated"}), 200
-
-
-@api.route('/get-stock/<int:product_id>', methods=['GET'])
-def get_stock(product_id):
-    product = Product.query.get(product_id)
-    return jsonify(product.serialize()), 200
-
-@api.route('/get-chat-token', methods=['POST'])
-def get_chat_token():
-    data = request.json
-    identity = data.get('identity')
-
-    twilio_account_sid = 'your_account_sid'
-    twilio_api_key = 'your_api_key'
-    twilio_api_secret = 'your_api_secret'
-    chat_service_sid = 'your_chat_service_sid'
-
-    token = AccessToken(twilio_account_sid, twilio_api_key, twilio_api_secret, identity=identity)
-    chat_grant = ChatGrant(service_sid=chat_service_sid)
-    token.add_grant(chat_grant)
-
-    return jsonify({'token': token.to_jwt().decode('utf-8')}), 200

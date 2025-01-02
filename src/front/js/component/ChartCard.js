@@ -2,132 +2,105 @@ import React from "react";
 import { Line, Bar, Pie, Doughnut, Radar } from "react-chartjs-2";
 import PropTypes from "prop-types";
 
-// const ChartCard = ({ type, data }) => {
-//   const chartTypes = {
-//     line: Line,
-//     bar: Bar,
-//   };
-
-//   const ChartComponent = chartTypes[type] || null;
-
-//   return ChartComponent ? (
-//     <div className="bg-white shadow-lg rounded-lg p-4">
-//       <ChartComponent
-//         data={data}
-//         options={{
-//           responsive: true,
-//           plugins: {
-//             legend: { display: true, position: "top" },
-//             tooltip: { enabled: true },
-//           },
-//         }}
-//       />
-//     </div>
-//   ) : (
-//     <p className="text-red-500">Unsupported chart type</p>
-//   );
-// };
-
-// ChartCard.propTypes = {
-//   type: PropTypes.string.isRequired,
-//   data: PropTypes.object.isRequired,
-// };
-
-// export default ChartCard;
 
 
 
-const ChartCard = ({ type, data, title, options }) => {
+const UnifiedChartCard = ({ type, data, title, options, showAnalytics }) => {
+  // Define supported chart types
   const chartTypes = {
-    line: Line,
-    bar: Bar,
-    pie: Pie,
-    doughnut: Doughnut,
-    radar: Radar,
+      line: Line,
+      bar: Bar,
+      pie: Pie,
+      doughnut: Doughnut,
+      radar: Radar,
   };
 
   const ChartComponent = chartTypes[type] || null;
 
-  return ChartComponent ? (
-    <div className="bg-white shadow-lg rounded-lg p-6">
-      {/* Display Title if Provided */}
-      {title && <h3 className="text-xl font-semibold text-gray-800 mb-4">{title}</h3>}
+  // Default analytics data (example for churn probability)
+  const defaultAnalyticsData = {
+      labels: data.map((item) => `Customer ${item.customer_id}`),
+      datasets: [
+          {
+              label: "Churn Probability (%)",
+              data: data.map((item) => item.churn_probability * 100),
+              backgroundColor: "rgba(255, 99, 132, 0.5)",
+          },
+      ],
+  };
 
-      {/* Chart Component */}
-      <ChartComponent
-        data={data}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: "top",
-              labels: {
-                color: "#4A5568", // Tailwind text-gray-700 equivalent
-                font: { size: 14 },
-              },
-            },
-            tooltip: {
-              enabled: true,
-              backgroundColor: "#2D3748", // Tailwind bg-gray-800 equivalent
-              titleColor: "#FFFFFF",
-              bodyColor: "#FFFFFF",
-              footerColor: "#A0AEC0", // Tailwind text-gray-400 equivalent
-            },
-          },
-          scales: {
-            x: {
-              grid: {
-                color: "#E2E8F0", // Tailwind border-gray-300 equivalent
-              },
-              ticks: {
-                color: "#4A5568",
-                font: {
-                  size: 12, // Customize font size for x-axis ticks
-                },
-              },
-            },
-            y: {
-              grid: {
-                color: "#E2E8F0",
-              },
-              ticks: {
-                color: "#4A5568",
-                font: {
-                  size: 12, // Customize font size for y-axis ticks
-                },
-              },
-            },
-          },
-          animation: {
-            duration: 1500, // Enhanced animation for smooth rendering
-            easing: "easeOutQuad", // Smoother easing effect
-          },
-          interaction: {
-            mode: "index", // Display tooltips for all datasets on hover
-            intersect: false,
-          },
-          ...options, // Merge additional options
-        }}
-      />
-    </div>
-  ) : (
-    <p className="text-red-500">Unsupported chart type</p>
+  return (
+      <div className="bg-white shadow-lg rounded-lg p-6">
+          {/* Title Section */}
+          {title && <h3 className="text-xl font-semibold text-gray-800 mb-4">{title}</h3>}
+
+          {/* Chart Section */}
+          {ChartComponent ? (
+              <ChartComponent
+                  data={showAnalytics ? defaultAnalyticsData : data}
+                  options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                          legend: {
+                              display: true,
+                              position: "top",
+                              labels: {
+                                  color: "#4A5568", // Tailwind text-gray-700
+                                  font: { size: 14 },
+                              },
+                          },
+                          tooltip: {
+                              enabled: true,
+                              backgroundColor: "#2D3748", // Tailwind bg-gray-800
+                              titleColor: "#FFFFFF",
+                              bodyColor: "#FFFFFF",
+                          },
+                      },
+                      scales: {
+                          x: {
+                              grid: { color: "#E2E8F0" }, // Tailwind border-gray-300
+                              ticks: { color: "#4A5568", font: { size: 12 } },
+                          },
+                          y: {
+                              grid: { color: "#E2E8F0" },
+                              ticks: { color: "#4A5568", font: { size: 12 } },
+                          },
+                      },
+                      animation: {
+                          duration: 1500,
+                          easing: "easeOutQuad",
+                      },
+                      interaction: {
+                          mode: "index",
+                          intersect: false,
+                      },
+                      ...options, // Custom options
+                  }}
+              />
+          ) : (
+              <p className="text-red-500">Unsupported chart type</p>
+          )}
+      </div>
   );
 };
 
-ChartCard.propTypes = {
-  type: PropTypes.string.isRequired, // Type of chart (line, bar, etc.)
-  data: PropTypes.object.isRequired, // Chart.js-compatible data object
-  title: PropTypes.string, // Optional title for the chart
-  options: PropTypes.object, // Chart.js-specific options to override defaults
+// Prop Types for Validation
+UnifiedChartCard.propTypes = {
+  type: PropTypes.oneOf(["line", "bar", "pie", "doughnut", "radar"]).isRequired, // Chart type
+  data: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired, // Data for the chart
+  title: PropTypes.string, // Optional title
+  options: PropTypes.object, // Optional Chart.js-specific options
+  showAnalytics: PropTypes.bool, // Toggle between analytics data or custom data
 };
 
-ChartCard.defaultProps = {
+// Default Props
+UnifiedChartCard.defaultProps = {
   title: null,
-  options: {}, // Default to empty object for customization
+  options: {},
+  showAnalytics: false,
 };
 
-export default ChartCard;
+export default UnifiedChartCard;
+
 

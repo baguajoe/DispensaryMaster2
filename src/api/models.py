@@ -407,6 +407,24 @@ class Store(db.Model):
             "employee_count": self.employee_count,
         }
 
+
+class Location(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+
+    # Relationships
+    inventories = db.relationship('Inventory', backref='location', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "phone": self.phone
+        }
+
 # Lead Status Enum
 class LeadStatus(Enum):
     NEW = "new"
@@ -520,22 +538,7 @@ class Deal(db.Model):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
     
-class PromotionalDeal(db.Model):  # Previously "Deal"
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    discount = db.Column(db.Float, nullable=False)
-    tier = db.Column(db.String(20), default='All')  # Bronze, Silver, Gold
 
-    def __repr__(self):
-        return f'<PromotionalDeal {self.title} - Discount: {self.discount}>'
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "discount": self.discount,
-            "tier": self.tier,
-        }
 
 
 class InventoryLog(db.Model):
@@ -548,7 +551,20 @@ class InventoryLog(db.Model):
 
     product = db.relationship('Product', backref='inventory_logs')
 
+class Inventory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
+    current_stock = db.Column(db.Integer, nullable=False)
+    reorder_point = db.Column(db.Integer, nullable=False)
 
+    def serialize(self):
+        return {
+            "product_id": self.product_id,
+            "location_id": self.location_id,
+            "current_stock": self.current_stock,
+            "reorder_point": self.reorder_point
+        }
 
 # ---------------------
 # Medical Models
@@ -1044,3 +1060,30 @@ class Feedback(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     action = db.Column(db.String(50), nullable=False)  # e.g., "viewed", "purchased"
     timestamp = db.Column(db.DateTime, default=db.func.now())
+
+class SalesHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    date_sold = db.Column(db.Date, nullable=False)
+    quantity_sold = db.Column(db.Integer, nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "product_id": self.product_id,
+            "date_sold": self.date_sold.isoformat(),
+            "quantity_sold": self.quantity_sold,
+        }
+    
+class PromotionalDeal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    discount = db.Column(db.Float, nullable=False, default=0.0)  # Discount percentage
+    tax_rate = db.Column(db.Float, nullable=False, default=0.0)  # Tax percentage
+    tier = db.Column(db.String(20), default='All')  # Bronze, Silver, Gold
+
+    def calculate_discount(self, original_price):
+        return original_price * (1 - (self.discount / 100))
+
+    def calculate_tax(self, discounted_price):
+        return discounted_price * (1 + (self.tax_rate / 100))
