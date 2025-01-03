@@ -11,6 +11,7 @@ import Deals from "./pages/Deals";
 import ContactUs from "./pages/ContactUs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import { ForgotPassword } from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Products from "./pages/Products";
@@ -98,6 +99,7 @@ const Layout = () => {
                             <Route path="/contact-us" element={<ContactUs />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/signup" element={<Signup />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/employee-dashboard" element={<EmployeeDashboard employeeId={1} />} />
                             <Route path="/products" element={<Products />} />

@@ -30,7 +30,7 @@ export const Sidebar = () => {
                 {isCollapsed ? "→" : "←"}
             </button>
 
-            
+
 
             <nav className="sidebar-nav">
                 {/* Non-Medical Features */}
@@ -270,24 +270,21 @@ export const Sidebar = () => {
                 </h5>
                 {collapsedSections.utilities && (
                     <div className="dropdown-content">
-                        <Link className={`nav-link ${location.pathname === "/settings" ? "active" : ""}`} to="/settings">
+                        {/* <Link className={`nav-link ${location.pathname === "/settings" ? "active" : ""}`} to="/settings">
                             Settings
-                        </Link>
+                        </Link> */}
                         <Link className={`nav-link ${location.pathname === "/accounts" ? "active" : ""}`} to="/accounts">
-                            Accounts
+                            Account
                         </Link>
-                        <Link className={`nav-link ${location.pathname === "/profile" ? "active" : ""}`} to="/profile">
-                            Profile
-                        </Link>
-                        <Link className={`nav-link ${location.pathname === "/messaging" ? "active" : ""}`} to="/messaging">
+                        {/* <Link className={`nav-link ${location.pathname === "/messaging" ? "active" : ""}`} to="/messaging">
                             Messaging
-                        </Link>
+                        </Link> */}
                         <Link className={`nav-link ${location.pathname === "/help" ? "active" : ""}`} to="/help">
                             Help
                         </Link>
-                        <Link className="nav-link text-danger" to="/logout">
+                        {/* <Link className="nav-link text-danger" to="/logout">
                             Logout
-                        </Link>
+                        </Link> */}
                     </div>
                 )}
             </nav>

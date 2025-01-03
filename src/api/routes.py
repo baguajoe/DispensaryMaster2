@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
-# from flask_login import current_user
 from flask_login import login_required, current_user
 from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback                                
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback     
+from api.send_email import send_email                           
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
@@ -22,6 +22,7 @@ from twilio.jwt.access_token.grants import ChatGrant
 from sklearn.linear_model import LinearRegression
 import numpy as np
 import os
+import jwt
 import json
 from flask_socketio import SocketIO, emit
 from api.extensions import socketio
@@ -104,8 +105,47 @@ def create_signup():
         print(f"signup error: {str(e)}")
         return jsonify({"error":f"Internal Server Error: {str(e)}"}), 500
     
-    # products
+@api.route("/forgot-password", methods=["POST"])
+def forgot_password(): 
+    email=request.json.get("email")
+
+    user = User.query.filter_by(email=email).first()
+    if user is None: 
+        return jsonify({"message": "email does not exist"}), 400
     
+    expiration_time=datetime.utcnow() + timedelta(hours = 1)
+    token = jwt.encode({"email": email, "exp": expiration_time}, os.getenv("FLASK_APP_KEY"), algorithm="HS256")
+
+    email_value=f"Click here to reset password.\n{os.getenv('FRONTEND_URL')}/forgot-password?token={token}"
+    send_email(email, email_value, "Password Recovery: DispenseMaster")
+    return jsonify({"message": "recovery email sent"}), 200
+    
+
+
+@api.route("/reset-password/<token>", methods=["PUT"])
+def reset_password(token):
+    data=request.get_json()
+    password=data.get("password")
+
+    try:
+        decoded_token=jwt.decode(token, os.getenv("FLASK_APP_KEY"), algorithms=["HS256"])
+        email=decoded_token.get("email")
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token has expired" }), 400
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 400
+    
+    user=User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"message": "User does not exist"}), 400
+    
+    user.password=generate_password_hash(password)
+    db.session.commit()
+
+    send_email(email, "password successfully reset", "password reset confirmation for DispenseMaster")
+    return jsonify({"message": "password reset email sent"}), 200
+    
+# products    
 @api.route('/products', methods=['GET'])
 @jwt_required()
 def get_products():
