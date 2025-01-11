@@ -1,0 +1,202 @@
+/* Main container to prevent overlap with the sidebar */
+.inventory-content {
+    margin-left: 16rem; /* Matches the sidebar width */
+    padding: 24px;
+    min-height: calc(100vh - 90px); /* Adjust for navbar height */
+    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
+    color: white;
+    overflow-x: auto;
+    transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
+}
+
+/* Adjust margin when sidebar is collapsed */
+.sidebar-collapsed + .inventory-content {
+    margin-left: 4rem; /* Matches collapsed sidebar width */
+}
+
+/* Header Styles */
+.inventory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.inventory-header h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #cbd5e0; /* Light Gray */
+}
+
+.inventory-header button {
+    background-color: #2a4365; /* Matches sidebar background */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.inventory-header button:hover {
+    background-color: #1e3a4c; /* Darker blue-teal for hover effect */
+    transform: scale(1.05);
+}
+
+/* File Upload Section */
+.upload-section {
+    margin-bottom: 24px;
+}
+
+.upload-section input[type="file"] {
+    background: #1e3a4c;
+    color: #cbd5e0;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.upload-section button {
+    background-color: #2a4365;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-left: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.upload-section button:hover {
+    background-color: #1e3a4c;
+    transform: scale(1.05);
+}
+
+.upload-status {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.upload-status.success {
+    background: #285e61;
+    color: #cbd5e0;
+}
+
+.upload-status.error {
+    background: #742a2a;
+    color: #feb2b2;
+}
+
+/* Inventory Table */
+.inventory-table-container {
+    overflow-x: auto;
+    margin-top: 16px;
+}
+
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #2a4365;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-table th,
+.inventory-table td {
+    padding: 16px;
+    text-align: left;
+    color: #cbd5e0;
+}
+
+.inventory-table thead {
+    background: #1e3a4c;
+    color: white;
+}
+
+.inventory-table tbody tr:nth-child(odd) {
+    background: #285e61;
+}
+
+.inventory-table tbody tr:hover {
+    background: #1e3a4c;
+}
+
+.inventory-table .recall-btn {
+    background-color: #e53e3e;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.inventory-table .recall-btn:hover {
+    background-color: #9b2c2c;
+    transform: scale(1.05);
+}
+
+/* Cash Management */
+.cash-management input,
+.cash-management textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    background: #1e3a4c;
+    color: #cbd5e0;
+}
+
+.cash-management button {
+    background-color: #38a169;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.cash-management button:hover {
+    background-color: #276749;
+    transform: scale(1.05);
+}
+
+/* Search Input */
+.search-inventory input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    border: 1px solid #cbd5e0;
+    background: #1e3a4c;
+    color: #cbd5e0;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .inventory-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .inventory-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .inventory-header button {
+        margin-top: 12px;
+        width: 100%;
+    }
+
+    .inventory-table-container {
+        overflow-x: scroll;
+    }
+
+    .inventory-table th,
+    .inventory-table td {
+        padding: 12px;
+    }
+}

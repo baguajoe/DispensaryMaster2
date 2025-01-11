@@ -1,7 +1,7 @@
 /* Sidebar Container */
 .sidebar {
     position: fixed; /* Keeps the sidebar fixed on the page */
-    top: 140px; /* Aligns the sidebar just below the navbar */
+    top: 96px; /* Aligns the sidebar just below the navbar */
     left: 0;
     width: 16rem; /* Sidebar width */
     height: calc(100vh - 140px); /* Adjusts height to account for the navbar */

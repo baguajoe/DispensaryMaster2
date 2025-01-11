@@ -9,6 +9,8 @@ export const Sidebar = () => {
         medical: false,
         growFarms: false,
         seedBanks: false,
+        utilities: false,
+        posSystem: false, // Added for POS System
     });
 
     const location = useLocation();
@@ -30,8 +32,6 @@ export const Sidebar = () => {
                 {isCollapsed ? "→" : "←"}
             </button>
 
-
-
             <nav className="sidebar-nav">
                 {/* Non-Medical Features */}
                 <h5
@@ -42,26 +42,11 @@ export const Sidebar = () => {
                 </h5>
                 {collapsedSections.nonMedical && (
                     <div className="dropdown-content">
-                        <Link className={`nav-link ${location.pathname === "/" ? "active" : ""}`} to="/">
-                            Home
-                        </Link>
-                        <Link className={`nav-link ${location.pathname === "/about-us" ? "active" : ""}`} to="/about-us">
-                            About Us
-                        </Link>
                         <Link className={`nav-link ${location.pathname === "/shop" ? "active" : ""}`} to="/shop">
                             Shop
                         </Link>
                         <Link className={`nav-link ${location.pathname === "/deals" ? "active" : ""}`} to="/deals">
                             Deals
-                        </Link>
-                        <Link className={`nav-link ${location.pathname === "/contact-us" ? "active" : ""}`} to="/contact-us">
-                            Contact Us
-                        </Link>
-                        <Link className={`nav-link ${location.pathname === "/login" ? "active" : ""}`} to="/login">
-                            Login
-                        </Link>
-                        <Link className={`nav-link ${location.pathname === "/signup" ? "active" : ""}`} to="/signup">
-                            Signup
                         </Link>
                         <Link className={`nav-link ${location.pathname === "/dashboard" ? "active" : ""}`} to="/dashboard">
                             Dashboard
@@ -81,9 +66,9 @@ export const Sidebar = () => {
                         <Link className={`nav-link ${location.pathname === "/stores" ? "active" : ""}`} to="/stores">
                             Stores
                         </Link>
-                        <Link className={`nav-link ${location.pathname === "/stores/add" ? "active" : ""}`} to="/stores/add">
+                        {/* <Link className={`nav-link ${location.pathname === "/stores/add" ? "active" : ""}`} to="/stores/add">
                             Add Store
-                        </Link>
+                        </Link> */}
                         <Link className={`nav-link ${location.pathname === "/suppliers" ? "active" : ""}`} to="/suppliers">
                             Suppliers
                         </Link>
@@ -167,6 +152,48 @@ export const Sidebar = () => {
                         </Link>
                         <Link className={`nav-link ${location.pathname === "/medical/symptom-tracker" ? "active" : ""}`} to="/medical/symptom-tracker">
                             Symptom Tracker
+                        </Link>
+                    </div>
+                )}
+
+                {/* Divider */}
+                <hr className="sidebar-divider" />
+
+                {/* POS System Features */}
+                <h5
+                    className="sidebar-heading"
+                    onClick={() => toggleSection("posSystem")}
+                >
+                    POS System
+                </h5>
+                {collapsedSections.posSystem && (
+                    <div className="dropdown-content">
+                        <Link className={`nav-link ${location.pathname === "/pos" ? "active" : ""}`} to="/pos">
+                            Main POS
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos/transactions" ? "active" : ""}`} to="/pos/transactions">
+                            Transaction History
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos/returns" ? "active" : ""}`} to="/pos/returns">
+                            Returns
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos/reconciliation" ? "active" : ""}`} to="/pos/reconciliation">
+                            Reconciliation
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos/customers" ? "active" : ""}`} to="/pos/customers">
+                            Customer Management
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos/receipt-management" ? "active" : ""}`} to="/pos/receipt-management">
+                            Receipt Management
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos/settings" ? "active" : ""}`} to="/pos/settings">
+                            POS Settings
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos/offline-transactions" ? "active" : ""}`} to="/pos/offline-transactions">
+                            Offline Transactions
+                        </Link>
+                        <Link className={`nav-link ${location.pathname === "/pos/reports" ? "active" : ""}`} to="/pos/reports">
+                            Reports
                         </Link>
                     </div>
                 )}
@@ -270,21 +297,12 @@ export const Sidebar = () => {
                 </h5>
                 {collapsedSections.utilities && (
                     <div className="dropdown-content">
-                        {/* <Link className={`nav-link ${location.pathname === "/settings" ? "active" : ""}`} to="/settings">
-                            Settings
-                        </Link> */}
                         <Link className={`nav-link ${location.pathname === "/accounts" ? "active" : ""}`} to="/accounts">
                             Account
                         </Link>
-                        {/* <Link className={`nav-link ${location.pathname === "/messaging" ? "active" : ""}`} to="/messaging">
-                            Messaging
-                        </Link> */}
-                        <Link className={`nav-link ${location.pathname === "/help" ? "active" : ""}`} to="/help">
-                            Help
+                        <Link className={`nav-link ${location.pathname === "/contact-us" ? "active" : ""}`} to="/contact-us">
+                            Contact Us
                         </Link>
-                        {/* <Link className="nav-link text-danger" to="/logout">
-                            Logout
-                        </Link> */}
                     </div>
                 )}
             </nav>

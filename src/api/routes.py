@@ -146,6 +146,36 @@ def reset_password(token):
     return jsonify({"message": "password reset email sent"}), 200
     
 # products    
+
+@api.route('/products/cheapest', methods=['GET'])
+def get_cheapest_products():
+    strain = request.args.get('strain', '')  # Get the strain filter
+    location = request.args.get('location', '')  # Get the location filter
+
+    # Query for the cheapest prices
+    query = db.session.query(
+        Product.strain,
+        Dispensary.name.label('dispensary_name'),
+        Dispensary.location,
+        func.min(Pricing.price).label('price'),
+        Pricing.availability
+    ).join(Pricing, Product.id == Pricing.product_id) \
+     .join(Dispensary, Pricing.dispensary_id == Dispensary.id) \
+     .filter(Product.strain.ilike(f"%{strain}%")) \
+     .filter(Dispensary.location.ilike(f"%{location}%")) \
+     .group_by(Product.strain, Dispensary.name, Dispensary.location, Pricing.availability)
+
+    # Convert the query results into JSON format
+    results = query.all()
+    return jsonify([{
+        "strain": row.strain,
+        "dispensary_name": row.dispensary_name,
+        "location": row.location,
+        "price": row.price,
+        "availability": row.availability
+    } for row in results])
+
+
 @api.route('/products', methods=['GET'])
 @jwt_required()
 def get_products():
@@ -501,7 +531,19 @@ def get_dashboard_metrics():
 
         metrics = [
             {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
-            {"title": "Average Purchase Order", "value": f"${average_purchase_order:,.2f}"}
+            {"title": "Average Purchase Order", "value": f"${average_purchase_order:,.2f}"},
+            { "title": "Average Purchase Order", "value": "$180", "icon": "🛒", "trend": 2, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
+            { "title": "Users", "value": "1,345", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
+            { "title": "Refunds", "value": "$320", "icon": "💸", "trend": -3, "bgColor": "bg-red-100", "textColor": "text-red-900" },
+            { "title": "Product Availability", "value": "93%", "icon": "📊", "trend": 1, "bgColor": "bg-teal-100", "textColor": "text-teal-900" },
+            { "title": "Supply Below Safety Stock", "value": "8", "icon": "📉", "trend": -2, "bgColor": "bg-gray-100", "textColor": "text-gray-900" },
+            { "title": "Invoices", "value": "295", "icon": "🧾", "trend": 7, "bgColor": "bg-indigo-100", "textColor": "text-indigo-900" },
+            { "title": "Today's Invoice", "value": "28", "icon": "📆", "trend": 3, "bgColor": "bg-orange-100", "textColor": "text-orange-900" },
+            { "title": "Current Monthly", "value": "$22,560", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900" },
+            { "title": "Inventory", "value": "965", "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900" },
+            { "title": "Stores", "value": "4", "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
+            # { "title": "Top Categories", "value": "Electronics, Clothing", "icon": "📂", "trend": 6, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
+            # { "title": "Sales Performance", "value": "Trending Up", "icon": "📈", "trend": 12, "bgColor": "bg-teal-100", "textColor": "text-teal-900" }
         ]
         return jsonify(metrics), 200
     except Exception as e:
@@ -1064,27 +1106,7 @@ def delete_medical_resource(id):
     return jsonify({"message": "Medical resource deleted successfully"}), 200
 
 
-@api.route('/receipt', methods=['POST'])
-def generate_receipt():
-    data = request.json
-    order_id = data.get('order_id')
-    items = data.get('items', [])
-    total_amount = data.get('total_amount', 0.00)
 
-    buffer = BytesIO()
-    pdf = canvas.Canvas(buffer)
-    pdf.drawString(100, 750, f"Receipt for Order #{order_id}")
-    pdf.drawString(100, 730, "---------------------------")
-
-    y = 710
-    for item in items:
-        pdf.drawString(100, y, f"{item['name']} (x{item['quantity']}): ${item['price']}")
-        y -= 20
-
-    pdf.drawString(100, y - 20, f"Total: ${total_amount}")
-    pdf.save()
-
-    buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"receipt_{order_id}.pdf", mimetype='application/pdf')
 
 # loyalty program
@@ -2278,3 +2300,444 @@ def get_payroll():
     payroll = Payroll.query.filter_by(employee_id=employee_id).all()
     return jsonify([p.serialize() for p in payroll]), 200
 
+# customer dashboard
+
+@api.route('/dashboard/overview', methods=['GET'])
+@jwt_required()
+def get_dashboard_overview():
+    user_id = get_jwt_identity()
+    # Fetch recent orders
+    recent_orders = Order.query.filter_by(customer_id=user_id).order_by(Order.created_at.desc()).limit(5).all()
+    # Fetch account statistics
+    total_spent = db.session.query(func.sum(Order.total_amount)).filter(Order.customer_id == user_id).scalar() or 0
+    loyalty_points = Customer.query.get(user_id).loyalty_points
+
+    return jsonify({
+        "recent_orders": [order.serialize() for order in recent_orders],
+        "account_statistics": {
+            "total_spent": total_spent,
+            "loyalty_points": loyalty_points
+        }
+    }), 200
+
+
+@api.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    user_id = get_jwt_identity()
+    customer = Customer.query.get_or_404(user_id)
+    return jsonify(customer.serialize()), 200
+
+@api.route('/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    user_id = get_jwt_identity()
+    data = request.json
+    customer = Customer.query.get_or_404(user_id)
+    for key, value in data.items():
+        setattr(customer, key, value)
+    db.session.commit()
+    return jsonify(customer.serialize()), 200
+
+@api.route('/orders', methods=['GET'])
+@jwt_required()
+def get_order_history():
+    user_id = get_jwt_identity()
+    orders = Order.query.filter_by(customer_id=user_id).all()
+    return jsonify([order.serialize() for order in orders]), 200
+
+@api.route('/orders/<int:order_id>', methods=['GET'])
+@jwt_required()
+def get_order_details(order_id):
+    order = Order.query.get_or_404(order_id)
+    return jsonify(order.serialize()), 200
+
+@api.route('/wishlist', methods=['GET'])
+@jwt_required()
+def get_wishlist():
+    user_id = get_jwt_identity()
+    wishlist = Wishlist.query.filter_by(customer_id=user_id).all()
+    return jsonify([item.serialize() for item in wishlist]), 200
+
+@api.route('/wishlist', methods=['POST'])
+@jwt_required()
+def add_to_wishlist():
+    user_id = get_jwt_identity()
+    data = request.json
+    new_item = Wishlist(customer_id=user_id, product_id=data['product_id'])
+    db.session.add(new_item)
+    db.session.commit()
+    return jsonify(new_item.serialize()), 201
+
+@api.route('/wishlist/<int:item_id>', methods=['DELETE'])
+@jwt_required()
+def remove_from_wishlist(item_id):
+    item = Wishlist.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"message": "Item removed from wishlist"}), 200
+
+
+@api.route('/cart/<int:item_id>', methods=['DELETE'])
+@jwt_required()
+def remove_from_cart(item_id):
+    item = Cart.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"message": "Item removed from cart"}), 200
+
+@api.route('/payment-methods', methods=['GET'])
+@jwt_required()
+def get_payment_methods():
+    user_id = get_jwt_identity()
+    payment_methods = PaymentMethod.query.filter_by(customer_id=user_id).all()
+    return jsonify([method.serialize() for method in payment_methods]), 200
+
+@api.route('/payment-methods', methods=['POST'])
+@jwt_required()
+def add_payment_method():
+    user_id = get_jwt_identity()
+    data = request.json
+    new_method = PaymentMethod(customer_id=user_id, **data)
+    db.session.add(new_method)
+    db.session.commit()
+    return jsonify(new_method.serialize()), 201
+
+@api.route('/payment-methods/<int:method_id>', methods=['DELETE'])
+@jwt_required()
+def delete_payment_method(method_id):
+    method = PaymentMethod.query.get_or_404(method_id)
+    db.session.delete(method)
+    db.session.commit()
+    return jsonify({"message": "Payment method deleted"}), 200
+
+@api.route('/support-tickets', methods=['GET'])
+@jwt_required()
+def get_support_tickets():
+    user_id = get_jwt_identity()
+    tickets = SupportTicket.query.filter_by(customer_id=user_id).all()
+    return jsonify([ticket.serialize() for ticket in tickets]), 200
+
+@api.route('/support-tickets', methods=['POST'])
+@jwt_required()
+def create_support_ticket():
+    user_id = get_jwt_identity()
+    data = request.json
+    new_ticket = SupportTicket(customer_id=user_id, **data)
+    db.session.add(new_ticket)
+    db.session.commit()
+    return jsonify(new_ticket.serialize()), 201
+
+@api.route('/notifications', methods=['GET'])
+@jwt_required()
+def get_notifications():
+    user_id = get_jwt_identity()
+    notifications = Notification.query.filter_by(customer_id=user_id).all()
+    return jsonify([notif.serialize() for notif in notifications]), 200
+
+@api.route('/subscriptions', methods=['GET'])
+@jwt_required()
+def get_subscriptions():
+    user_id = get_jwt_identity()
+    subscriptions = Subscription.query.filter_by(customer_id=user_id).all()
+    return jsonify([sub.serialize() for sub in subscriptions]), 200
+
+@api.route('/subscriptions/<int:sub_id>', methods=['GET'])
+@jwt_required()
+def get_subscription_details(sub_id):
+    subscription = Subscription.query.get_or_404(sub_id)
+    return jsonify(subscription.serialize()), 200
+
+@api.route('/subscriptions', methods=['POST'])
+@jwt_required()
+def create_subscription():
+    user_id = get_jwt_identity()
+    data = request.json
+    new_subscription = Subscription(customer_id=user_id, **data)
+    db.session.add(new_subscription)
+    db.session.commit()
+    return jsonify(new_subscription.serialize()), 201
+
+@api.route('/subscriptions/<int:sub_id>', methods=['PUT'])
+@jwt_required()
+def update_subscription(sub_id):
+    subscription = Subscription.query.get_or_404(sub_id)
+    data = request.json
+    for key, value in data.items():
+        setattr(subscription, key, value)
+    db.session.commit()
+    return jsonify(subscription.serialize()), 200
+
+@api.route('/subscriptions/<int:sub_id>', methods=['DELETE'])
+@jwt_required()
+def delete_subscription(sub_id):
+    subscription = Subscription.query.get_or_404(sub_id)
+    db.session.delete(subscription)
+    db.session.commit()
+    return jsonify({"message": "Subscription deleted successfully"}), 200
+
+@api.route('/loyalty-program', methods=['GET'])
+@jwt_required()
+def get_loyalty_program():
+    user_id = get_jwt_identity()
+    customer = Customer.query.get_or_404(user_id)
+    return jsonify({
+        "points": customer.loyalty_points,
+        "tier": customer.loyalty_tier
+    }), 200
+
+@api.route('/loyalty-program/history', methods=['GET'])
+@jwt_required()
+def get_loyalty_history():
+    user_id = get_jwt_identity()
+    history = LoyaltyHistory.query.filter_by(customer_id=user_id).all()
+    return jsonify([entry.serialize() for entry in history]), 200
+
+# @api.route('/loyalty-program/redeem', methods=['POST'])
+# @jwt_required()
+# def redeem_loyalty_points():
+#     user_id = get_jwt_identity()
+#     data = request.json
+#     points_to_redeem = data.get("points")
+#     customer = Customer.query.get_or_404(user_id)
+
+#     if customer.loyalty_points < points_to_redeem:
+#         return jsonify({"error": "Insufficient points"}), 400
+
+#     customer.loyalty_points -= points_to_redeem
+#     db.session.commit()
+#     return jsonify({"message": f"{points_to_redeem} points redeemed.", "remaining_points": customer.loyalty_points}), 200
+
+@api.route('/analytics/customer', methods=['GET'])
+@jwt_required()
+def get_customer_analytics():
+    user_id = get_jwt_identity()
+    customer = Customer.query.get_or_404(user_id)
+
+    # Example: Analytics calculation
+    total_spent = db.session.query(func.sum(Order.total_amount)).filter(Order.customer_id == user_id).scalar() or 0
+    order_count = Order.query.filter_by(customer_id=user_id).count()
+    avg_order_value = total_spent / order_count if order_count > 0 else 0
+
+    return jsonify({
+        "total_spent": total_spent,
+        "order_count": order_count,
+        "avg_order_value": avg_order_value,
+        "loyalty_points": customer.loyalty_points,
+    }), 200
+
+
+@api.route('/settings', methods=['GET'])
+@jwt_required()
+def get_settings():
+    user_id = get_jwt_identity()
+    settings = Settings.query.filter_by(customer_id=user_id).first()
+    return jsonify(settings.serialize()), 200
+
+@api.route('/settings', methods=['PUT'])
+@jwt_required()
+def update_settings():
+    user_id = get_jwt_identity()
+    data = request.json
+    settings = Settings.query.filter_by(customer_id=user_id).first()
+    
+    if not settings:
+        settings = Settings(customer_id=user_id)
+        db.session.add(settings)
+
+    for key, value in data.items():
+        setattr(settings, key, value)
+    db.session.commit()
+    return jsonify(settings.serialize()), 200
+
+
+@api.route('/addresses', methods=['GET'])
+@jwt_required()
+def get_addresses():
+    user_id = get_jwt_identity()
+    addresses = Address.query.filter_by(customer_id=user_id).all()
+    return jsonify([addr.serialize() for addr in addresses]), 200
+
+@api.route('/addresses', methods=['POST'])
+@jwt_required()
+def add_address():
+    user_id = get_jwt_identity()
+    data = request.json
+    new_address = Address(customer_id=user_id, **data)
+    db.session.add(new_address)
+    db.session.commit()
+    return jsonify(new_address.serialize()), 201
+
+@api.route('/addresses/<int:address_id>', methods=['PUT'])
+@jwt_required()
+def update_address(address_id):
+    address = Address.query.get_or_404(address_id)
+    data = request.json
+    for key, value in data.items():
+        setattr(address, key, value)
+    db.session.commit()
+    return jsonify(address.serialize()), 200
+
+@api.route('/addresses/<int:address_id>', methods=['DELETE'])
+@jwt_required()
+def delete_address(address_id):
+    address = Address.query.get_or_404(address_id)
+    db.session.delete(address)
+    db.session.commit()
+    return jsonify({"message": "Address deleted successfully"}), 200
+
+
+# pos system
+
+@api.route('/cart', methods=['GET'])
+@jwt_required()
+def get_cart():
+    user_id = get_jwt_identity()
+    cart = Cart.query.filter_by(customer_id=user_id).first()
+    if not cart:
+        return jsonify({"error": "Cart not found"}), 404
+    return jsonify(cart.serialize()), 200
+
+@api.route('/cart', methods=['POST'])
+@jwt_required()
+def add_to_cart():
+    user_id = get_jwt_identity()
+    data = request.json
+    cart = Cart.query.filter_by(customer_id=user_id).first()
+
+    if not cart:
+        cart = Cart(customer_id=user_id)
+        db.session.add(cart)
+
+    product = Product.query.get_or_404(data['product_id'])
+    cart_item = CartItem(
+        cart_id=cart.id,
+        product_id=product.id,
+        quantity=data.get('quantity', 1)
+    )
+    db.session.add(cart_item)
+    db.session.commit()
+
+    return jsonify(cart.serialize()), 201
+
+@api.route('/cart/<int:item_id>', methods=['PUT'])
+@jwt_required()
+def update_cart_item(item_id):
+    cart_item = CartItem.query.get_or_404(item_id)
+    data = request.json
+    cart_item.quantity = data.get('quantity', cart_item.quantity)
+    db.session.commit()
+    return jsonify(cart_item.serialize()), 200
+
+@api.route('/cart/<int:item_id>', methods=['DELETE'])
+@jwt_required()
+def delete_cart_item(item_id):
+    cart_item = CartItem.query.get_or_404(item_id)
+    db.session.delete(cart_item)
+    db.session.commit()
+    return jsonify({"message": "Item removed from cart"}), 200
+
+@api.route('/cart/clear', methods=['DELETE'])
+@jwt_required()
+def clear_cart():
+    user_id = get_jwt_identity()
+    cart = Cart.query.filter_by(customer_id=user_id).first()
+    if not cart:
+        return jsonify({"error": "Cart not found"}), 404
+    db.session.delete(cart)
+    db.session.commit()
+    return jsonify({"message": "Cart cleared successfully"}), 200
+
+@api.route('/pos/payment', methods=['POST'])
+@jwt_required()
+def process_payment():
+    data = request.json
+    order_id = data.get('order_id')
+    payments = data.get('payments', [])  # Example: [{"method": "cash", "amount": 50}, {"method": "credit", "amount": 25}]
+    
+    if not payments:
+        return jsonify({"error": "No payment methods provided"}), 400
+
+    order = Order.query.get_or_404(order_id)
+    total_paid = sum(payment['amount'] for payment in payments)
+    
+    if total_paid < order.total_amount:
+        return jsonify({"error": "Insufficient payment"}), 400
+
+    for payment in payments:
+        PaymentLog(
+            order_id=order.id,
+            payment_method=payment['method'],
+            amount=payment['amount']
+        )
+        db.session.add(payment_log)
+    
+    order.status = "completed"
+    db.session.commit()
+    
+    return jsonify({"message": "Payment processed successfully", "order": order.serialize()}), 200
+
+@api.route('/pos/receipt/<int:order_id>', methods=['GET'])
+@jwt_required()
+def generate_receipt(order_id):
+    order = Order.query.get_or_404(order_id)
+    items = OrderItem.query.filter_by(order_id=order.id).all()
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer)
+    pdf.drawString(100, 750, f"Receipt for Order #{order.id}")
+    pdf.drawString(100, 730, "---------------------------")
+
+    y = 710
+    for item in items:
+        pdf.drawString(100, y, f"{item.product.name} (x{item.quantity}): ${item.unit_price}")
+        y -= 20
+
+    pdf.drawString(100, y - 20, f"Total: ${order.total_amount}")
+    pdf.save()
+
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f"receipt_{order.id}.pdf", mimetype='application/pdf')
+
+
+@api.route('/pos/offline-transactions', methods=['POST'])
+@jwt_required()
+def sync_offline_transactions():
+    data = request.json.get("transactions", [])
+    if not data:
+        return jsonify({"error": "No transactions to sync"}), 400
+
+    for transaction in data:
+        order = Order(**transaction.get("order"))
+        db.session.add(order)
+        db.session.flush()
+
+        for item in transaction.get("items", []):
+            order_item = OrderItem(order_id=order.id, **item)
+            db.session.add(order_item)
+
+    db.session.commit()
+    return jsonify({"message": "Offline transactions synced successfully"}), 200
+
+
+@api.route('/pos/reports', methods=['GET'])
+@jwt_required()
+def generate_pos_reports():
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    
+    query = Order.query.filter(Order.created_at.between(start_date, end_date))
+    total_sales = sum(order.total_amount for order in query)
+    total_orders = query.count()
+    top_products = db.session.query(
+        Product.name, func.sum(OrderItem.quantity).label('quantity_sold')
+    ).join(OrderItem, Product.id == OrderItem.product_id)\
+     .group_by(Product.name)\
+     .order_by(func.sum(OrderItem.quantity).desc())\
+     .limit(5).all()
+
+    return jsonify({
+        "total_sales": total_sales,
+        "total_orders": total_orders,
+        "top_products": [{"name": p[0], "quantity": p[1]} for p in top_products]
+    }), 200

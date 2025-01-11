@@ -1,0 +1,127 @@
+/* Main container */
+.stores-page {
+    margin-left: 16rem; /* Matches the sidebar width */
+    padding: 24px;
+    min-height: calc(100vh - 90px); /* Adjust for navbar height */
+    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
+    color: white; /* Matches sidebar color */
+    overflow-x: auto; /* Prevent horizontal scroll if sidebar collapses */
+    transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
+}
+
+/* Header Styles */
+.stores-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.stores-header h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #cbd5e0; /* Light Gray to match the theme */
+}
+
+.stores-header a {
+    background-color: #2a4365; /* Matches the gradient theme */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.stores-header a:hover {
+    background-color: #1e3a4c; /* Darker blue-teal for hover effect */
+    transform: scale(1.05);
+}
+
+/* Table Styles */
+.stores-table-container {
+    overflow-x: auto; /* Prevent table overflow */
+    margin-top: 16px;
+}
+
+.stores-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #2a4365; /* Matches theme background */
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stores-table th,
+.stores-table td {
+    padding: 16px;
+    text-align: left;
+    color: #cbd5e0; /* Matches theme text color */
+}
+
+.stores-table thead {
+    background: #1e3a4c; /* Dark Blue Teal */
+    color: white;
+}
+
+.stores-table tbody tr:nth-child(odd) {
+    background: #285e61; /* Slightly lighter teal for alternating rows */
+}
+
+.stores-table tbody tr:hover {
+    background: #1e3a4c; /* Darker teal on hover */
+}
+
+.stores-table .edit-btn {
+    background-color: #2a4365; /* Matches theme */
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.stores-table .edit-btn:hover {
+    background-color: #1e3a4c; /* Darker Blue Teal on Hover */
+    transform: scale(1.05);
+}
+
+/* Responsive Table Adjustments */
+@media (max-width: 768px) {
+    .stores-table-container {
+        overflow-x: scroll;
+    }
+
+    .stores-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .stores-header a {
+        padding: 8px 16px;
+    }
+
+    .stores-table th,
+    .stores-table td {
+        padding: 12px; /* Reduce padding for smaller screens */
+    }
+}
+
+/* Additional Adjustments for Extra Small Screens */
+@media (max-width: 576px) {
+    .stores-page {
+        padding: 16px;
+    }
+
+    .stores-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stores-header a {
+        margin-top: 12px;
+        width: 100%; /* Full-width buttons */
+    }
+}

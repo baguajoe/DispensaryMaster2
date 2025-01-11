@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../../styles/navbar.css"
-import logo from "../../../../docs/assets/logo.jpg"
+import logo from "../../../../docs/assets/DispenseMaster.png"
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const Navbar = () => {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
         <div className="container-fluid mx-5">
-          <img src={logo} alt="logo" style={{ height: "90px" }} />
+          <img src={logo} alt="logo" style={{ height: "40px" }} />
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"><i className="fa-solid fa-bars"></i></span>
           </button>

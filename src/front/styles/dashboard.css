@@ -1,0 +1,14 @@
+/* Main container to prevent overlap with the sidebar */
+.main-content {
+    margin-left: 16rem; /* Matches the sidebar width */
+    padding: 24px;
+    min-height: calc(100vh - 90px); /* Adjust for navbar height */
+    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
+    color: white; /* Matches sidebar color */
+    overflow-x: auto; /* Prevent horizontal scroll if sidebar collapses */
+    transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
+}
+
+.sales-performance {
+    width: 50%;
+}

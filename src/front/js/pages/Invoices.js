@@ -7,7 +7,7 @@ const Invoices = () => {
 
   useEffect(() => {
     axios
-      .get("/api/invoices")
+      .get(process.env.BACKEND_URL + "/api/invoices")
       .then((response) => {
         setInvoices(response.data);
         setLoading(false);
@@ -35,7 +35,7 @@ const Invoices = () => {
   if (loading) return <p>Loading invoices...</p>;
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
+    <div className="p-6 bg-white rounded-lg shadow-md main-content">
       <h2 className="text-xl font-bold mb-4">Invoices</h2>
       {invoices.length === 0 ? (
         <p>No invoices available</p>

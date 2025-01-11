@@ -1,12 +1,12 @@
 // HeatmapChart.js
 import React from "react";
-import { Heatmap } from "chartjs-chart-geo";
+// import { Heatmap } from "chartjs-chart-geo";
 
-const HeatmapChart = ({ data }) => {
+const HeatMapChart = ({ data }) => {
     return (
         <div className="bg-white shadow-lg rounded-lg p-6">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">Sales Heatmap</h3>
-            <Heatmap
+            {/* <Heatmap
                 data={data}
                 options={{
                     responsive: true,
@@ -33,9 +33,9 @@ const HeatmapChart = ({ data }) => {
                         },
                     },
                 }}
-            />
+            /> */}
         </div>
     );
 };
 
-export default HeatmapChart;
+export default HeatMapChart;
