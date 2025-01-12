@@ -84,9 +84,10 @@ export const Sidebar = () => {
                         <Link className={`nav-link ${location.pathname === "/users" ? "active" : ""}`} to="/users">
                             Users
                         </Link>
-                        <Link className={`nav-link ${location.pathname === "/analytics" ? "active" : ""}`} to="/analytics">
-                            Analytics
+                        <Link className={`nav-link ${location.pathname === "/analytics-dashboard" ? "active" : ""}`} to="/analytics-dashboard">
+                            Analytics Dashboard
                         </Link>
+
                         <Link className={`nav-link ${location.pathname === "/reports" ? "active" : ""}`} to="/reports">
                             Reports
                         </Link>

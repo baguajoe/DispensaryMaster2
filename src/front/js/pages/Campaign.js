@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { CampaignList, CampaignForm, CampaignMetrics } from "../component/CampaignComponent";
 
-const Campaign = () => {
+const CampaignPage = () => {
   const [campaigns, setCampaigns] = useState([]);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [newCampaign, setNewCampaign] = useState({
     name: "",
     description: "",
@@ -9,103 +11,115 @@ const Campaign = () => {
     end_date: "",
     budget: "",
   });
+  const [metrics, setMetrics] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch campaigns on component mount
   useEffect(() => {
-    fetch(process.env.BACKEND_URL + "/api/campaigns", {
-      headers: { "Authorization": "Bearer " + sessionStorage.getItem("token") },
-    })
-      .then((response) => response.json())
-      .then((data) => setCampaigns(data))
-      .catch((error) => console.error("Error fetching campaigns:", error));
+    fetchCampaigns();
   }, []);
 
-  const handleAddCampaign = async () => {
-    const response = await fetch(process.env.BACKEND_URL + "/api/campaigns", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + sessionStorage.getItem("token"),
-      },
-      body: JSON.stringify(newCampaign),
-    });
+  const fetchCampaigns = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(process.env.BACKEND_URL + "/api/campaigns", {
+        headers: { Authorization: "Bearer " + sessionStorage.getItem("token") },
+      });
+      if (response.ok) {
+        setCampaigns(await response.json());
+      } else {
+        throw new Error("Failed to fetch campaigns.");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (response.ok) {
-      const addedCampaign = await response.json();
-      setCampaigns([...campaigns, addedCampaign]);
-      setNewCampaign({ name: "", description: "", start_date: "", end_date: "", budget: "" });
-    } else {
-      alert("Failed to add campaign.");
+  const handleAddOrUpdateCampaign = async () => {
+    try {
+      const url = selectedCampaign
+        ? `${process.env.BACKEND_URL}/api/campaigns/${selectedCampaign.id}`
+        : process.env.BACKEND_URL + "/api/campaigns";
+      const method = selectedCampaign ? "PUT" : "POST";
+      const campaign = selectedCampaign || newCampaign;
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+        },
+        body: JSON.stringify(campaign),
+      });
+
+      if (response.ok) {
+        fetchCampaigns();
+        setSelectedCampaign(null);
+        setNewCampaign({ name: "", description: "", start_date: "", end_date: "", budget: "" });
+      } else {
+        throw new Error("Failed to add/update campaign.");
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteCampaign = async (id) => {
+    try {
+      const response = await fetch(`${process.env.BACKEND_URL}/api/campaigns/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.getItem("token"),
+        },
+      });
+      if (response.ok) fetchCampaigns();
+      else throw new Error("Failed to delete campaign.");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const fetchMetrics = async (campaignId) => {
+    try {
+      const response = await fetch(`${process.env.BACKEND_URL}/api/campaigns/${campaignId}/metrics`, {
+        headers: { Authorization: "Bearer " + sessionStorage.getItem("token") },
+      });
+      if (response.ok) {
+        const data = await response.json()
+        setMetrics((prevMetrics) => ({ ...prevMetrics, [campaignId]: data }));
+      } else {
+        throw new Error(`Failed to fetch metrics for campaign ${campaignId}.`);
+      }
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Campaign Management</h1>
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Campaign Name"
-          value={newCampaign.name}
-          onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })}
-          className="p-2 border rounded mr-2"
+      <h1 className="text-3xl font-bold mb-6">Campaign Management</h1>
+      <CampaignForm
+        campaign={selectedCampaign || newCampaign}
+        onChange={(data) => (selectedCampaign ? setSelectedCampaign(data) : setNewCampaign(data))}
+        onSubmit={handleAddOrUpdateCampaign}
+        isEdit={!!selectedCampaign}
+      />
+      {loading ? (
+        <p>Loading campaigns...</p>
+      ) : (
+        <CampaignList
+          campaigns={campaigns}
+          onEdit={setSelectedCampaign}
+          onDelete={handleDeleteCampaign}
+          onFetchMetrics={fetchMetrics}
         />
-        <input
-          type="text"
-          placeholder="Description"
-          value={newCampaign.description}
-          onChange={(e) => setNewCampaign({ ...newCampaign, description: e.target.value })}
-          className="p-2 border rounded mr-2"
-        />
-        <input
-          type="date"
-          placeholder="Start Date"
-          value={newCampaign.start_date}
-          onChange={(e) => setNewCampaign({ ...newCampaign, start_date: e.target.value })}
-          className="p-2 border rounded mr-2"
-        />
-        <input
-          type="date"
-          placeholder="End Date"
-          value={newCampaign.end_date}
-          onChange={(e) => setNewCampaign({ ...newCampaign, end_date: e.target.value })}
-          className="p-2 border rounded mr-2"
-        />
-        <input
-          type="number"
-          placeholder="Budget"
-          value={newCampaign.budget}
-          onChange={(e) => setNewCampaign({ ...newCampaign, budget: e.target.value })}
-          className="p-2 border rounded mr-2"
-        />
-        <button onClick={handleAddCampaign} className="bg-blue-500 text-white px-4 py-2 rounded">
-          Add Campaign
-        </button>
-      </div>
-      <table className="w-full border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Description</th>
-            <th className="px-4 py-2">Start Date</th>
-            <th className="px-4 py-2">End Date</th>
-            <th className="px-4 py-2">Budget</th>
-          </tr>
-        </thead>
-        <tbody>
-          {campaigns.map((campaign) => (
-            <tr key={campaign.id} className="border-t">
-              <td className="px-4 py-2">{campaign.name}</td>
-              <td className="px-4 py-2">{campaign.description}</td>
-              <td className="px-4 py-2">{campaign.start_date}</td>
-              <td className="px-4 py-2">{campaign.end_date}</td>
-              <td className="px-4 py-2">{campaign.budget}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      )}
+      <CampaignMetrics metrics={metrics} />
+      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 };
 
-export default Campaign;
+export default CampaignPage;

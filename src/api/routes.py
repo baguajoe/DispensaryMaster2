@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback     
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics     
 from api.send_email import send_email                           
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -713,42 +713,157 @@ def delete_lead(id):
 
 # campaign routes
 
+
+
+
+# Route to get all campaigns
 @api.route('/campaigns', methods=['GET'])
 @jwt_required()
-@handle_errors
 def get_campaigns():
-    campaigns = Campaign.query.all()
+    status = request.args.get('status')  # Optional filtering by status
+    if status:
+        campaigns = Campaign.query.filter_by(status=status).all()
+    else:
+        campaigns = Campaign.query.all()
     return jsonify([campaign.serialize() for campaign in campaigns]), 200
 
+# Route to create a new campaign
 @api.route('/campaigns', methods=['POST'])
 @jwt_required()
-@handle_errors
 def create_campaign():
     data = request.json
-    campaign = Campaign(**data)
-    db.session.add(campaign)
-    db.session.commit()
-    return jsonify(campaign.serialize()), 201
+    try:
+        new_campaign = Campaign(
+            name=data['name'],
+            description=data.get('description'),
+            target_audience=data.get('target_audience'),
+            start_date=data['start_date'],
+            end_date=data.get('end_date'),
+            status=data.get('status', 'draft')
+        )
+        db.session.add(new_campaign)
+        db.session.commit()
+        return jsonify(new_campaign.serialize()), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
+# Route to update a specific campaign
 @api.route('/campaigns/<int:id>', methods=['PUT'])
 @jwt_required()
-@handle_errors
 def update_campaign(id):
     campaign = Campaign.query.get_or_404(id)
     data = request.json
-    for key, value in data.items():
-        setattr(campaign, key, value)
-    db.session.commit()
-    return jsonify(campaign.serialize()), 200
+    try:
+        for key, value in data.items():
+            setattr(campaign, key, value)
+        db.session.commit()
+        return jsonify(campaign.serialize()), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
+# Route to delete a specific campaign
 @api.route('/campaigns/<int:id>', methods=['DELETE'])
 @jwt_required()
-@handle_errors
 def delete_campaign(id):
     campaign = Campaign.query.get_or_404(id)
-    db.session.delete(campaign)
-    db.session.commit()
-    return jsonify({"message": "Campaign deleted successfully"}), 200
+    try:
+        db.session.delete(campaign)
+        db.session.commit()
+        return jsonify({"message": "Campaign deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+# ---------------------------------
+# Metrics and Analytics
+# ---------------------------------
+
+# Route to fetch metrics for a specific campaign
+@api.route('/campaigns/<int:id>/metrics', methods=['GET'])
+@jwt_required()
+def get_campaign_metrics(id):
+    metrics = CampaignMetrics.query.filter_by(campaign_id=id).all()
+    if not metrics:
+        return jsonify({"error": "Metrics not found for the campaign"}), 404
+    return jsonify([metric.serialize() for metric in metrics]), 200
+
+# Route to fetch aggregated metrics for all campaigns
+@api.route('/campaigns/metrics', methods=['GET'])
+@jwt_required()
+def get_all_campaign_metrics():
+    metrics = CampaignMetrics.query.all()
+    return jsonify([metric.serialize() for metric in metrics]), 200
+
+# Route to fetch analytics for campaign dashboard
+@api.route('/campaigns/analytics', methods=['GET'])
+@jwt_required()
+def get_campaign_analytics():
+    # Placeholder: Add custom logic for aggregated analytics
+    analytics = {
+        "total_campaigns": Campaign.query.count(),
+        "total_metrics": CampaignMetrics.query.count()
+    }
+    return jsonify(analytics), 200
+
+
+# ---------------------------------
+# Bulk Operations
+# ---------------------------------
+
+# Route to create multiple campaigns in bulk
+@api.route('/campaigns/bulk-create', methods=['POST'])
+@jwt_required()
+def bulk_create_campaigns():
+    data = request.json
+    try:
+        campaigns = [
+            Campaign(
+                name=campaign['name'],
+                description=campaign.get('description'),
+                target_audience=campaign.get('target_audience'),
+                start_date=campaign['start_date'],
+                end_date=campaign.get('end_date'),
+                status=campaign.get('status', 'draft')
+            )
+            for campaign in data
+        ]
+        db.session.bulk_save_objects(campaigns)
+        db.session.commit()
+        return jsonify({"message": "Bulk campaigns created successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+# Route to delete multiple campaigns in bulk
+@api.route('/campaigns/bulk-delete', methods=['DELETE'])
+@jwt_required()
+def bulk_delete_campaigns():
+    campaign_ids = request.json.get('ids', [])
+    try:
+        Campaign.query.filter(Campaign.id.in_(campaign_ids)).delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify({"message": "Bulk campaigns deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+# ---------------------------------
+# Campaign Filtering
+# ---------------------------------
+
+# Route to filter campaigns by status
+@api.route('/campaigns/status/<string:status>', methods=['GET'])
+@jwt_required()
+def get_campaigns_by_status(status):
+    campaigns = Campaign.query.filter_by(status=status).all()
+    return jsonify([campaign.serialize() for campaign in campaigns]), 200
+
+# Route to search campaigns by name
+@api.route('/campaigns/search', methods=['GET'])
+@jwt_required()
+def search_campaigns():
+    name = request.args.get('name', '')
+    campaigns = Campaign.query.filter(Campaign.name.ilike(f"%{name}%")).all()
+    return jsonify([campaign.serialize() for campaign in campaigns]), 200
 
 
 # task routes 
@@ -2294,11 +2409,7 @@ def clock_out():
     return jsonify({"message": "Clock-out successful", "total_hours": time_log.total_hours}), 200
 
 # Retrieve Payroll Data Route
-@api.route('/payroll', methods=['GET'])
-def get_payroll():
-    employee_id = request.args.get('employee_id')
-    payroll = Payroll.query.filter_by(employee_id=employee_id).all()
-    return jsonify([p.serialize() for p in payroll]), 200
+
 
 # customer dashboard
 
@@ -2741,3 +2852,255 @@ def generate_pos_reports():
         "total_orders": total_orders,
         "top_products": [{"name": p[0], "quantity": p[1]} for p in top_products]
     }), 200
+
+# Route to get all plans
+@api.route('/plans', methods=['GET'])
+def get_plans():
+    plans = Plan.query.all()
+    return jsonify([plan.serialize() for plan in plans]), 200
+
+# Route to create a new plan (Admin use)
+@api.route('/plans', methods=['POST'])
+def create_plan():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('name', 'price', 'features')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        new_plan = Plan(
+            name=data['name'],
+            price=data['price'],
+            features=data['features']
+        )
+        db.session.add(new_plan)
+        db.session.commit()
+        return jsonify(new_plan.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to update a specific plan by ID (Admin use)
+@api.route('/plans/<int:plan_id>', methods=['PUT'])
+def update_plan(plan_id):
+    data = request.get_json()
+    plan = Plan.query.get(plan_id)
+
+    if not plan:
+        return jsonify({"error": "Plan not found"}), 404
+
+    try:
+        if 'name' in data:
+            plan.name = data['name']
+        if 'price' in data:
+            plan.price = data['price']
+        if 'features' in data:
+            plan.features = data['features']
+
+        db.session.commit()
+        return jsonify(plan.serialize()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to delete a specific plan by ID (Admin use)
+@api.route('/plans/<int:plan_id>', methods=['DELETE'])
+def delete_plan(plan_id):
+    plan = Plan.query.get(plan_id)
+
+    if not plan:
+        return jsonify({"error": "Plan not found"}), 404
+
+    try:
+        db.session.delete(plan)
+        db.session.commit()
+        return jsonify({"message": f"Plan with ID {plan_id} deleted"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to get all deals
+
+# Route to get a specific deal by ID
+@api.route('/deals/<int:deal_id>', methods=['GET'])
+def get_deal(deal_id):
+    deal = Deal.query.get(deal_id)
+    if not deal:
+        return jsonify({"error": "Deal not found"}), 404
+    return jsonify(deal.serialize()), 200
+
+# Route to create a new deal
+@api.route('/deals', methods=['POST'])
+def create_deal():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('name', 'stage', 'value', 'customer_id')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        new_deal = Deal(
+            name=data['name'],
+            description=data.get('description', None),
+            stage=data['stage'],
+            value=data['value'],
+            customer_id=data['customer_id'],
+            assigned_to=data.get('assigned_to', None)
+        )
+        db.session.add(new_deal)
+        db.session.commit()
+        return jsonify(new_deal.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to update a specific deal by ID
+@api.route('/deals/<int:deal_id>', methods=['PUT'])
+def update_deal(deal_id):
+    data = request.get_json()
+    deal = Deal.query.get(deal_id)
+
+    if not deal:
+        return jsonify({"error": "Deal not found"}), 404
+
+    try:
+        if 'name' in data:
+            deal.name = data['name']
+        if 'description' in data:
+            deal.description = data['description']
+        if 'stage' in data:
+            deal.stage = data['stage']
+        if 'value' in data:
+            deal.value = data['value']
+        if 'customer_id' in data:
+            deal.customer_id = data['customer_id']
+        if 'assigned_to' in data:
+            deal.assigned_to = data['assigned_to']
+
+        db.session.commit()
+        return jsonify(deal.serialize()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to delete a specific deal by ID
+@api.route('/deals/<int:deal_id>', methods=['DELETE'])
+def delete_deal(deal_id):
+    deal = Deal.query.get(deal_id)
+
+    if not deal:
+        return jsonify({"error": "Deal not found"}), 404
+
+    try:
+        db.session.delete(deal)
+        db.session.commit()
+        return jsonify({"message": f"Deal with ID {deal_id} deleted"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+    # Route to get all inventory logs
+@api.route('/inventory_logs', methods=['GET'])
+def get_inventory_logs():
+    logs = InventoryLog.query.all()
+    return jsonify([log.serialize() for log in logs]), 200
+
+# Route to create a new inventory log
+@api.route('/inventory_logs', methods=['POST'])
+def create_inventory_log():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('product_id', 'transaction_type', 'quantity')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        new_log = InventoryLog(
+            product_id=data['product_id'],
+            transaction_type=data['transaction_type'],
+            quantity=data['quantity'],
+            reason=data.get('reason', None)
+        )
+        db.session.add(new_log)
+        db.session.commit()
+        return jsonify(new_log.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to get all payroll records
+@api.route('/payroll', methods=['GET'])
+def get_payrolls():
+    store_id = request.args.get('store_id')  # Get the store_id from query parameters
+    if store_id:
+        # Filter payrolls based on the provided store ID
+        payrolls = Payroll.query.filter_by(store_id=store_id).all()
+        if not payrolls:
+            return jsonify({"message": "No payrolls found for the specified store"}), 404
+    else:
+        # Return all payrolls if no store ID is provided
+        payrolls = Payroll.query.all()
+    
+    return jsonify([payroll.serialize() for payroll in payrolls]), 200
+
+
+# Route to get a specific payroll record by ID
+@api.route('/payroll/<int:payroll_id>', methods=['GET'])
+def get_payroll(payroll_id):
+    payroll = Payroll.query.get(payroll_id)
+    if not payroll:
+        return jsonify({"error": "Payroll not found"}), 404
+    return jsonify(payroll.serialize()), 200
+
+# Route to create a new payroll record
+@api.route('/payroll', methods=['POST'])
+def create_payroll():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('employee_id', 'pay_period_start', 'pay_period_end', 'hourly_rate')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        total_hours = data.get('total_hours', 0.0)
+        total_pay = total_hours * data['hourly_rate']
+
+        new_payroll = Payroll(
+            employee_id=data['employee_id'],
+            pay_period_start=data['pay_period_start'],
+            pay_period_end=data['pay_period_end'],
+            total_hours=total_hours,
+            hourly_rate=data['hourly_rate'],
+            total_pay=total_pay
+        )
+        db.session.add(new_payroll)
+        db.session.commit()
+        return jsonify(new_payroll.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to get all time logs
+@api.route('/time_logs', methods=['GET'])
+def get_time_logs():
+    logs = TimeLog.query.all()
+    return jsonify([log.serialize() for log in logs]), 200
+
+# Route to create a new time log
+@api.route('/time_logs', methods=['POST'])
+def create_time_log():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('employee_id', 'clock_in_time')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        new_log = TimeLog(
+            employee_id=data['employee_id'],
+            clock_in_time=data['clock_in_time'],
+            clock_out_time=data.get('clock_out_time', None),
+            status=data.get('status', 'clocked_in')
+        )
+        db.session.add(new_log)
+        db.session.commit()
+        return jsonify(new_log.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

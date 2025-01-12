@@ -1087,3 +1087,108 @@ class PromotionalDeal(db.Model):
 
     def calculate_tax(self, discounted_price):
         return discounted_price * (1 + (self.tax_rate / 100))
+    
+class Campaign(db.Model):
+    __tablename__ = 'campaigns'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    target_audience = db.Column(db.JSON, nullable=True)  # Audience details
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default='draft')  # draft, active, completed, etc.
+
+    # Relationships
+    metrics = db.relationship('CampaignMetrics', backref='campaign', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "target_audience": self.target_audience,
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+            "status": self.status,
+        }
+
+class CampaignMetrics(db.Model):
+    __tablename__ = 'campaign_metrics'
+
+    id = db.Column(db.Integer, primary_key=True)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaigns.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)  # Date of metric recording
+    impressions = db.Column(db.Integer, default=0)
+    clicks = db.Column(db.Integer, default=0)
+    conversions = db.Column(db.Integer, default=0)
+    revenue_generated = db.Column(db.Float, default=0.0)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "campaign_id": self.campaign_id,
+            "date": self.date.isoformat(),
+            "impressions": self.impressions,
+            "clicks": self.clicks,
+            "conversions": self.conversions,
+            "revenue_generated": self.revenue_generated,
+        }
+
+class AudienceSegment(db.Model):
+    __tablename__ = 'audience_segments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    demographics = db.Column(db.JSON, nullable=True)  # Example: age, location, gender
+    preferences = db.Column(db.JSON, nullable=True)  # Example: product preferences
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "demographics": self.demographics,
+            "preferences": self.preferences,
+        }
+
+class AdCreative(db.Model):
+    __tablename__ = 'ad_creatives'
+
+    id = db.Column(db.Integer, primary_key=True)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaigns.id'), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(50), nullable=False)  # image, video, text
+    content_url = db.Column(db.String(255), nullable=False)  # URL to the creative file
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    campaign = db.relationship('Campaign', backref='ad_creatives', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "campaign_id": self.campaign_id,
+            "title": self.title,
+            "type": self.type,
+            "content_url": self.content_url,
+            "created_at": self.created_at.isoformat(),
+        }
+
+class MarketingEvent(db.Model):
+    __tablename__ = 'marketing_events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    date = db.Column(db.DateTime, nullable=False)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('campaigns.id'), nullable=True)
+
+    campaign = db.relationship('Campaign', backref='marketing_events', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "date": self.date.isoformat(),
+            "campaign_id": self.campaign_id,
+        }

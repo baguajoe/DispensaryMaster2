@@ -24,8 +24,7 @@ import Suppliers from "./pages/Suppliers";
 import Orders from "./pages/Orders";
 import CartManagement from "./pages/CartManagement";
 import Users from "./pages/Users";
-import Analytics from "./pages/Analytics";
-import AdvancedAnalytics from "./pages/AdvancedAnalytics";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard"; // Assuming the file is in the 'pages' folder
 import Reports from "./pages/Reports";
 import Leads from "./pages/Leads";
 import CheckoutPage from "./pages/CheckoutPage";
@@ -108,6 +107,8 @@ import Sidebar from "./component/Sidebar";
 import { Footer } from "./component/footer";
 // import { Settings, Accounts, Profile, Messaging, Help } from "./pages/NewPages";
 
+
+
 const Layout = () => {
     const basename = process.env.BASENAME || "";
 
@@ -144,9 +145,7 @@ const Layout = () => {
                             <Route path="/cart-management" element={<CartManagement />} />
                             <Route path="/checkout" element={<CheckoutPage />} />
                             <Route path="/users" element={<Users />} />
-                            <Route path="/analytics" element={<Analytics />} />
-                            <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
-
+                            <Route path="/analytics-dashboard" element={<AnalyticsDashboard />} />
                             <Route path="/reports" element={<Reports />} />
                             <Route path="/barcode-scanner" element={<BarcodeScanner />} />
                             <Route path="/campaign" element={<Campaign />} />
