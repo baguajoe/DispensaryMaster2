@@ -325,6 +325,18 @@ def demand_forecast():
     db.session.commit()
     return jsonify(product.serialize()), 200
 
+@api.route('/products/search', methods=['GET'])
+def search_products():
+    name = request.args.get('name')
+    category = request.args.get('category')
+    products = Product.query
+    if name:
+        products = products.filter(Product.name.ilike(f'%{name}%'))
+    if category:
+        products = products.filter(Product.category == category)
+    return jsonify([product.serialize() for product in products.all()])
+
+
 
 # customer routes
 
@@ -1481,19 +1493,29 @@ def delete_business(id):
 
 # ---------------------
 # Invoice Routes
-# ---------------------
+
 @api.route('/invoices', methods=['GET'])
 @jwt_required()
 def get_invoices():
-    invoices = Invoice.query.all()
-    return jsonify([invoice.serialize() for invoice in invoices]), 200
+    customer_id = request.args.get('customer_id')
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    if customer_id:
+        query = Invoice.query.filter_by(customer_id=customer_id)
+    else:
+        query = Invoice.query
+
+    invoices = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify({
+        "invoices": [invoice.serialize() for invoice in invoices.items],
+        "total": invoices.total,
+        "pages": invoices.pages,
+        "current_page": invoices.page
+    }), 200
 
 
-@api.route('/invoices/<int:id>', methods=['GET'])
-@jwt_required()
-def get_invoice(id):
-    invoice = Invoice.query.get_or_404(id)
-    return jsonify(invoice.serialize()), 200
 
 
 @api.route('/invoices', methods=['POST'])
@@ -2577,8 +2599,6 @@ def apply_discount():
         "discount": discount_amount,
         "new_total": total - discount_amount,
     }), 200
-
-
 
 
 @api.route('/cart/<int:item_id>', methods=['DELETE'])
