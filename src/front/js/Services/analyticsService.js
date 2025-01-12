@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'; // Set your API base URL here
+const API_BASE_URL = process.env.BACKEND_URL || 'https://shiny-broccoli-q79pvgr4wqp72qx9-3001.app.github.dev/api'; // Set your API base URL here
 
 const analyticsService = {
     /**
@@ -9,9 +9,9 @@ const analyticsService = {
      */
     getCustomerAnalytics: async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/analytics/customer`, {
+            const response = await axios.get(`${API_BASE_URL}/api/analytics/customer`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`, // Example: Adding JWT token for authentication
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`, // Example: Adding JWT token for authentication
                 },
             });
             return response.data;
@@ -27,9 +27,9 @@ const analyticsService = {
      */
     getDashboardAnalytics: async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/dashboard/analytics`, {
+            const response = await axios.get(`${API_BASE_URL}/api/dashboard/analytics`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -45,9 +45,9 @@ const analyticsService = {
      */
     getSalesPredictions: async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/analytics/predict-sales`, {
+            const response = await axios.get(`${API_BASE_URL}/api/analytics/predict-sales`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -63,9 +63,9 @@ const analyticsService = {
      */
     getCLVPredictions: async () => {
         try {
-            const response = await axios.post(`${API_BASE_URL}/analytics/clv-prediction`, {}, {
+            const response = await axios.post(`${API_BASE_URL}/api/analytics/clv-prediction`, {}, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -81,9 +81,9 @@ const analyticsService = {
      */
     getInventoryForecast: async () => {
         try {
-            const response = await axios.post(`${API_BASE_URL}/analytics/inventory-forecast`, {}, {
+            const response = await axios.post(`${API_BASE_URL}/api/analytics/inventory-forecast`, {}, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -99,9 +99,9 @@ const analyticsService = {
      */
     getComplianceTrends: async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/medical/compliance`, {
+            const response = await axios.get(`${API_BASE_URL}/api/medical/compliance`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
                 },
             });
             return response.data;

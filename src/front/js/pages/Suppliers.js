@@ -8,7 +8,7 @@ const Suppliers = () => {
         <h1 className="text-2xl font-bold">Suppliers Information</h1>
         <button className="bg-black text-white px-4 py-2 rounded">Add Supplier</button>
       </div>
-      <table className="table-auto w-full bg-white rounded shadow-md">
+      <table className="table-auto w-full rounded shadow-md">
         <thead className="bg-gray-100">
           <tr>
             <th className="px-4 py-2 text-left">Name</th>

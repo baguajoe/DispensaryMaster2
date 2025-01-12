@@ -75,9 +75,7 @@ export const Sidebar = () => {
                         <Link className={`nav-link ${location.pathname === "/orders" ? "active" : ""}`} to="/orders">
                             Orders
                         </Link>
-                        <Link className={`nav-link ${location.pathname === "/pos" ? "active" : ""}`} to="/pos">
-                            POS
-                        </Link>
+                        
                         <Link className={`nav-link ${location.pathname === "/cart-management" ? "active" : ""}`} to="/cart-management">
                             Cart Management
                         </Link>
