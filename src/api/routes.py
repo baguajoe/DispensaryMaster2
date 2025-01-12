@@ -177,19 +177,55 @@ def get_cheapest_products():
 
 
 @api.route('/products', methods=['GET'])
-@jwt_required()
+@jwt_required()  # Ensure the endpoint is protected
 def get_products():
+    category = request.args.get('category', '')
+    strain = request.args.get('strain', '')
+    location = request.args.get('location', '')
+    cheapest = request.args.get('cheapest', 'false').lower() == 'true'
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
-    products = Product.query.paginate(page, per_page, False)
+    # Base query
+    query = db.session.query(Product).filter(Product.is_available_online == True)
+
+    # Apply filters
+    if category:
+        query = query.filter(Product.category.ilike(f"%{category}%"))
+    if strain:
+        query = query.filter(Product.strain.ilike(f"%{strain}%"))
+
+    # Handle cheapest filter
+    if cheapest:
+        query = db.session.query(
+            Product.strain,
+            Dispensary.name.label('dispensary_name'),
+            Dispensary.location,
+            func.min(Pricing.price).label('price'),
+            Pricing.availability
+        ).join(Pricing, Product.id == Pricing.product_id) \
+         .join(Dispensary, Pricing.dispensary_id == Dispensary.id) \
+         .filter(Product.strain.ilike(f"%{strain}%")) \
+         .filter(Dispensary.location.ilike(f"%{location}%")) \
+         .group_by(Product.strain, Dispensary.name, Dispensary.location, Pricing.availability)
+        results = query.all()
+        return jsonify([{
+            "strain": row.strain,
+            "dispensary_name": row.dispensary_name,
+            "location": row.location,
+            "price": float(row.price),
+            "availability": row.availability
+        } for row in results]), 200
+
+    # Pagination and product data retrieval
+    products = query.paginate(page, per_page, False)
     product_list = []
 
     for product in products.items:
         pricings = Pricing.query.filter_by(product_id=product.id).all()
         pricing_data = [
             {
-                "price": pricing.price,
+                "price": float(pricing.price),
                 "availability": pricing.availability,
                 "dispensary": pricing.dispensary.serialize(),
                 "updated_at": pricing.updated_at.isoformat() if pricing.updated_at else None,
@@ -2489,6 +2525,62 @@ def remove_from_wishlist(item_id):
     return jsonify({"message": "Item removed from wishlist"}), 200
 
 
+# @api.route('/cart', methods=['GET'])
+# @jwt_required()
+# def get_cart():
+#     user_id = get_jwt_identity()  # Assumes you use JWT to authenticate users
+#     cart_items = Cart.query.filter_by(user_id=user_id).all()
+#     return jsonify([item.serialize() for item in cart_items]), 200
+
+@api.route('/cart/save_for_later', methods=['POST'])
+@jwt_required()
+def save_for_later():
+    data = request.json
+    user_id = get_jwt_identity()  # Get the current user's ID
+
+    # Check if the cart item exists
+    cart_item = Cart.query.filter_by(user_id=user_id, product_id=data['product_id']).first()
+    if not cart_item:
+        return jsonify({"error": "Cart item not found"}), 404
+
+    # Move item to "saved for later"
+    saved_item = SavedForLater(
+        user_id=user_id,
+        product_id=cart_item.product_id,
+        quantity=cart_item.quantity,
+    )
+    db.session.add(saved_item)
+    db.session.delete(cart_item)
+    db.session.commit()
+
+    return jsonify({"message": "Item saved for later"}), 201
+
+@api.route('/cart/apply_discount', methods=['POST'])
+@jwt_required()
+def apply_discount():
+    data = request.json
+    user_id = get_jwt_identity()  # Get the current user's ID
+
+    # Validate the discount code
+    discount = Discount.query.filter_by(code=data['code'], is_active=True).first()
+    if not discount:
+        return jsonify({"error": "Invalid or expired discount code"}), 400
+
+    # Calculate discount
+    cart_items = Cart.query.filter_by(user_id=user_id).all()
+    total = sum(item.quantity * item.product.unit_price for item in cart_items)
+    discount_amount = total * (discount.percentage / 100)
+
+    return jsonify({
+        "message": "Discount applied",
+        "original_total": total,
+        "discount": discount_amount,
+        "new_total": total - discount_amount,
+    }), 200
+
+
+
+
 @api.route('/cart/<int:item_id>', methods=['DELETE'])
 @jwt_required()
 def remove_from_cart(item_id):
@@ -2496,6 +2588,51 @@ def remove_from_cart(item_id):
     db.session.delete(item)
     db.session.commit()
     return jsonify({"message": "Item removed from cart"}), 200
+
+@api.route('/cart/<int:item_id>', methods=['PATCH'])
+@jwt_required()
+def update_cart_item(item_id):
+    data = request.json
+    item = Cart.query.get_or_404(item_id)
+    if 'quantity' in data:
+        item.quantity = data['quantity']
+    db.session.commit()
+    return jsonify(item.serialize()), 200
+
+@api.route('/checkout', methods=['POST'])
+@jwt_required()
+def checkout():
+    user_id = get_jwt_identity()  # Get the current user's ID
+    cart_items = Cart.query.filter_by(user_id=user_id).all()
+    if not cart_items:
+        return jsonify({"error": "Cart is empty"}), 400
+
+    # Create an order
+    order = Order(user_id=user_id, status="pending", total_amount=0)
+    db.session.add(order)
+    db.session.flush()  # Get the order ID before committing
+
+    # Calculate total and move items to the order
+    total = 0
+    for item in cart_items:
+        total += item.quantity * item.product.unit_price
+        order_item = OrderItem(
+            order_id=order.id,
+            product_id=item.product_id,
+            quantity=item.quantity,
+            unit_price=item.product.unit_price,
+        )
+        db.session.add(order_item)
+        db.session.delete(item)  # Remove from cart
+
+    order.total_amount = total
+    db.session.commit()
+
+    return jsonify({"message": "Order created", "order_id": order.id, "total": total}), 201
+
+
+
+
 
 @api.route('/payment-methods', methods=['GET'])
 @jwt_required()
@@ -2731,14 +2868,14 @@ def add_to_cart():
 
     return jsonify(cart.serialize()), 201
 
-@api.route('/cart/<int:item_id>', methods=['PUT'])
-@jwt_required()
-def update_cart_item(item_id):
-    cart_item = CartItem.query.get_or_404(item_id)
-    data = request.json
-    cart_item.quantity = data.get('quantity', cart_item.quantity)
-    db.session.commit()
-    return jsonify(cart_item.serialize()), 200
+# @api.route('/cart/<int:item_id>', methods=['PUT'])
+# @jwt_required()
+# def update_cart_item(item_id):
+#     cart_item = CartItem.query.get_or_404(item_id)
+#     data = request.json
+#     cart_item.quantity = data.get('quantity', cart_item.quantity)
+#     db.session.commit()
+#     return jsonify(cart_item.serialize()), 200
 
 @api.route('/cart/<int:item_id>', methods=['DELETE'])
 @jwt_required()

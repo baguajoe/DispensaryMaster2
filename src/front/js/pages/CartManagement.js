@@ -1,153 +1,164 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const CartManagement = () => {
+  const [cart, setCart] = useState([]);
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountApplied, setDiscountApplied] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch cart items on component mount
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const fetchCart = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("/cart");
+      setCart(response.data);
+      calculateTotal(response.data);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate total amount
+  const calculateTotal = (cartItems) => {
+    const totalAmount = cartItems.reduce(
+      (sum, item) => sum + item.unit_price * item.quantity,
+      0
+    );
+    setTotal(totalAmount);
+  };
+
+  // Remove an item from the cart
+  const removeFromCart = async (itemId) => {
+    try {
+      await axios.delete(`/cart/${itemId}`);
+      const updatedCart = cart.filter((item) => item.id !== itemId);
+      setCart(updatedCart);
+      calculateTotal(updatedCart);
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
+  };
+
+  // Clear the entire cart
+  const clearCart = async () => {
+    try {
+      await axios.delete("/cart");
+      setCart([]);
+      setTotal(0);
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+    }
+  };
+
+  // Save an item for later
+  const saveForLater = async (itemId) => {
+    try {
+      await axios.post("/cart/save_for_later", { item_id: itemId });
+      const updatedCart = cart.filter((item) => item.id !== itemId);
+      setCart(updatedCart);
+      calculateTotal(updatedCart);
+    } catch (error) {
+      console.error("Error saving item for later:", error);
+    }
+  };
+
+  // Apply a discount code
+  const applyDiscount = async () => {
+    try {
+      const response = await axios.post("/cart/apply_discount", {
+        code: discountCode,
+      });
+      if (response.data.success) {
+        const discountRate = response.data.discount / 100;
+        setTotal(total * (1 - discountRate));
+        setDiscountApplied(true);
+      } else {
+        alert("Invalid discount code");
+      }
+    } catch (error) {
+      console.error("Error applying discount:", error);
+    }
+  };
+
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      {/* Back to Shop and Support */}
-      <div className="flex justify-between items-center mb-6">
-        <a href="/shop" className="text-gray-500 text-sm">
-          &larr; Back to Shop
-        </a>
-        <a href="/support" className="text-gray-500 text-sm">
-          Customer Support
-        </a>
-      </div>
-
-      {/* Shopping Cart Header */}
-      <h1 className="text-3xl font-bold mb-6">Shopping Cart</h1>
-      <p className="text-gray-600 mb-6">
-        Shipping charges and discount codes are confirmed at checkout.
-      </p>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Your Order Section */}
-        <div className="lg:col-span-2">
-          <h2 className="text-xl font-bold mb-4">Your Order</h2>
-          <div className="space-y-4">
-            {[1, 2].map((item, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow-md p-4 flex justify-between items-center"
-              >
-                <div className="flex items-center space-x-4">
-                  {/* Product Image */}
-                  <div className="bg-gray-200 w-16 h-16 rounded-md"></div>
-                  {/* Product Details */}
-                  <div>
-                    <h3 className="text-lg font-semibold">Product Name</h3>
-                    <p className="text-sm text-gray-600">Description, color, size</p>
-                    <p className="text-sm text-gray-500">Shipping 2-4 weeks</p>
-                  </div>
-                </div>
-                {/* Quantity and Price */}
-                <div className="flex items-center space-x-6">
-                  <div>
-                    <select className="border rounded-md px-2 py-1">
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                    </select>
-                  </div>
-                  <div>
-                    <p className="text-gray-600 line-through">$95</p>
-                    <p className="text-black font-bold">$70</p>
-                    <p className="text-green-600 text-sm">You save 25%</p>
-                  </div>
-                  {/* Remove Button */}
-                  <button className="text-red-500 hover:text-red-700">
-                    &#x1F5D1;
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Summary Section */}
-        <div>
-          <h2 className="text-xl font-bold mb-4">Summary</h2>
-          <div className="bg-white rounded-lg shadow-md p-4 space-y-4">
-            <div className="flex justify-between">
-              <p>Items in the Cart</p>
-              <p>$149.00</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Savings applied</p>
-              <p>-$25.00</p>
-            </div>
-            <hr />
-            <div className="flex justify-between font-bold text-lg">
-              <p>Total</p>
-              <p>$124.00</p>
-            </div>
-            <button className="bg-black text-white px-6 py-3 w-full rounded-md hover:bg-gray-800">
-              Go to Checkout
+    <div className="cart-management p-6 bg-gray-100 min-h-screen">
+      <h1 className="text-3xl font-bold mb-4">Shopping Cart</h1>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <div className="flex justify-between mb-6">
+            <button
+              onClick={clearCart}
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Clear Cart
+            </button>
+            <input
+              type="text"
+              placeholder="Discount Code"
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              className="border rounded px-3 py-2"
+            />
+            <button
+              onClick={applyDiscount}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              Apply Discount
             </button>
           </div>
-          <button className="mt-4 text-blue-500 hover:underline">
-            Discount Code / Gift Card
-          </button>
-        </div>
-      </div>
 
-      {/* Safe & Easy Shopping Section */}
-      <div className="mt-10 space-y-6">
-        <h2 className="text-xl font-bold">Safe & Easy Shopping</h2>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-500">&#x21BA;</span>
-            <p>Free returns for 30 days</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-500">&#x1F4B3;</span>
-            <p>Convenient payment methods</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-500">&#x1F4E6;</span>
-            <p>Deliver to home or pick-up point</p>
-          </div>
-        </div>
-      </div>
+          <ul className="space-y-4">
+            {cart.map((item) => (
+              <li
+                key={item.id}
+                className="flex justify-between items-center bg-white p-4 rounded shadow"
+              >
+                <div>
+                  <h3 className="text-lg font-bold">{item.name}</h3>
+                  <p>${item.unit_price} x {item.quantity}</p>
+                </div>
+                <div>
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    className="text-red-500 hover:text-red-700 mr-4"
+                  >
+                    Remove
+                  </button>
+                  <button
+                    onClick={() => saveForLater(item.id)}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    Save for Later
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
 
-      {/* Footer Section */}
-      <footer className="mt-16 border-t pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div>
-            <h3 className="text-lg font-bold">Need help?</h3>
-            <a href="/contact" className="text-blue-500 hover:underline">
-              Contact Us
-            </a>
+          <div className="mt-6">
+            <h2 className="text-2xl font-bold">Total: ${total.toFixed(2)}</h2>
+            {discountApplied && (
+              <p className="text-green-500 mt-2">Discount applied!</p>
+            )}
+            <button
+              onClick={() => (window.location.href = "/checkout")}
+              className="bg-black text-white px-6 py-3 rounded mt-4"
+            >
+              Proceed to Checkout
+            </button>
           </div>
-          <div>
-            <h3 className="text-lg font-bold">Customer Support</h3>
-            <ul className="space-y-1 text-gray-600">
-              <li>Returns & Warranty</li>
-              <li>Payments</li>
-              <li>Shipping</li>
-              <li>Terms of Service</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold">Corporate Info</h3>
-            <ul className="space-y-1 text-gray-600">
-              <li>About Us</li>
-              <li>Brands</li>
-              <li>Investors</li>
-              <li>Cookies</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold">Gift Card</h3>
-            <ul className="space-y-1 text-gray-600">
-              <li>Buy Gift Cards</li>
-              <li>Redeem Card</li>
-            </ul>
-          </div>
-        </div>
-        <div className="mt-6 text-center text-gray-500">
-          <p>&copy; Your Company</p>
-        </div>
-      </footer>
+        </>
+      )}
     </div>
   );
 };
