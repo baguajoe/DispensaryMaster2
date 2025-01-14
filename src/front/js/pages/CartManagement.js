@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "../../styles/cart.css";
 
 const CartManagement = () => {
   const [cart, setCart] = useState([]);
@@ -89,7 +90,7 @@ const CartManagement = () => {
   };
 
   return (
-    <div className="cart-management p-6 bg-gray-100 min-h-screen">
+    <div className="cart-management p-6 bg-gray-100 min-h-screen main-content">
       <h1 className="text-3xl font-bold mb-4">Shopping Cart</h1>
       {loading ? (
         <p>Loading...</p>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from "./Auth"; // Correct import path
+import "../../styles/login.css";
 
 
 
@@ -29,7 +30,7 @@ const Login = () => {
 
 
     return (
-        <div className="login-container">
+        <div className="login-container main-content">
             <h1>Login</h1>
             <input
                 type="email"

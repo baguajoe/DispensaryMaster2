@@ -2,51 +2,21 @@ import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 import "../../styles/inventory.css";
 
-// Function for handling inventory import
-const importInventory = async (file) => {
-    try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch(`${process.env.BACKEND_URL}/api/inventory/import`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: formData,
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || "Failed to import inventory");
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error("Error importing inventory:", error);
-        throw error;
-    }
-};
-
 const InventoryComponent = () => {
     const [file, setFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState(null);
     const [stockLevels, setStockLevels] = useState([]);
-    const [cashAmount, setCashAmount] = useState("");
-    const [cashReason, setCashReason] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedLocation, setSelectedLocation] = useState("Main Warehouse");
     const [loading, setLoading] = useState(false);
     const socket = io(process.env.BACKEND_URL);
 
-    // Handle file selection
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
         setUploadStatus(null);
     };
 
-    // Handle file upload
     const handleUpload = async () => {
         if (!file) {
             setUploadStatus({ success: false, message: "Please select a file" });
@@ -55,7 +25,23 @@ const InventoryComponent = () => {
 
         setIsLoading(true);
         try {
-            const result = await importInventory(file);
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch(`${process.env.BACKEND_URL}/api/inventory/import`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || "Failed to import inventory");
+            }
+
+            const result = await response.json();
             setUploadStatus({ success: true, message: result.message || "Import completed successfully" });
             fetchStockLevels();
         } catch (error) {
@@ -65,7 +51,6 @@ const InventoryComponent = () => {
         }
     };
 
-    // Fetch initial inventory levels
     const fetchStockLevels = async () => {
         setLoading(true);
         try {
@@ -79,7 +64,6 @@ const InventoryComponent = () => {
         }
     };
 
-    // Recall Batch function
     const recallBatch = async (batchNumber) => {
         try {
             const response = await fetch(`${process.env.BACKEND_URL}/api/recall/${batchNumber}`, {
@@ -103,30 +87,6 @@ const InventoryComponent = () => {
         }
     };
 
-    // Handle cash drop logging
-    const handleCashDrop = async () => {
-        try {
-            const response = await fetch(`${process.env.BACKEND_URL}/api/cash-management`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ amount: cashAmount, reason: cashReason }),
-            });
-
-            if (response.ok) {
-                alert("Cash drop logged successfully!");
-            } else {
-                const error = await response.json();
-                alert(`Error logging cash drop: ${error.message}`);
-            }
-        } catch (error) {
-            console.error("Error logging cash drop:", error);
-        }
-    };
-
-    // Update inventory stock
     const updateInventory = (location, id, newStock) => {
         setStockLevels((prev) =>
             prev.map((item) =>
@@ -185,28 +145,6 @@ const InventoryComponent = () => {
                 )}
             </div>
 
-            {/* Cash Management Section */}
-            <div className="cash-management mb-6">
-                <h2 className="text-lg font-semibold mb-2">Cash Management</h2>
-                <input
-                    type="number"
-                    placeholder="Enter cash amount"
-                    onChange={(e) => setCashAmount(e.target.value)}
-                    className="border p-2 rounded mb-2"
-                />
-                <textarea
-                    placeholder="Enter reason (optional)"
-                    onChange={(e) => setCashReason(e.target.value)}
-                    className="border p-2 rounded mb-2"
-                ></textarea>
-                <button
-                    onClick={handleCashDrop}
-                    className="bg-green-500 text-white px-4 py-2 rounded mt-2 hover:bg-green-600"
-                >
-                    Log Cash Drop
-                </button>
-            </div>
-
             {/* Search Inventory */}
             <div className="search-inventory mb-6">
                 <input
@@ -223,7 +161,7 @@ const InventoryComponent = () => {
                 <h2 className="text-lg font-semibold mb-2">Inventory for Location: {selectedLocation}</h2>
                 {loading ? (
                     <p>Loading inventory...</p>
-                ) : (
+                ) : stockLevels.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredStockLevels.map((item) => (
                             <div key={item.id} className="border p-4 rounded shadow">
@@ -255,6 +193,8 @@ const InventoryComponent = () => {
                             </div>
                         ))}
                     </div>
+                ) : (
+                    <p>No inventory items available.</p>
                 )}
             </div>
         </div>

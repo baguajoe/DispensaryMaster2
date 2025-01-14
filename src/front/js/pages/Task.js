@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "../../styles/task.css";
 
 const TaskManagement = () => {
   const [tasks, setTasks] = useState([]);
@@ -56,7 +57,7 @@ const TaskManagement = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 main-content">
       <h1 className="text-2xl font-bold mb-4">Task Management</h1>
       <div className="mb-4">
         <input

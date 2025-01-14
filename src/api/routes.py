@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics     
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report     
 from api.send_email import send_email                           
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -568,17 +568,59 @@ def predict_sales():
 
 # dashboard
 
+# @api.route('/dashboard/metrics', methods=['GET'])
+# @jwt_required()
+# def get_dashboard_metrics():
+#     try:
+#         orders = Order.query.filter(Order.status == 'completed').all()
+#         total_sales = sum(float(order.total_amount) for order in orders)
+#         order_count = len(orders)
+#         average_purchase_order = total_sales / order_count if order_count > 0 else 0
+
+#         metrics = [
+#             {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
+#             {"title": "Average Purchase Order", "value": f"${average_purchase_order:,.2f}"},
+#             { "title": "Average Purchase Order", "value": "$180", "icon": "🛒", "trend": 2, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
+#             { "title": "Users", "value": "1,345", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
+#             { "title": "Refunds", "value": "$320", "icon": "💸", "trend": -3, "bgColor": "bg-red-100", "textColor": "text-red-900" },
+#             { "title": "Product Availability", "value": "93%", "icon": "📊", "trend": 1, "bgColor": "bg-teal-100", "textColor": "text-teal-900" },
+#             { "title": "Supply Below Safety Stock", "value": "8", "icon": "📉", "trend": -2, "bgColor": "bg-gray-100", "textColor": "text-gray-900" },
+#             { "title": "Invoices", "value": "295", "icon": "🧾", "trend": 7, "bgColor": "bg-indigo-100", "textColor": "text-indigo-900" },
+#             { "title": "Today's Invoice", "value": "28", "icon": "📆", "trend": 3, "bgColor": "bg-orange-100", "textColor": "text-orange-900" },
+#             { "title": "Current Monthly", "value": "$22,560", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900" },
+#             { "title": "Inventory", "value": "965", "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900" },
+#             { "title": "Stores", "value": "4", "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
+#             # { "title": "Top Categories", "value": "Electronics, Clothing", "icon": "📂", "trend": 6, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
+#             # { "title": "Sales Performance", "value": "Trending Up", "icon": "📈", "trend": 12, "bgColor": "bg-teal-100", "textColor": "text-teal-900" }
+#         ]
+#         return jsonify(metrics), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+    
 @api.route('/dashboard/metrics', methods=['GET'])
 @jwt_required()
+@handle_errors
 def get_dashboard_metrics():
+    # Query parameter to toggle between formats
+    format_type = request.args.get('format', 'user_friendly')  # Default to 'user_friendly'
+
     try:
+        # Shared Data
         orders = Order.query.filter(Order.status == 'completed').all()
         total_sales = sum(float(order.total_amount) for order in orders)
         order_count = len(orders)
-        average_purchase_order = total_sales / order_count if order_count > 0 else 0
+        average_order_value = total_sales / order_count if order_count > 0 else 0
 
-        metrics = [
-            {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
+        low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).all()
+        top_products = Product.query.order_by(Product.sales.desc()).limit(5).all()
+
+        total_customers = Customer.query.count()
+        top_customer = db.session.query(Customer).join(Order).group_by(Customer.id).order_by(db.func.sum(Order.total_amount).desc()).first()
+
+        # User-Friendly Metrics
+        if format_type == 'user_friendly':
+            metrics = [
+                 {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
             {"title": "Average Purchase Order", "value": f"${average_purchase_order:,.2f}"},
             { "title": "Average Purchase Order", "value": "$180", "icon": "🛒", "trend": 2, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
             { "title": "Users", "value": "1,345", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
@@ -590,12 +632,36 @@ def get_dashboard_metrics():
             { "title": "Current Monthly", "value": "$22,560", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900" },
             { "title": "Inventory", "value": "965", "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900" },
             { "title": "Stores", "value": "4", "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
-            # { "title": "Top Categories", "value": "Electronics, Clothing", "icon": "📂", "trend": 6, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
-            # { "title": "Sales Performance", "value": "Trending Up", "icon": "📈", "trend": 12, "bgColor": "bg-teal-100", "textColor": "text-teal-900" }
-        ]
-        return jsonify(metrics), 200
+            ]
+            return jsonify(metrics), 200
+
+        # Data-Centric Metrics
+        elif format_type == 'data_centric':
+            return jsonify({
+                "sales": {
+                    "total_sales": total_sales,
+                    "order_count": order_count,
+                    "average_order_value": round(average_order_value, 2)
+                },
+                "inventory": {
+                    "low_stock_count": len(low_stock_products),
+                    "top_products": [{"name": p.name, "sales": p.sales} for p in top_products]
+                },
+                "customers": {
+                    "total_customers": total_customers,
+                    "top_customer": {
+                        "id": top_customer.id if top_customer else None,
+                        "name": f"{top_customer.first_name} {top_customer.last_name}" if top_customer else None,
+                        "total_spent": round(top_customer.total_spent, 2) if top_customer else None
+                    }
+                }
+            }), 200
+        else:
+            return jsonify({"error": "Invalid format type"}), 400
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
     
 @api.route('/dashboard/analytics', methods=['GET'])
 def get_dashboard_analytics():
@@ -1102,21 +1168,34 @@ def handle_custom_event(data):
 
 @api.route('/analytics/inventory-forecast', methods=['POST'])
 def inventory_forecast():
-    import numpy as np
-    from sklearn.linear_model import LinearRegression
-
+    
     # Fetch sales data
     sales = db.session.query(Product.id, func.sum(OrderItem.quantity)).group_by(Product.id).all()
     product_ids = [s[0] for s in sales]
     quantities = [s[1] for s in sales]
 
-    # Train model to forecast future sales
-    model = LinearRegression().fit(np.arange(len(quantities)).reshape(-1, 1), quantities)
-    predictions = model.predict(np.arange(len(quantities) + 5).reshape(-1, 1))
+    # Check if quantities data is available
+    if len(quantities) == 0:
+        return jsonify({"error": "No sales data available to forecast."}), 400
 
-    # Return forecasted inventory levels
-    forecast = [{"product_id": pid, "predicted_quantity": q} for pid, q in zip(product_ids, predictions)]
-    return jsonify(forecast), 200
+    # Train model to forecast future sales
+    try:
+        model = LinearRegression()
+        X = np.arange(len(quantities)).reshape(-1, 1)
+        y = np.array(quantities)
+        model.fit(X, y)
+
+        # Generate predictions for the next 5 periods
+        future_X = np.arange(len(quantities), len(quantities) + 5).reshape(-1, 1)
+        predictions = model.predict(future_X)
+
+        # Return forecasted inventory levels
+        forecast = [{"product_id": pid, "predicted_quantity": float(q)} for pid, q in zip(product_ids, predictions)]
+        return jsonify(forecast), 200
+
+    except Exception as e:
+        return jsonify({"error": f"An error occurred during forecasting: {str(e)}"}), 500
+
 
 
 
@@ -1173,6 +1252,59 @@ def get_compliance_trends():
         ],
     }
     return jsonify(trends)
+
+@api.route('/reports', methods=['GET'])
+@jwt_required()
+def get_reports():
+    report_type = request.args.get('type', 'all')  # Default to 'all' if no type is specified
+    reports = Report.query
+    if report_type != 'all':
+        reports = reports.filter_by(type=report_type)
+    reports = reports.order_by(Report.created_at.desc()).all()
+    return jsonify([report.serialize() for report in reports]), 200
+
+@api.route('/reports/generate', methods=['POST'])
+@jwt_required()
+def generate_report():
+    data = request.json
+    report_type = data.get('type')
+    filters = data.get('filters', {})
+
+    # Example: Implement your logic to generate the report
+    if report_type == 'sales':
+        # Logic for generating a sales report
+        pass
+    elif report_type == 'inventory':
+        # Logic for generating an inventory report
+        pass
+    else:
+        return jsonify({"error": "Invalid report type"}), 400
+
+    # Save the report to the database
+    report = Report(type=report_type, filters=filters, created_at=datetime.utcnow())
+    db.session.add(report)
+    db.session.commit()
+    return jsonify(report.serialize()), 201
+
+@api.route('/reports/export/<int:id>', methods=['GET'])
+@jwt_required()
+def export_report(id):
+    format = request.args.get('format', 'pdf')  # Default format is PDF
+    report = Report.query.get_or_404(id)
+
+    # Generate export (PDF or CSV)
+    if format == 'pdf':
+        # Logic to generate PDF file
+        pass
+    elif format == 'csv':
+        # Logic to generate CSV file
+        pass
+    else:
+        return jsonify({"error": "Invalid format"}), 400
+
+    # Return the exported file as a response
+    return send_file(exported_file_path, as_attachment=True), 200
+
 
 
 @api.route('/compliance/reports', methods=['GET'])
@@ -3261,3 +3393,140 @@ def create_time_log():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+@api.route('/api/products/<string:barcode>', methods=['GET'])
+def get_product_by_barcode(barcode):
+    product = Product.query.filter_by(barcode=barcode).first()
+    if product:
+        return jsonify(product.serialize()), 200
+    else:
+        return jsonify({"error": "Product not found"}), 404
+
+@api.route('/analytics/sales', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_sales_analytics():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    
+    # Validate date range
+    try:
+        if start_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if end_date:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+    
+    query = Order.query.filter(Order.status == 'completed')
+    if start_date:
+        query = query.filter(Order.created_at >= start_date)
+    if end_date:
+        query = query.filter(Order.created_at <= end_date)
+    
+    orders = query.all()
+    total_sales = sum(float(order.total_amount) for order in orders)
+    order_count = len(orders)
+    
+    daily_sales = {}
+    for order in orders:
+        order_date = order.created_at.date()
+        daily_sales[order_date] = daily_sales.get(order_date, 0) + float(order.total_amount)
+    
+    return jsonify({
+        "start_date": start_date.strftime("%Y-%m-%d") if start_date else None,
+        "end_date": end_date.strftime("%Y-%m-%d") if end_date else None,
+        "total_sales": total_sales,
+        "order_count": order_count,
+        "daily_sales": [{"date": str(date), "sales": sales} for date, sales in daily_sales.items()]
+    }), 200
+
+@api.route('/analytics/sales/export', methods=['GET'])
+@jwt_required()
+@handle_errors
+def export_sales_report():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    output_format = request.args.get('format', 'pdf').lower()
+
+    # Validate date range
+    try:
+        if start_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if end_date:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    query = Order.query.filter(Order.status == 'completed')
+    if start_date:
+        query = query.filter(Order.created_at >= start_date)
+    if end_date:
+        query = query.filter(Order.created_at <= end_date)
+
+    orders = query.all()
+
+    if output_format == 'pdf':
+        from io import BytesIO
+        buffer = BytesIO()
+        pdf = canvas.Canvas(buffer)
+        pdf.drawString(100, 750, f"Sales Report ({start_date} to {end_date})")
+        pdf.drawString(100, 730, f"Total Sales: {sum(float(o.total_amount) for o in orders)}")
+        pdf.drawString(100, 710, f"Total Orders: {len(orders)}")
+        pdf.showPage()
+        pdf.save()
+
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name="sales_report.pdf", mimetype="application/pdf")
+    elif output_format == 'excel':
+        import pandas as pd
+        from io import BytesIO
+
+        data = [{"Order ID": o.id, "Total Amount": o.total_amount, "Date": o.created_at} for o in orders]
+        df = pd.DataFrame(data)
+
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name="Sales Report")
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name="sales_report.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    else:
+        return jsonify({"error": "Invalid format. Use 'pdf' or 'excel'."}), 400
+
+# @api.route('/dashboard/metrics', methods=['GET'])
+# @jwt_required()
+# @handle_errors
+# def get_dashboard_metrics():
+#     # Sales Metrics
+#     completed_orders = Order.query.filter(Order.status == 'completed').all()
+#     total_sales = sum(float(order.total_amount) for order in completed_orders)
+#     order_count = len(completed_orders)
+#     average_order_value = total_sales / order_count if order_count > 0 else 0
+
+#     # Inventory Metrics
+#     low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).all()
+#     top_products = Product.query.order_by(Product.sales.desc()).limit(5).all()
+
+#     # Customer Metrics
+#     total_customers = Customer.query.count()
+#     top_customer = db.session.query(Customer).join(Order).group_by(Customer.id).order_by(db.func.sum(Order.total_amount).desc()).first()
+
+#     return jsonify({
+#         "sales": {
+#             "total_sales": total_sales,
+#             "order_count": order_count,
+#             "average_order_value": round(average_order_value, 2)
+#         },
+#         "inventory": {
+#             "low_stock_count": len(low_stock_products),
+#             "top_products": [{"name": p.name, "sales": p.sales} for p in top_products]
+#         },
+#         "customers": {
+#             "total_customers": total_customers,
+#             "top_customer": {
+#                 "id": top_customer.id if top_customer else None,
+#                 "name": f"{top_customer.first_name} {top_customer.last_name}" if top_customer else None,
+#                 "total_spent": round(top_customer.total_spent, 2) if top_customer else None
+#             }
+#         }
+#     }), 200

@@ -83,6 +83,8 @@
 		"lucide-react": "^0.460.0",
 		"prop-types": "^15.6.1",
 		"react": "^16.8.4",
+		"react-barcode-reader": "^0.0.2",
+		"react-beautiful-dnd": "^13.1.1",
 		"react-chartjs-2": "^5.2.0",
 		"react-dom": "^16.8.4",
 		"react-google-charts": "^5.2.1",

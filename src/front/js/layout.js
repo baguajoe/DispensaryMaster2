@@ -25,7 +25,7 @@ import Orders from "./pages/Orders";
 import CartManagement from "./pages/CartManagement";
 import Users from "./pages/Users";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard"; // Assuming the file is in the 'pages' folder
-import Reports from "./pages/Reports";
+import Reports from "./pages/ReportsPage";
 import Leads from "./pages/Leads";
 import CheckoutPage from "./pages/CheckoutPage";
 import BarcodeScanner from "./pages/BarcodeScanner";

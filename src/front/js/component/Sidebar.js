@@ -60,6 +60,9 @@ export const Sidebar = () => {
                         <Link className={`nav-link ${location.pathname === "/inventory" ? "active" : ""}`} to="/inventory">
                             Inventory
                         </Link>
+                        <Link className={`nav-link ${location.pathname === "/analytics-dashboard" ? "active" : ""}`} to="/analytics-dashboard">
+                            Leads
+                        </Link>
                         <Link className={`nav-link ${location.pathname === "/invoices" ? "active" : ""}`} to="/invoices">
                             Invoices
                         </Link>
@@ -85,7 +88,7 @@ export const Sidebar = () => {
                         <Link className={`nav-link ${location.pathname === "/analytics-dashboard" ? "active" : ""}`} to="/analytics-dashboard">
                             Analytics Dashboard
                         </Link>
-
+                        
                         <Link className={`nav-link ${location.pathname === "/reports" ? "active" : ""}`} to="/reports">
                             Reports
                         </Link>
@@ -283,6 +286,8 @@ export const Sidebar = () => {
                         </Link>
                     </div>
                 )}
+
+            
 
                 {/* Divider */}
                 <hr className="sidebar-divider" />

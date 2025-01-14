@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import LeadForm from "../component/LeadForm";
 import LeadTable from "../component/LeadTable";
+import "../../styles/lead.css";
 
 const Leads = () => {
     const [leads, setLeads] = useState([]);
@@ -61,7 +62,7 @@ const Leads = () => {
     };
 
     return (
-        <div className="p-6">
+        <div className="p-6 main-content">
             <h1 className="text-2xl font-bold mb-4">Lead Management</h1>
             <LeadForm
                 newLead={newLead}

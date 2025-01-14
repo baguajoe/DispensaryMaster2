@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CampaignList, CampaignForm, CampaignMetrics } from "../component/CampaignComponent";
+import "../../styles/campaign.css";
 
 const CampaignPage = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -98,7 +99,7 @@ const CampaignPage = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 main-content">
       <h1 className="text-3xl font-bold mb-6">Campaign Management</h1>
       <CampaignForm
         campaign={selectedCampaign || newCampaign}

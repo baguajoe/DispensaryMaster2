@@ -360,6 +360,30 @@ class Compliance(db.Model):
             "reports": self.reports,
             "audits": self.audits,
         }
+    
+class Report(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(50), nullable=False)  # e.g., 'sales', 'inventory', 'compliance', etc.
+    filters = db.Column(db.JSON, nullable=True, default={})  # Store report filters as JSON
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    generated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Optional: Reference the user who generated the report
+    file_path = db.Column(db.String(255), nullable=True)  # Path to the exported file (PDF, CSV, etc.)
+    
+    # Relationships
+    user = db.relationship('User', backref='reports', lazy=True)
+
+    def __repr__(self):
+        return f"<Report {self.type} generated on {self.created_at}>"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "type": self.type,
+            "filters": self.filters,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "generated_by": self.generated_by,
+            "file_path": self.file_path,
+        }
 
 # Transaction Model
 class Transaction(db.Model):
