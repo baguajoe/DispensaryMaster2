@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report     
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource      
 from api.send_email import send_email                           
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -1404,6 +1404,169 @@ def delete_medical_resource(id):
 
     return send_file(buffer, as_attachment=True, download_name=f"receipt_{order_id}.pdf", mimetype='application/pdf')
 
+@api.route('/appointments', methods=['GET'])
+def get_appointments():
+    appointments = Appointment.query.all()
+    return jsonify([appointment.serialize() for appointment in appointments]), 200
+
+@api.route('/appointments/<int:appointment_id>', methods=['GET'])
+def get_appointment(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+    return jsonify(appointment.serialize()), 200
+
+@api.route('/appointments', methods=['POST'])
+def create_appointment():
+    data = request.get_json()
+    appointment = Appointment(
+        patient_id=data['patient_id'],
+        physician_id=data['physician_id'],
+        appointment_date=data['appointment_date'],
+        status=data.get('status', 'Scheduled'),
+        notes=data.get('notes')
+    )
+    db.session.add(appointment)
+    db.session.commit()
+    return jsonify(appointment.serialize()), 201
+
+@api.route('/appointments/<int:appointment_id>', methods=['PUT'])
+def update_appointment(appointment_id):
+    data = request.get_json()
+    appointment = Appointment.query.get_or_404(appointment_id)
+    appointment.status = data.get('status', appointment.status)
+    appointment.notes = data.get('notes', appointment.notes)
+    db.session.commit()
+    return jsonify(appointment.serialize()), 200
+
+@api.route('/appointments/<int:appointment_id>', methods=['DELETE'])
+def delete_appointment(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+    db.session.delete(appointment)
+    db.session.commit()
+    return jsonify({"message": "Appointment deleted"}), 200
+
+@api.route('/insurances', methods=['GET'])
+def get_insurances():
+    insurances = Insurance.query.all()
+    return jsonify([insurance.serialize() for insurance in insurances]), 200
+
+@api.route('/insurances/<int:insurance_id>', methods=['GET'])
+def get_insurance(insurance_id):
+    insurance = Insurance.query.get_or_404(insurance_id)
+    return jsonify(insurance.serialize()), 200
+
+@api.route('/insurances', methods=['POST'])
+def create_insurance():
+    data = request.get_json()
+    insurance = Insurance(
+        patient_id=data['patient_id'],
+        provider_name=data['provider_name'],
+        policy_number=data['policy_number'],
+        coverage_details=data.get('coverage_details')
+    )
+    db.session.add(insurance)
+    db.session.commit()
+    return jsonify(insurance.serialize()), 201
+
+@api.route('/insurances/<int:insurance_id>', methods=['PUT'])
+def update_insurance(insurance_id):
+    data = request.get_json()
+    insurance = Insurance.query.get_or_404(insurance_id)
+    insurance.provider_name = data.get('provider_name', insurance.provider_name)
+    insurance.policy_number = data.get('policy_number', insurance.policy_number)
+    insurance.coverage_details = data.get('coverage_details', insurance.coverage_details)
+    db.session.commit()
+    return jsonify(insurance.serialize()), 200
+
+@api.route('/insurances/<int:insurance_id>', methods=['DELETE'])
+def delete_insurance(insurance_id):
+    insurance = Insurance.query.get_or_404(insurance_id)
+    db.session.delete(insurance)
+    db.session.commit()
+    return jsonify({"message": "Insurance deleted"}), 200
+
+@api.route('/education-resources', methods=['GET'])
+def get_education_resources():
+    resources = PatientEducationResource.query.all()
+    return jsonify([resource.serialize() for resource in resources]), 200
+
+@api.route('/education-resources/<int:resource_id>', methods=['GET'])
+def get_education_resource(resource_id):
+    resource = PatientEducationResource.query.get_or_404(resource_id)
+    return jsonify(resource.serialize()), 200
+
+@api.route('/education-resources', methods=['POST'])
+def create_education_resource():
+    data = request.get_json()
+    resource = PatientEducationResource(
+        title=data['title'],
+        content=data['content'],
+        resource_type=data['resource_type'],
+        link=data.get('link')
+    )
+    db.session.add(resource)
+    db.session.commit()
+    return jsonify(resource.serialize()), 201
+
+@api.route('/education-resources/<int:resource_id>', methods=['PUT'])
+def update_education_resource(resource_id):
+    data = request.get_json()
+    resource = PatientEducationResource.query.get_or_404(resource_id)
+    resource.title = data.get('title', resource.title)
+    resource.content = data.get('content', resource.content)
+    resource.resource_type = data.get('resource_type', resource.resource_type)
+    resource.link = data.get('link', resource.link)
+    db.session.commit()
+    return jsonify(resource.serialize()), 200
+
+@api.route('/education-resources/<int:resource_id>', methods=['DELETE'])
+def delete_education_resource(resource_id):
+    resource = PatientEducationResource.query.get_or_404(resource_id)
+    db.session.delete(resource)
+    db.session.commit()
+    return jsonify({"message": "Resource deleted"}), 200
+
+@api.route('/training-resources', methods=['GET'])
+def get_training_resources():
+    resources = StaffTrainingResource.query.all()
+    return jsonify([resource.serialize() for resource in resources]), 200
+
+@api.route('/training-resources/<int:resource_id>', methods=['GET'])
+def get_training_resource(resource_id):
+    resource = StaffTrainingResource.query.get_or_404(resource_id)
+    return jsonify(resource.serialize()), 200
+
+@api.route('/training-resources', methods=['POST'])
+def create_training_resource():
+    data = request.get_json()
+    resource = StaffTrainingResource(
+        title=data['title'],
+        content=data['content'],
+        resource_type=data['resource_type'],
+        link=data.get('link')
+    )
+    db.session.add(resource)
+    db.session.commit()
+    return jsonify(resource.serialize()), 201
+
+@api.route('/training-resources/<int:resource_id>', methods=['PUT'])
+def update_training_resource(resource_id):
+    data = request.get_json()
+    resource = StaffTrainingResource.query.get_or_404(resource_id)
+    resource.title = data.get('title', resource.title)
+    resource.content = data.get('content', resource.content)
+    resource.resource_type = data.get('resource_type', resource.resource_type)
+    resource.link = data.get('link', resource.link)
+    db.session.commit()
+    return jsonify(resource.serialize()), 200
+
+@api.route('/training-resources/<int:resource_id>', methods=['DELETE'])
+def delete_training_resource(resource_id):
+    resource = StaffTrainingResource.query.get_or_404(resource_id)
+    db.session.delete(resource)
+    db.session.commit()
+    return jsonify({"message": "Resource deleted"}), 200
+
+
 # loyalty program
 
 @api.route('/loyalty/points/<int:customer_id>', methods=['GET'])
@@ -2304,6 +2467,96 @@ def manage_single_yield_prediction(prediction_id):
         db.session.commit()
         return jsonify({"message": "Yield prediction deleted successfully"}), 200
 
+@api.route('/growfarms/overview', methods=['GET'])
+def get_grow_farm_overview():
+    total_farms = GrowFarm.query.count()
+    active_batches = PlantBatch.query.filter_by(status="Growing").count()
+    tasks_in_progress = GrowTask.query.filter_by(status="Pending").count()
+    environment_warnings = EnvironmentData.query.filter(
+        (EnvironmentData.temperature < 10) | 
+        (EnvironmentData.humidity > 90)
+    ).count()
+
+    return jsonify({
+        "totalFarms": total_farms,
+        "activeBatches": active_batches,
+        "tasksInProgress": tasks_in_progress,
+        "environmentWarnings": environment_warnings
+    }), 200
+
+@api.route('/grow-tasks/assign', methods=['POST'])
+def assign_grow_task():
+    data = request.json
+    task_id = data.get("taskId")
+    worker_id = data.get("workerId")
+
+    task = GrowTask.query.get_or_404(task_id)
+    task.assigned_to = worker_id
+
+    db.session.commit()
+    return jsonify({"message": "Task assigned successfully"}), 200
+
+@api.route('/notifications', methods=['GET'])
+def get_notifications():
+    warnings = EnvironmentData.query.filter(
+        (EnvironmentData.temperature < 10) | 
+        (EnvironmentData.humidity > 90)
+    ).all()
+
+    notifications = [
+        {
+            "type": "warning",
+            "message": f"Threshold exceeded at {data.timestamp}: Temp {data.temperature}, Humidity {data.humidity}"
+        }
+        for data in warnings
+    ]
+
+    return jsonify(notifications), 200
+
+@api.route('/resources', methods=['GET', 'POST'])
+def manage_resources():
+    if request.method == 'GET':
+        resources = Resource.query.all()
+        return jsonify([resource.serialize() for resource in resources]), 200
+    elif request.method == 'POST':
+        data = request.json
+        resource = Resource(name=data['name'], quantity=data['quantity'])
+        db.session.add(resource)
+        db.session.commit()
+        return jsonify(resource.serialize()), 201
+
+@api.route('/resources/<int:resource_id>', methods=['PUT', 'DELETE'])
+def manage_single_resource(resource_id):
+    resource = Resource.query.get_or_404(resource_id)
+
+    if request.method == 'PUT':
+        data = request.json
+        resource.name = data.get('name', resource.name)
+        resource.quantity = data.get('quantity', resource.quantity)
+        db.session.commit()
+        return jsonify(resource.serialize()), 200
+
+    elif request.method == 'DELETE':
+        db.session.delete(resource)
+        db.session.commit()
+        return jsonify({"message": "Resource deleted successfully"}), 200
+
+@api.route('/grow-tasks/schedule', methods=['GET'])
+def get_task_schedule():
+    tasks = GrowTask.query.all()
+    schedule = [
+        {
+            "id": task.id,
+            "name": task.task_name,
+            "startDate": task.due_date.isoformat(),
+            "endDate": (task.due_date + timedelta(hours=2)).isoformat()  # Example duration
+        }
+        for task in tasks
+    ]
+
+    return jsonify(schedule), 200
+
+
 # Seedbank Routes
 
 @api.route('/seedbanks', methods=['GET', 'POST'])
@@ -2451,6 +2704,42 @@ def get_crm_metrics():
         "top_customers": [customer.serialize() for customer in top_customers]
     }
     return jsonify(metrics), 200
+
+@api.route('/notifications', methods=['GET'])
+def get_seedbank_notifications():
+    # Get storage conditions with thresholds exceeded
+    alerts = StorageConditions.query.filter(
+        (StorageConditions.temperature < 10) |  # Example threshold
+        (StorageConditions.temperature > 30) | 
+        (StorageConditions.humidity > 80)
+    ).all()
+
+    # Get seed batches nearing expiration
+    today = datetime.utcnow().date()
+    expiring_batches = SeedBatch.query.filter(
+        SeedBatch.expiration_date <= today + timedelta(days=30)
+    ).all()
+
+    notifications = {
+        "alerts": [
+            {
+                "id": condition.id,
+                "location": condition.location,
+                "message": f"Temperature: {condition.temperature}, Humidity: {condition.humidity}"
+            }
+            for condition in alerts
+        ],
+        "expiring_batches": [
+            {
+                "id": batch.id,
+                "strain": batch.strain,
+                "expiration_date": batch.expiration_date.isoformat()
+            }
+            for batch in expiring_batches
+        ]
+    }
+
+    return jsonify(notifications), 200
 
 
 # # ---------------------
@@ -2828,12 +3117,6 @@ def create_support_ticket():
     db.session.commit()
     return jsonify(new_ticket.serialize()), 201
 
-@api.route('/notifications', methods=['GET'])
-@jwt_required()
-def get_notifications():
-    user_id = get_jwt_identity()
-    notifications = Notification.query.filter_by(customer_id=user_id).all()
-    return jsonify([notif.serialize() for notif in notifications]), 200
 
 @api.route('/subscriptions', methods=['GET'])
 @jwt_required()

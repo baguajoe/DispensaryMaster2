@@ -10,7 +10,7 @@ const DealsPage = () => {
 
     // Fetch deals from the API
     useEffect(() => {
-        fetch("/api/deals", {
+        fetch(`${process.env.BACKEND_URL}/api/deals`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
@@ -55,7 +55,7 @@ const DealsPage = () => {
 
     // Delete a deal
     const handleDeleteDeal = (dealId, stage) => {
-        fetch(`/api/deals/${dealId}`, {
+        fetch(`${process.env.BACKEND_URL}/api/deals/${dealId}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
@@ -81,7 +81,7 @@ const DealsPage = () => {
     // Update deal details
     const handleUpdateDeal = (e) => {
         e.preventDefault();
-        fetch(`/api/deals/${selectedDeal.id}`, {
+        fetch(`${process.env.BACKEND_URL}/api/deals/${selectedDeal.id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

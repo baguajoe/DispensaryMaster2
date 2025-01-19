@@ -15,7 +15,7 @@ const StorageConditionsTable = ({ conditions }) => {
           </tr>
         </thead>
         <tbody>
-          {conditions.map((condition) => (
+          {conditions&&conditions.map((condition) => (
             <tr key={condition.id}>
               <td>{condition.location}</td>
               <td>{condition.temperature}</td>

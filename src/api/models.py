@@ -755,6 +755,81 @@ class Invoice(db.Model):
             "payment_method": self.payment_method,
             "notes": self.notes,
         }
+    
+class Appointment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    physician_id = db.Column(db.Integer, nullable=False)  # Add a reference to a physician, or use User
+    appointment_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(50), default="Scheduled")  # Scheduled, Completed, Canceled
+    notes = db.Column(db.Text, nullable=True)
+
+    patient = db.relationship('Patient', backref='appointments')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "physician_id": self.physician_id,
+            "appointment_date": self.appointment_date.isoformat(),
+            "status": self.status,
+            "notes": self.notes,
+        }
+
+class Insurance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    provider_name = db.Column(db.String(100), nullable=False)
+    policy_number = db.Column(db.String(50), nullable=False, unique=True)
+    coverage_details = db.Column(db.JSON, nullable=True)
+
+    patient = db.relationship('Patient', backref='insurance')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "provider_name": self.provider_name,
+            "policy_number": self.policy_number,
+            "coverage_details": self.coverage_details,
+        }
+
+class PatientEducationResource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    resource_type = db.Column(db.String(50), nullable=False)  # e.g., article, video, guide
+    link = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "resource_type": self.resource_type,
+            "link": self.link,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+class StaffTrainingResource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    resource_type = db.Column(db.String(50), nullable=False)  # e.g., article, video, module
+    link = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "resource_type": self.resource_type,
+            "link": self.link,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
 
 # class Business(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
@@ -914,77 +989,20 @@ class YieldPrediction(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
-
-# seedbank
-
-class Seedbank(db.Model):
-    __tablename__ = 'seedbanks'
-
+class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    location = db.Column(db.String(200))
-    contact_info = db.Column(db.JSON)  # JSONB equivalent in SQLAlchemy
-    status = db.Column(db.String(20), default='active', nullable=False)
-
-    # seeds = db.relationship('Seed', backref='seedbank', lazy=True)
-
-class SeedBatch(db.Model):
-    __tablename__ = 'seed_batches'
-
-    id = db.Column(db.Integer, primary_key=True)
-    strain = db.Column(db.String(100), nullable=False)
-    batch_number = db.Column(db.String(50), unique=True, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    storage_location = db.Column(db.String(200), nullable=True)
-    expiration_date = db.Column(db.Date, nullable=True)
-    status = db.Column(db.String(20), default='active')
+    seedbank_id = db.Column(db.Integer, db.ForeignKey('seedbanks.id'))
+    message = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def serialize(self):
         return {
             "id": self.id,
-            "strain": self.strain,
-            "batch_number": self.batch_number,
-            "quantity": self.quantity,
-            "storage_location": self.storage_location,
-            "expiration_date": self.expiration_date.isoformat() if self.expiration_date else None,
-            "status": self.status
+            "seedbank_id": self.seedbank_id,
+            "message": self.message,
+            "created_at": self.created_at.isoformat()
         }
-
-class StorageConditions(db.Model):
-    __tablename__ = 'storage_conditions'
-
-    id = db.Column(db.Integer, primary_key=True)
-    location = db.Column(db.String(100), nullable=False)
-    temperature = db.Column(db.Float, nullable=False)
-    humidity = db.Column(db.Float, nullable=False)
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "location": self.location,
-            "temperature": self.temperature,
-            "humidity": self.humidity,
-            "last_updated": self.last_updated.isoformat() if self.last_updated else None
-        }
-
-class SeedReport(db.Model):
-    __tablename__ = 'seed_reports'
-
-    id = db.Column(db.Integer, primary_key=True)
-    report_type = db.Column(db.String(50), nullable=False)
-    parameters = db.Column(db.JSON, nullable=True)
-    report_data = db.Column(db.JSON, nullable=False)
-    generated_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "report_type": self.report_type,
-            "parameters": self.parameters,
-            "report_data": self.report_data,
-            "generated_at": self.generated_at.isoformat() if self.generated_at else None
-        }
+            
 
 # new pages
 
@@ -1252,4 +1270,102 @@ class Cart(db.Model):
             "product_id": self.product_id,
             "quantity": self.quantity,
             "last_updated": self.last_updated.isoformat(),
+        }
+
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+class Seedbank(db.Model):
+    __tablename__ = 'seedbanks'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(255), nullable=False)
+    contact_email = db.Column(db.String(255), unique=True, nullable=False)
+    phone_number = db.Column(db.String(50), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'location': self.location,
+            'contact_email': self.contact_email,
+            'phone_number': self.phone_number,
+            'description': self.description
+        }
+
+class SeedBatch(db.Model):
+    __tablename__ = 'seed_batches'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    strain = db.Column(db.String(100), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    harvest_date = db.Column(db.Date, nullable=False)
+    grower = db.Column(db.String(100), nullable=True)  # Optional field
+
+    def serialize(self):
+        """Serialize the model into a dictionary for JSON responses."""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "strain": self.strain,
+            "quantity": self.quantity,
+            "harvest_date": self.harvest_date.strftime('%Y-%m-%d'),
+            "grower": self.grower
+        }
+    
+class StorageConditions(db.Model):
+    __tablename__ = 'storage_conditions'
+
+    id = db.Column(db.Integer, primary_key=True)  # Unique identifier
+    temperature = db.Column(db.Float, nullable=False)  # Temperature in Celsius
+    humidity = db.Column(db.Float, nullable=False)  # Humidity percentage
+    light_exposure = db.Column(db.String(50), nullable=False)  # Light exposure condition (e.g., "low", "medium", "high")
+    notes = db.Column(db.Text, nullable=True)  # Additional notes or description
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())  # Timestamp of creation
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())  # Timestamp of updates
+
+    def serialize(self):
+        """Converts the object to a dictionary for JSON serialization."""
+        return {
+            "id": self.id,
+            "temperature": self.temperature,
+            "humidity": self.humidity,
+            "light_exposure": self.light_exposure,
+            "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+    
+
+
+class SeedReport(db.Model):
+    __tablename__ = 'seed_reports'
+
+    id = db.Column(db.Integer, primary_key=True)  # Unique identifier
+    seed_batch_id = db.Column(db.Integer, db.ForeignKey('seed_batches.id'), nullable=False)  # Foreign key to SeedBatch
+    germination_rate = db.Column(db.Float, nullable=False)  # Germination success rate (percentage)
+    harvest_yield = db.Column(db.Float, nullable=True)  # Yield from the batch (in grams or other unit)
+    report_date = db.Column(db.Date, nullable=False)  # Date of the report
+    notes = db.Column(db.Text, nullable=True)  # Additional notes or findings
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())  # Timestamp of creation
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())  # Timestamp of updates
+
+    # Relationship to SeedBatch
+    seed_batch = db.relationship('SeedBatch', backref=db.backref('reports', lazy=True))
+
+    def serialize(self):
+        """Converts the object to a dictionary for JSON serialization."""
+        return {
+            "id": self.id,
+            "seed_batch_id": self.seed_batch_id,
+            "germination_rate": self.germination_rate,
+            "harvest_yield": self.harvest_yield,
+            "report_date": self.report_date.isoformat() if self.report_date else None,
+            "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

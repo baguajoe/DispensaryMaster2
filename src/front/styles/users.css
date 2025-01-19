@@ -1,0 +1,41 @@
+.users-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+    font-family: Arial, sans-serif;
+}
+
+.users-form {
+    margin-bottom: 20px;
+}
+
+.users-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.users-form input,
+.users-form select,
+.users-form button {
+    padding: 10px;
+    font-size: 16px;
+}
+
+.users-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-list th,
+.users-list td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ccc;
+}
+
+.users-list button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}

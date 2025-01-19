@@ -61,6 +61,14 @@ import PrescriptionManagement from "./pages/Medical/PrescriptionManagement";
 import MedicalRecommendations from "./pages/Medical/Recommendations";
 import ResourceDetailPage from "./pages/Medical/ResourceDetailPage";
 import SymptomTracker from "./pages/Medical/SymptomTracker";
+import PatientManagement from "./pages/Medical/PatientManagement";
+import AppointmentManagement from "./pages/Medical/AppointmentManagement";
+import Telemedicine from "./pages/Medical/Telemedicine";
+import BillingInsurance from "./pages/Medical/BillingInsurance";
+import HealthAnalytics from "./pages/Medical/HealthAnalytics";
+import PatientEducation from "./pages/Medical/PatientEducation";
+import StaffTraining from "./pages/Medical/StaffTraining";
+
 
 // GrowFarms Pages
 import AddGrowTask from "./pages/GrowFarms/AddGrowTask";
@@ -74,6 +82,12 @@ import PlantBatchList from "./pages/GrowFarms/PlantBatchList";
 import GrowReports from "./pages/GrowFarms/GrowReports";
 import GrowFarmSettings from "./pages/GrowFarms/Settings";
 import YieldPrediction from "./pages/GrowFarms/YieldPrediction";
+import GrowFarmOverview from "./pages/GrowFarms/GrowFarmOverview";
+import AssignGrowTask from "./pages/GrowFarms/AssignGrowTask";
+import Notifications from "./pages/GrowFarms/Notifications";
+import ResourceManagement from "./pages/GrowFarms/ResourceManagement";
+import CalendarView from "./pages/GrowFarms/CalendarView";
+
 
 // SeedBanks Pages
 import AddSeedBatch from "./pages/SeedBanks/AddSeedBatch";
@@ -84,6 +98,11 @@ import SeedBatchList from "./pages/SeedBanks/SeedBatchList";
 import SeedInventory from "./pages/SeedBanks/SeedInventory";
 import SeedReports from "./pages/SeedBanks/SeedReports";
 import StorageConditions from "./pages/SeedBanks/StorageConditions";
+import SeedNotifications from "./pages/SeedBanks/SeedNotifications";
+import SeedResourceManagement from "./pages/SeedBanks/SeedResourceManagement";
+import SeedCalendarView from "./pages/SeedBanks/SeedCalendarView";
+import SeedAnalytics from "./pages/SeedBanks/SeedAnalytics";
+
 
 // Import your customer dashboard components
 import DashboardOverview from "./pages/CustomerDashboard/DashboardOverview";
@@ -96,11 +115,12 @@ import PaymentMethods from "./pages/CustomerDashboard/PaymentMethods";
 import Support from "./pages/CustomerDashboard/Support";
 import LoyaltyProgram from "./pages/CustomerDashboard/LoyaltyProgram";
 import CustomerRecommendations from "./pages/CustomerDashboard/Recommendations";
-import Notifications from "./pages/CustomerDashboard/Notifications";
+import CustomerNotifications from "./pages/CustomerDashboard/Notifications";
 import Subscriptions from "./pages/CustomerDashboard/Subscriptions";
 import CustomerAnalytics from "./pages/CustomerDashboard/CustomerAnalytics";
 import Addresses from "./pages/CustomerDashboard/Addresses";
 import CustomerSettings from "./pages/CustomerDashboard/Settings";
+
 
 import Navbar from "./component/Navbar";
 import Sidebar from "./component/Sidebar";
@@ -176,12 +196,12 @@ const Layout = () => {
                             <Route path="/support" element={<Support />} />
                             <Route path="/loyalty-program" element={<LoyaltyProgram />} />
                             <Route path="/recommendations" element={<CustomerRecommendations />} />
-                            <Route path="/notifications" element={<Notifications />} />
+                            <Route path="/notifications" element={<CustomerNotifications />} />
                             <Route path="/subscriptions" element={<Subscriptions />} />
                             <Route path="/customer-analytics" element={<CustomerAnalytics />} />
                             <Route path="/addresses" element={<Addresses />} />
                             <Route path="/settings" element={<CustomerSettings />} />
-      
+
 
 
                             {/* Medical Routes */}
@@ -197,6 +217,15 @@ const Layout = () => {
                             <Route path="/medical/recommendations" element={<MedicalRecommendations />} />
                             <Route path="/medical/resource-detail" element={<ResourceDetailPage />} />
                             <Route path="/medical/symptom-tracker" element={<SymptomTracker />} />
+                            {/* New Medical Routes */}
+                            <Route path="/medical/patient-management" element={<PatientManagement />} />
+                            <Route path="/medical/appointment-management" element={<AppointmentManagement />} />
+                            <Route path="/medical/telemedicine" element={<Telemedicine />} />
+                            <Route path="/medical/billing-insurance" element={<BillingInsurance />} />
+                            <Route path="/medical/health-analytics" element={<HealthAnalytics />} />
+                            <Route path="/medical/patient-education" element={<PatientEducation />} />
+                            <Route path="/medical/staff-training" element={<StaffTraining />} />
+
 
                             {/* GrowFarms Routes */}
                             <Route path="/growfarms/add-grow-task" element={<AddGrowTask />} />
@@ -210,6 +239,12 @@ const Layout = () => {
                             <Route path="/growfarms/grow-reports" element={<GrowReports />} />
                             <Route path="/growfarms/settings" element={<GrowFarmSettings />} />
                             <Route path="/growfarms/yield-prediction" element={<YieldPrediction />} />
+                            <Route path="/growfarms/overview" element={<GrowFarmOverview />} />
+                            <Route path="/growfarms/assign-task" element={<AssignGrowTask />} />
+                            <Route path="/growfarms/notifications" element={<Notifications />} />
+                            <Route path="/growfarms/resource-management" element={<ResourceManagement />} />
+                            <Route path="/growfarms/calendar-view" element={<CalendarView />} />
+
 
                             {/* SeedBanks Routes */}
                             <Route path="/seedbanks/add-seed-batch" element={<AddSeedBatch />} />
@@ -220,6 +255,11 @@ const Layout = () => {
                             <Route path="/seedbanks/inventory" element={<SeedInventory />} />
                             <Route path="/seedbanks/reports" element={<SeedReports />} />
                             <Route path="/seedbanks/storage-conditions" element={<StorageConditions />} />
+                            <Route path="/seedbanks/notifications" element={<SeedNotifications />} />
+                            <Route path="/seedbanks/resource-management" element={<SeedResourceManagement />} />
+                            <Route path="/seedbanks/calendar-view" element={<SeedCalendarView />} />
+                            <Route path="/seedbanks/analytics" element={<SeedAnalytics />} />
+
 
                             {/* // Add these routes
                             <Route path="/settings" element={<Settings />} />

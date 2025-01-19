@@ -85,6 +85,7 @@
 		"react": "^16.8.4",
 		"react-barcode-reader": "^0.0.2",
 		"react-beautiful-dnd": "^13.1.1",
+		"react-big-calendar": "^1.17.1",
 		"react-chartjs-2": "^5.2.0",
 		"react-dom": "^16.8.4",
 		"react-google-charts": "^5.2.1",
