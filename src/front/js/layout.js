@@ -118,7 +118,7 @@ import CustomerRecommendations from "./pages/CustomerDashboard/Recommendations";
 import CustomerNotifications from "./pages/CustomerDashboard/Notifications";
 import Subscriptions from "./pages/CustomerDashboard/Subscriptions";
 import CustomerAnalytics from "./pages/CustomerDashboard/CustomerAnalytics";
-import Addresses from "./pages/CustomerDashboard/Addresses";
+import Address from "./pages/CustomerDashboard/Address";
 import CustomerSettings from "./pages/CustomerDashboard/Settings";
 
 
@@ -199,7 +199,7 @@ const Layout = () => {
                             <Route path="/notifications" element={<CustomerNotifications />} />
                             <Route path="/subscriptions" element={<Subscriptions />} />
                             <Route path="/customer-analytics" element={<CustomerAnalytics />} />
-                            <Route path="/addresses" element={<Addresses />} />
+                            <Route path="/address" element={<Address />} />
                             <Route path="/settings" element={<CustomerSettings />} />
 
 

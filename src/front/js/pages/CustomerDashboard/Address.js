@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 
-const Addresses = () => {
-  const [addresses, setAddresses] = useState([
+const Address = () => {
+  const [address, setAddress] = useState([
     { id: 1, nickname: "Home", address: "123 Main St, Boston, MA", isDefault: true },
     { id: 2, nickname: "Work", address: "456 Office Dr, Cambridge, MA", isDefault: false },
   ]);
 
   const setDefault = (id) => {
-    setAddresses(
+    setAddress(
       addresses.map((addr) =>
         addr.id === id ? { ...addr, isDefault: true } : { ...addr, isDefault: false }
       )
@@ -35,4 +35,4 @@ const Addresses = () => {
   );
 };
 
-export default Addresses;
+export default Address;

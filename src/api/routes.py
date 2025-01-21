@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource      
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource, Cart, CartItem, Wishlist, PaymentLog, Subscription, SupportTicket, LoyaltyHistory, Discount, Address, Supplier      
 from api.send_email import send_email                           
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -1054,6 +1054,51 @@ def apply_promotion():
         "discount": promotion.discount,
         "tax_rate": promotion.tax_rate
     }), 200
+
+@api.route('/promotions', methods=['POST'])
+def create_promotion():
+    data = request.json
+    promotion = PromotionalDeal(
+        title=data['title'],
+        discount_percentage=data['discount_percentage'],
+        tax_rate=data.get('tax_rate', 0.0),
+        tier=data.get('tier', 'All'),
+        start_date=data.get('start_date'),
+        end_date=data.get('end_date')
+    )
+    db.session.add(promotion)
+    db.session.commit()
+    return jsonify(promotion.serialize()), 201
+
+@api.route('/promotions', methods=['GET'])
+def get_all_promotions():
+    promotions = PromotionalDeal.query.all()
+    return jsonify([promo.serialize() for promo in promotions]), 200
+
+@api.route('/promotions/<int:id>', methods=['GET'])
+def get_promotion(id):
+    promotion = PromotionalDeal.query.get_or_404(id)
+    return jsonify(promotion.serialize()), 200
+
+@api.route('/promotions/<int:id>', methods=['PUT'])
+def update_promotion(id):
+    data = request.json
+    promotion = PromotionalDeal.query.get_or_404(id)
+    promotion.title = data['title']
+    promotion.discount_percentage = data['discount_percentage']
+    promotion.tax_rate = data.get('tax_rate', promotion.tax_rate)
+    promotion.tier = data.get('tier', promotion.tier)
+    promotion.start_date = data.get('start_date', promotion.start_date)
+    promotion.end_date = data.get('end_date', promotion.end_date)
+    db.session.commit()
+    return jsonify(promotion.serialize()), 200
+
+@api.route('/promotions/<int:id>', methods=['DELETE'])
+def delete_promotion(id):
+    promotion = PromotionalDeal.query.get_or_404(id)
+    db.session.delete(promotion)
+    db.session.commit()
+    return jsonify({"message": "Promotion deleted successfully"}), 200
 
 
 # inventory logs
@@ -3597,6 +3642,17 @@ def create_inventory_log():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+    
+@api.route('/inventory/check-expiry', methods=['GET'])
+@jwt_required()
+def check_expiry():
+    from datetime import datetime, timedelta
+    nearing_expiry = Product.query.filter(
+        Product.expiry_date != None,
+        Product.expiry_date <= datetime.utcnow() + timedelta(days=30)
+    ).all()
+    return jsonify([product.serialize() for product in nearing_expiry]), 200
 
 # Route to get all payroll records
 @api.route('/payroll', methods=['GET'])
@@ -3775,6 +3831,20 @@ def export_sales_report():
         return send_file(buffer, as_attachment=True, download_name="sales_report.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     else:
         return jsonify({"error": "Invalid format. Use 'pdf' or 'excel'."}), 400
+    
+@api.route('/warehouse/inventory', methods=['GET'])
+@jwt_required()
+def get_warehouse_inventory():
+    warehouse_id = request.args.get('warehouse_id')
+    inventory = Inventory.query.filter_by(warehouse_id=warehouse_id).all()
+    return jsonify([item.serialize() for item in inventory]), 200
+
+@api.route('/suppliers', methods=['GET'])
+def get_suppliers():
+    suppliers = Supplier.query.all()
+    return jsonify([supplier.to_dict() for supplier in suppliers])
+
+
 
 # @api.route('/dashboard/metrics', methods=['GET'])
 # @jwt_required()
