@@ -35,6 +35,7 @@ import SalesPipeline from "./pages/SalesPipeline";
 import PriceComparison from "./pages/PriceComparison";
 import PersonalizedRecommendations from "./pages/PersonalizedRecommendations";
 import ChatPage from './pages/ChatPage';
+// import SalesPipeline from './pages/SalesReport';
 
 // import MainPOS from "./pages/POS/MainPOS";
 import POS from "./pages/POS/POS";
@@ -125,6 +126,7 @@ import CustomerSettings from "./pages/CustomerDashboard/Settings";
 import Navbar from "./component/Navbar";
 import Sidebar from "./component/Sidebar";
 import { Footer } from "./component/footer";
+import SalesReport from "./pages/SalesReport";
 // import { Settings, Accounts, Profile, Messaging, Help } from "./pages/NewPages";
 
 
@@ -170,7 +172,7 @@ const Layout = () => {
                             <Route path="/barcode-scanner" element={<BarcodeScanner />} />
                             <Route path="/campaign" element={<Campaign />} />
                             <Route path="/task" element={<Task />} />
-                            <Route path="/sales-pipeline" element={<SalesPipeline />} />
+                            <Route path="/sales-report" element={<SalesReport />} />
                             <Route path="/chat" element={<ChatPage />} />
 
                             {/* POS Routes */}

@@ -35,6 +35,10 @@ from celery import shared_task
 # from your_project.tasks import generate_report
 # TODO: work on getting these project.tasks/generate_report working versus line 43-47
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 socketio = SocketIO()
 
 
@@ -1630,23 +1634,6 @@ def earn_loyalty_points():
     db.session.commit()
     return jsonify({"message": f"{points_earned} points added.", "loyalty_points": customer.loyalty_points}), 200
 
-@api.route('/loyalty/points/redeem', methods=['POST'])
-@jwt_required()
-def redeem_loyalty_points():
-    data = request.json
-    customer = Customer.query.get_or_404(data['customer_id'])
-    points_to_redeem = data['points']
-    if points_to_redeem > customer.loyalty_points:
-        return jsonify({"error": "Insufficient points"}), 400
-    customer.loyalty_points -= points_to_redeem
-    db.session.commit()
-    return jsonify({"message": f"{points_to_redeem} points redeemed.", "loyalty_points": customer.loyalty_points}), 200
-
-@socketio.on('connect')
-def handle_connect():
-    emit('status', {'message': 'Connected to the server!'})
-
-
 #   loyalty program    
 
 
@@ -3020,6 +3007,53 @@ def remove_from_wishlist(item_id):
 #     cart_items = Cart.query.filter_by(user_id=user_id).all()
 #     return jsonify([item.serialize() for item in cart_items]), 200
 
+@api.route('/cart', methods=['POST'])
+@jwt_required()
+def add_to_cart():
+    user_id = get_jwt_identity()
+    data = request.json
+    product = Product.query.get_or_404(data['product_id'])
+
+    # Validate stock availability
+    quantity_requested = data.get('quantity', 1)
+    if product.current_stock < quantity_requested:
+        return jsonify({"error": "Insufficient stock for this product"}), 400
+
+    # Deduct stock
+    try:
+        product.current_stock -= quantity_requested
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to update stock"}), 500
+
+    # Check if the customer has an existing cart
+    cart = Cart.query.filter_by(customer_id=user_id).first()
+    if not cart:
+        cart = Cart(customer_id=user_id)
+        db.session.add(cart)
+        db.session.flush()
+
+    # Add the item to the cart
+    try:
+        cart_item = CartItem(
+            cart_id=cart.id,
+            product_id=product.id,
+            quantity=quantity_requested
+        )
+        db.session.add(cart_item)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        # Rollback stock deduction if cart operation fails
+        product.current_stock += quantity_requested
+        db.session.commit()
+        return jsonify({"error": "Failed to add item to cart"}), 500
+
+    return jsonify(cart.serialize()), 201
+
+
+
 @api.route('/cart/save_for_later', methods=['POST'])
 @jwt_required()
 def save_for_later():
@@ -3101,6 +3135,13 @@ def checkout():
     # Calculate total and move items to the order
     total = 0
     for item in cart_items:
+        product = Product.query.get(item.product_id)
+        if not product or product.current_stock < item.quantity:
+            return jsonify({"error": f"Insufficient stock for {product.name}"}), 400
+
+        product.current_stock -= item.quantity
+        db.session.add(product)
+
         total += item.quantity * item.product.unit_price
         order_item = OrderItem(
             order_id=order.id,
@@ -3112,9 +3153,11 @@ def checkout():
         db.session.delete(item)  # Remove from cart
 
     order.total_amount = total
+    order.status = "completed"  # Update the status to completed
     db.session.commit()
 
     return jsonify({"message": "Order created", "order_id": order.id, "total": total}), 201
+
 
 
 
@@ -3209,10 +3252,20 @@ def delete_subscription(sub_id):
 def get_loyalty_program():
     user_id = get_jwt_identity()
     customer = Customer.query.get_or_404(user_id)
+    logger.info(f"Loyalty program accessed by user {user_id}")
+
+    # Hypothetical functions for additional details
+    next_tier_points = calculate_points_for_next_tier(customer.loyalty_tier) if 'calculate_points_for_next_tier' in globals() else None
+    available_rewards = get_rewards_for_tier(customer.loyalty_tier) if 'get_rewards_for_tier' in globals() else []
+
     return jsonify({
         "points": customer.loyalty_points,
-        "tier": customer.loyalty_tier
+        "tier": customer.loyalty_tier,
+        "next_tier_points": next_tier_points,
+        "available_rewards": available_rewards
     }), 200
+
+
 
 @api.route('/loyalty-program/history', methods=['GET'])
 @jwt_required()
@@ -3221,20 +3274,32 @@ def get_loyalty_history():
     history = LoyaltyHistory.query.filter_by(customer_id=user_id).all()
     return jsonify([entry.serialize() for entry in history]), 200
 
-# @api.route('/loyalty-program/redeem', methods=['POST'])
-# @jwt_required()
-# def redeem_loyalty_points():
-#     user_id = get_jwt_identity()
-#     data = request.json
-#     points_to_redeem = data.get("points")
-#     customer = Customer.query.get_or_404(user_id)
+@api.route('/loyalty/redeem', methods=['POST'])
+@jwt_required()
+def redeem_loyalty_points():
+    user_id = get_jwt_identity()
+    data = request.json
 
-#     if customer.loyalty_points < points_to_redeem:
-#         return jsonify({"error": "Insufficient points"}), 400
+    # Support for passing explicit customer_id for admin context
+    customer_id = data.get('customer_id', user_id)
+    points_to_redeem = data.get('points', 0)
 
-#     customer.loyalty_points -= points_to_redeem
-#     db.session.commit()
-#     return jsonify({"message": f"{points_to_redeem} points redeemed.", "remaining_points": customer.loyalty_points}), 200
+    customer = Customer.query.get_or_404(customer_id)
+
+    if customer.loyalty_points < points_to_redeem:
+        return jsonify({"error": "Insufficient loyalty points"}), 400
+
+    # Optional: Handle monetary discount conversion
+    discount = points_to_redeem / 100  # Example: 100 points = $1
+
+    customer.loyalty_points -= points_to_redeem
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Redeemed {points_to_redeem} points.",
+        "discount": f"${discount:.2f}",
+        "remaining_points": customer.loyalty_points
+    }), 200
 
 @api.route('/analytics/customer', methods=['GET'])
 @jwt_required()
@@ -3326,27 +3391,6 @@ def get_cart():
         return jsonify({"error": "Cart not found"}), 404
     return jsonify(cart.serialize()), 200
 
-@api.route('/cart', methods=['POST'])
-@jwt_required()
-def add_to_cart():
-    user_id = get_jwt_identity()
-    data = request.json
-    cart = Cart.query.filter_by(customer_id=user_id).first()
-
-    if not cart:
-        cart = Cart(customer_id=user_id)
-        db.session.add(cart)
-
-    product = Product.query.get_or_404(data['product_id'])
-    cart_item = CartItem(
-        cart_id=cart.id,
-        product_id=product.id,
-        quantity=data.get('quantity', 1)
-    )
-    db.session.add(cart_item)
-    db.session.commit()
-
-    return jsonify(cart.serialize()), 201
 
 # @api.route('/cart/<int:item_id>', methods=['PUT'])
 # @jwt_required()
@@ -3844,7 +3888,70 @@ def get_suppliers():
     suppliers = Supplier.query.all()
     return jsonify([supplier.to_dict() for supplier in suppliers])
 
+@api.route('/reports/sales', methods=['GET'])
+@jwt_required()
+def get_sales_report():
+    user_id = get_jwt_identity()  # For user-specific reports, if needed
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    breakdown = request.args.get("breakdown", "daily")  # Options: daily, weekly, monthly, payment_method, category
 
+    # Validate and parse date range
+    try:
+        if start_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if end_date:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        else:
+            end_date = datetime.utcnow()
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    # Base query
+    query = Order.query.filter(Order.status == "completed")
+    if start_date:
+        query = query.filter(Order.created_at >= start_date)
+    if end_date:
+        query = query.filter(Order.created_at <= end_date)
+
+    # Group data based on breakdown criteria
+    if breakdown == "daily":
+        results = query.with_entities(
+            func.date(Order.created_at).label("date"),
+            func.sum(Order.total_amount).label("total_sales")
+        ).group_by(func.date(Order.created_at)).order_by("date").all()
+    elif breakdown == "weekly":
+        results = query.with_entities(
+            func.year(Order.created_at).label("year"),
+            func.week(Order.created_at).label("week"),
+            func.sum(Order.total_amount).label("total_sales")
+        ).group_by("year", "week").order_by("year", "week").all()
+    elif breakdown == "monthly":
+        results = query.with_entities(
+            func.year(Order.created_at).label("year"),
+            func.month(Order.created_at).label("month"),
+            func.sum(Order.total_amount).label("total_sales")
+        ).group_by("year", "month").order_by("year", "month").all()
+    elif breakdown == "payment_method":
+        results = query.join(PaymentLog, Order.id == PaymentLog.order_id).with_entities(
+            PaymentLog.payment_method,
+            func.sum(PaymentLog.amount).label("total_sales")
+        ).group_by(PaymentLog.payment_method).order_by("total_sales").all()
+    elif breakdown == "category":
+        results = query.join(OrderItem, Order.id == OrderItem.order_id).join(Product, Product.id == OrderItem.product_id).with_entities(
+            Product.category,
+            func.sum(OrderItem.quantity).label("total_sales")
+        ).group_by(Product.category).order_by("total_sales").all()
+    else:
+        return jsonify({"error": "Invalid breakdown type"}), 400
+
+    # Format the results
+    formatted_results = [{"label": row[0], "value": row[1]} for row in results]
+
+    return jsonify({
+        "breakdown": breakdown,
+        "results": formatted_results
+    }), 200
 
 # @api.route('/dashboard/metrics', methods=['GET'])
 # @jwt_required()

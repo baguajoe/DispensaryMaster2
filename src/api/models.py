@@ -237,14 +237,16 @@ class OrderItem(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=True)  # To track the cashier or clerk
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
-    refund_amount = db.Column(db.Numeric(10, 2), default=0.0)  # Total refunded amount
+    refund_amount = db.Column(db.Numeric(10, 2), default=0.0)  # To track refunds
     status = db.Column(db.String(20), default='pending')  # pending, completed, refunded
     payment_status = db.Column(db.String(20), default='unpaid')  # unpaid, partially_paid, paid
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
     customer = db.relationship('Customer', backref='orders')
+    employee = db.relationship('Employee', backref='orders')  # Relationship with employee
 
     def calculate_remaining_amount(self):
         return float(self.total_amount) - float(self.refund_amount)
@@ -253,6 +255,7 @@ class Order(db.Model):
         return {
             "id": self.id,
             "customer_id": self.customer_id,
+            "employee_id": self.employee_id,
             "total_amount": float(self.total_amount),
             "refund_amount": float(self.refund_amount),
             "status": self.status,
@@ -260,6 +263,7 @@ class Order(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+
 
 
 # Customer Model
