@@ -1,71 +1,514 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { Context } from "../store/appContext"
 import "../../styles/Products.css";
+import jsPDF from "jspdf"; // For generating PDF files
+import "jspdf-autotable"; // For creating tables in PDFs
+
+
 
 const Products = () => {
+  const { store, actions } = useContext(Context);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    strain: '',
+    price: '',
+    stock: '',
+    thc_content: '',
+    cbd_content: '',
+    medical_benefits: ''
+  });
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    const result = await actions.fetchProducts();
+    if (!result.success) {
+      setError(result.error);
+    }
+    setLoading(false);
+  };
+
+  // CRUD functions
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const result = await actions.addProduct(formData);
+    if (result.success) {
+      setShowAddModal(false);
+      setFormData({
+        name: '',
+        category: '',
+        strain: '',
+        price: '',
+        stock: '',
+        thc_content: '',
+        cbd_content: '',
+        medical_benefits: ''
+      });
+    } else {
+      setError(result.error);
+    }
+  };
+
+  const handleEdit = (product) => {
+    setSelectedProduct(product);
+    setFormData({
+      name: product.name,
+      category: product.category,
+      strain: product.strain,
+      price: product.price,
+      stock: product.stock,
+      thc_content: product.thc_content,
+      cbd_content: product.cbd_content,
+      medical_benefits: product.medical_benefits
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    const result = await actions.editProduct(selectedProduct.id, formData);
+    if (result.success) {
+      setShowEditModal(false);
+      setSelectedProduct(null);
+      setFormData({
+        name: '',
+        category: '',
+        strain: '',
+        price: '',
+        stock: '',
+        thc_content: '',
+        cbd_content: '',
+        medical_benefits: ''
+      });
+    } else {
+      setError(result.error);
+    }
+  };
+
+  const handleDelete = async (productId) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      const result = await actions.deleteProduct(productId);
+      if (!result.success) {
+        setError(result.error);
+      }
+    }
+  };
+
+  // Export functions
+  const handleGeneratePDF = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.text("Product List", 14, 10);
+
+    // Prepare table headers and rows
+    const tableColumn = ["Name", "Category", "Strain", "Price", "Stock", "THC %", "CBD %"];
+    const tableRows = store.products.map((product) => [
+      product.name,
+      product.category,
+      product.strain,
+      `$${product.price.toFixed(2)}`,
+      product.stock,
+      `${product.thc_content}%`,
+      `${product.cbd_content}%`,
+    ]);
+
+    // Add table to the PDF
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+
+    // Save the PDF
+    doc.save("ProductList.pdf");
+  };
+
+  const handleGenerateCSV = () => {
+    // Prepare CSV headers and rows
+    const headers = ["Name,Category,Strain,Price,Stock,THC %,CBD %"];
+    const rows = store.products.map((product) => [
+      `"${product.name}"`,
+      `"${product.category}"`,
+      `"${product.strain}"`,
+      `${product.price.toFixed(2)}`,
+      `${product.stock}`,
+      `${product.thc_content}`,
+      `${product.cbd_content}`,
+    ]);
+
+    // Combine headers and rows into a single CSV string
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+
+    // Create a Blob object and trigger file download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "ProductList.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  if (loading) {
+    return (
+      <div className="main-content">
+        <div className="d-flex justify-content-center align-items-center min-vh-100">
+          <div className="spinner-border text-light" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleCSVUpload = async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const csvContent = event.target.result;
+
+      // Parse CSV content into rows
+      const rows = csvContent.split("\n").map((row) => row.split(","));
+      const headers = rows[0]; // Assuming the first row is the header
+      const products = rows.slice(1).map((row) => {
+        const product = {};
+        headers.forEach((header, index) => {
+          product[header.trim()] = row[index].trim();
+        });
+        return product;
+      });
+
+      // Send products to the backend
+      try {
+        const response = await fetch(process.env.BACKEND_URL + '/api/products/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ products }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log("Products uploaded successfully:", result);
+          loadProducts(); // Reload products after successful upload
+        } else {
+          console.error("Failed to upload products:", await response.json());
+        }
+      } catch (error) {
+        console.error("Error uploading products:", error);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  const handlePDFUpload = async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const pdfData = new Uint8Array(event.target.result);
+      const pdf = await getDocument({ data: pdfData }).promise;
+
+      let textContent = "";
+      for (let i = 0; i < pdf.numPages; i++) {
+        const page = await pdf.getPage(i + 1);
+        const text = await page.getTextContent();
+        text.items.forEach((item) => {
+          textContent += item.str;
+        });
+      }
+
+      console.log("Extracted PDF content:", textContent);
+
+      // Process extracted text (e.g., split into rows, map to products, etc.)
+      const products = textContent.split("\n").map((line) => {
+        const [name, category, strain, price, stock, thc_content, cbd_content] = line.split(",");
+        return {
+          name: name?.trim(),
+          category: category?.trim(),
+          strain: strain?.trim(),
+          price: parseFloat(price?.trim()),
+          stock: parseInt(stock?.trim(), 10),
+          thc_content: parseFloat(thc_content?.trim()),
+          cbd_content: parseFloat(cbd_content?.trim()),
+        };
+      });
+
+      // Send products to the backend
+      try {
+        const response = await fetch(process.env.BACKEND_URL + '/api/products/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ products }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log("Products uploaded successfully:", result);
+          loadProducts(); // Reload products after successful upload
+        } else {
+          console.error("Failed to upload products:", await response.json());
+        }
+      } catch (error) {
+        console.error("Error uploading products:", error);
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
   return (
     <div className="main-content">
       <div className="products-page">
-        {/* Header Section */}
+        {error && (
+          <div className="alert alert-danger alert-dismissible fade show" role="alert">
+            {error}
+            <button type="button" className="btn-close" onClick={() => setError(null)}></button>
+          </div>
+        )}
         <header className="products-header">
           <h1>Products</h1>
-          <div>
-            <button>Add Product</button>
-            <button>Add Category</button>
+          <div className="button-group">
+            <button
+              className="btn btn-dark me-2"
+              onClick={() => setShowAddModal(true)}
+            >
+              Add Product
+            </button>
+            <button
+              className="btn btn-primary me-2"
+              onClick={handleGeneratePDF}
+            >
+              Download PDF
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleGenerateCSV}
+            >
+              Download CSV
+            </button>
           </div>
         </header>
 
-        {/* Table Section */}
+        {/* Upload Section */}
+        <div className="upload-section">
+          <h2>Upload Files</h2>
+          <div className="mb-3">
+            <label htmlFor="csvUpload" className="form-label">Upload CSV</label>
+            <input
+              type="file"
+              className="form-control"
+              id="csvUpload"
+              accept=".csv"
+              onChange={handleCSVUpload}
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="pdfUpload" className="form-label">Upload PDF</label>
+            <input
+              type="file"
+              className="form-control"
+              id="pdfUpload"
+              accept=".pdf"
+              onChange={handlePDFUpload}
+            />
+          </div>
+        </div>
+
+
+
         <div className="products-table-container">
-          <table className="products-table">
+          <table className="table table-hover">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-left">Name</th>
-                <th className="px-4 py-2 text-left">Status</th>
-                <th className="px-4 py-2 text-left">Category</th>
-                <th className="px-4 py-2 text-left">Price</th>
-                <th className="px-4 py-2 text-left">Date</th>
-                <th className="px-4 py-2 text-left">ID</th>
-                <th className="px-4 py-2 text-left">Actions</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Strain</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>THC/CBD</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {/* Dynamic Data */}
-              <tr>
-                <td className="px-4 py-2">Blue Dream</td>
-                <td className="px-4 py-2">Available</td>
-                <td className="px-4 py-2">Flower</td>
-                <td className="px-4 py-2">$12.99</td>
-                <td className="px-4 py-2">2024-01-01</td>
-                <td className="px-4 py-2">FLR001</td>
-                <td className="px-4 py-2">
-                  <button className="edit-btn">Edit</button>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-2">Granddaddy Purple</td>
-                <td className="px-4 py-2">Out of Stock</td>
-                <td className="px-4 py-2">Flower</td>
-                <td className="px-4 py-2">$15.99</td>
-                <td className="px-4 py-2">2024-01-10</td>
-                <td className="px-4 py-2">FLR002</td>
-                <td className="px-4 py-2">
-                  <button className="edit-btn">Edit</button>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-2">Gummy Bears</td>
-                <td className="px-4 py-2">Available</td>
-                <td className="px-4 py-2">Edible</td>
-                <td className="px-4 py-2">$9.99</td>
-                <td className="px-4 py-2">2024-02-01</td>
-                <td className="px-4 py-2">EDB001</td>
-                <td className="px-4 py-2">
-                  <button className="edit-btn">Edit</button>
-                </td>
-              </tr>
+              {store.products.map((product) => (
+                <tr key={product.id}>
+                  <td>{product.name}</td>
+                  <td>{product.category}</td>
+                  <td>{product.strain}</td>
+                  <td>${product.price}</td>
+                  <td>{product.stock}</td>
+                  <td>{product.thc_content}% / {product.cbd_content}%</td>
+                  <td>
+                    <div className="d-flex gap-2">
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => handleEdit(product)}
+                      >
+                        <i className="fa-regular fa-pen-to-square"></i>
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        <i className="fa-regular fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
+
+        {/* Add Product Modal */}
+        {showAddModal && (
+          <>
+            <div className="modal fade show d-block" tabIndex="-1">
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Add New Product</h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setShowAddModal(false)}
+                    ></button>
+                  </div>
+                  <div className="modal-body">
+                    <form onSubmit={handleSubmit}>
+                      <div className="mb-3">
+                        <label className="form-label">Product Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Category</label>
+                        <select
+                          className="form-select"
+                          value={formData.category}
+                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                          required
+                        >
+                          <option value="">Select category</option>
+                          <option value="Flower">Flower</option>
+                          <option value="Edible">Edible</option>
+                          <option value="Concentrate">Concentrate</option>
+                          <option value="Topical">Topical</option>
+                        </select>
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Strain</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.strain}
+                          onChange={(e) => setFormData({ ...formData, strain: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="row">
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Price</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            className="form-control"
+                            value={formData.price}
+                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">Stock</label>
+                          <input
+                            type="number"
+                            className="form-control"
+                            value={formData.stock}
+                            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="row">
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">THC %</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            className="form-control"
+                            value={formData.thc_content}
+                            onChange={(e) => setFormData({ ...formData, thc_content: e.target.value })}
+                          />
+                        </div>
+                        <div className="col-md-6 mb-3">
+                          <label className="form-label">CBD %</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            className="form-control"
+                            value={formData.cbd_content}
+                            onChange={(e) => setFormData({ ...formData, cbd_content: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Medical Benefits</label>
+                        <textarea
+                          className="form-control"
+                          rows="3"
+                          value={formData.medical_benefits}
+                          onChange={(e) => setFormData({ ...formData, medical_benefits: e.target.value })}
+                        ></textarea>
+                      </div>
+
+                      <div className="modal-footer px-0 pb-0">
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => setShowAddModal(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button type="submit" className="btn btn-primary">
+                          Add Product
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-backdrop fade show"></div>
+          </>
+        )}
       </div>
     </div>
   );

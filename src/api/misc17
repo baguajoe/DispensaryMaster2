@@ -1,0 +1,70 @@
+
+@api.route('/suppliers', methods=['GET'])
+def get_suppliers():
+    suppliers = Supplier.query.all()
+    return jsonify([supplier.to_dict() for supplier in suppliers])
+
+@api.route('/reports/sales', methods=['GET'])
+@jwt_required()
+def get_sales_report():
+    user_id = get_jwt_identity()  # For user-specific reports, if needed
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    breakdown = request.args.get("breakdown", "daily")  # Options: daily, weekly, monthly, payment_method, category
+
+    # Validate and parse date range
+    try:
+        if start_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if end_date:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        else:
+            end_date = datetime.utcnow()
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    # Base query
+    query = Order.query.filter(Order.status == "completed")
+    if start_date:
+        query = query.filter(Order.created_at >= start_date)
+    if end_date:
+        query = query.filter(Order.created_at <= end_date)
+
+    # Group data based on breakdown criteria
+    if breakdown == "daily":
+        results = query.with_entities(
+            func.date(Order.created_at).label("date"),
+            func.sum(Order.total_amount).label("total_sales")
+        ).group_by(func.date(Order.created_at)).order_by("date").all()
+    elif breakdown == "weekly":
+        results = query.with_entities(
+            func.year(Order.created_at).label("year"),
+            func.week(Order.created_at).label("week"),
+            func.sum(Order.total_amount).label("total_sales")
+        ).group_by("year", "week").order_by("year", "week").all()
+    elif breakdown == "monthly":
+        results = query.with_entities(
+            func.year(Order.created_at).label("year"),
+            func.month(Order.created_at).label("month"),
+            func.sum(Order.total_amount).label("total_sales")
+        ).group_by("year", "month").order_by("year", "month").all()
+    elif breakdown == "payment_method":
+        results = query.join(PaymentLog, Order.id == PaymentLog.order_id).with_entities(
+            PaymentLog.payment_method,
+            func.sum(PaymentLog.amount).label("total_sales")
+        ).group_by(PaymentLog.payment_method).order_by("total_sales").all()
+    elif breakdown == "category":
+        results = query.join(OrderItem, Order.id == OrderItem.order_id).join(Product, Product.id == OrderItem.product_id).with_entities(
+            Product.category,
+            func.sum(OrderItem.quantity).label("total_sales")
+        ).group_by(Product.category).order_by("total_sales").all()
+    else:
+        return jsonify({"error": "Invalid breakdown type"}), 400
+
+    # Format the results
+    formatted_results = [{"label": row[0], "value": row[1]} for row in results]
+
+    return jsonify({
+        "breakdown": breakdown,
+        "results": formatted_results
+    }), 200

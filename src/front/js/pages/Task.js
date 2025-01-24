@@ -13,7 +13,7 @@ const TaskManagement = () => {
   // Fetch tasks on component mount
   useEffect(() => {
     fetch(process.env.BACKEND_URL + "/api/tasks", {
-      headers: { "Authorization": "Bearer " + sessionStorage.getItem("token") },
+      headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
     })
       .then((response) => response.json())
       .then((data) => setTasks(data))
@@ -25,7 +25,7 @@ const TaskManagement = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + sessionStorage.getItem("token"),
+        "Authorization": "Bearer " + localStorage.getItem("token"),
       },
       body: JSON.stringify(newTask),
     });
@@ -44,7 +44,7 @@ const TaskManagement = () => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + sessionStorage.getItem("token"),
+        "Authorization": "Bearer " + localStorage.getItem("token"),
       },
       body: JSON.stringify({ status: newStatus }),
     });

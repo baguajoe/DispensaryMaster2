@@ -24,7 +24,7 @@ const CampaignPage = () => {
     setLoading(true);
     try {
       const response = await fetch(process.env.BACKEND_URL + "/api/campaigns", {
-        headers: { Authorization: "Bearer " + sessionStorage.getItem("token") },
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") },
       });
       if (response.ok) {
         setCampaigns(await response.json());
@@ -50,7 +50,7 @@ const CampaignPage = () => {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          Authorization: "Bearer " + localStorage.getItem("token"),
         },
         body: JSON.stringify(campaign),
       });
@@ -72,7 +72,7 @@ const CampaignPage = () => {
       const response = await fetch(`${process.env.BACKEND_URL}/api/campaigns/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: "Bearer " + sessionStorage.getItem("token"),
+          Authorization: "Bearer " + localStorage.getItem("token"),
         },
       });
       if (response.ok) fetchCampaigns();
@@ -85,7 +85,7 @@ const CampaignPage = () => {
   const fetchMetrics = async (campaignId) => {
     try {
       const response = await fetch(`${process.env.BACKEND_URL}/api/campaigns/${campaignId}/metrics`, {
-        headers: { Authorization: "Bearer " + sessionStorage.getItem("token") },
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") },
       });
       if (response.ok) {
         const data = await response.json()

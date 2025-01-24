@@ -1,0 +1,39 @@
+ # Route to get all inventory logs
+    
+@api.route('/inventory_logs', methods=['GET'])
+def get_inventory_logs():
+    logs = InventoryLog.query.all()
+    return jsonify([log.serialize() for log in logs]), 200
+
+# Route to create a new inventory log
+@api.route('/inventory_logs', methods=['POST'])
+def create_inventory_log():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('product_id', 'transaction_type', 'quantity')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        new_log = InventoryLog(
+            product_id=data['product_id'],
+            transaction_type=data['transaction_type'],
+            quantity=data['quantity'],
+            reason=data.get('reason', None)
+        )
+        db.session.add(new_log)
+        db.session.commit()
+        return jsonify(new_log.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+    
+@api.route('/inventory/check-expiry', methods=['GET'])
+@jwt_required()
+def check_expiry():
+    from datetime import datetime, timedelta
+    nearing_expiry = Product.query.filter(
+        Product.expiry_date != None,
+        Product.expiry_date <= datetime.utcnow() + timedelta(days=30)
+    ).all()
+    return jsonify([product.serialize() for product in nearing_expiry]), 200

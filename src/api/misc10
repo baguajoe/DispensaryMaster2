@@ -1,0 +1,34 @@
+@api.route('/addresses', methods=['GET'])
+@jwt_required()
+def get_addresses():
+    user_id = get_jwt_identity()
+    addresses = Address.query.filter_by(customer_id=user_id).all()
+    return jsonify([addr.serialize() for addr in addresses]), 200
+
+@api.route('/addresses', methods=['POST'])
+@jwt_required()
+def add_address():
+    user_id = get_jwt_identity()
+    data = request.json
+    new_address = Address(customer_id=user_id, **data)
+    db.session.add(new_address)
+    db.session.commit()
+    return jsonify(new_address.serialize()), 201
+
+@api.route('/addresses/<int:address_id>', methods=['PUT'])
+@jwt_required()
+def update_address(address_id):
+    address = Address.query.get_or_404(address_id)
+    data = request.json
+    for key, value in data.items():
+        setattr(address, key, value)
+    db.session.commit()
+    return jsonify(address.serialize()), 200
+
+@api.route('/addresses/<int:address_id>', methods=['DELETE'])
+@jwt_required()
+def delete_address(address_id):
+    address = Address.query.get_or_404(address_id)
+    db.session.delete(address)
+    db.session.commit()
+    return jsonify({"message": "Address deleted successfully"}), 200

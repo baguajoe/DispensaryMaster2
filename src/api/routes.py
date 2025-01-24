@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Payroll, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource, Cart, CartItem, Wishlist, PaymentLog, Subscription, SupportTicket, LoyaltyHistory, Discount, Address, Supplier      
+from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource, Cart, CartItem, Wishlist, PaymentLog, Subscription, SupportTicket, LoyaltyHistory, Discount, Address, Supplier      
 from api.send_email import send_email                           
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -150,195 +150,174 @@ def reset_password(token):
     return jsonify({"message": "password reset email sent"}), 200
     
 # products    
-
-@api.route('/products/cheapest', methods=['GET'])
-def get_cheapest_products():
-    strain = request.args.get('strain', '')  # Get the strain filter
-    location = request.args.get('location', '')  # Get the location filter
-
-    # Query for the cheapest prices
-    query = db.session.query(
-        Product.strain,
-        Dispensary.name.label('dispensary_name'),
-        Dispensary.location,
-        func.min(Pricing.price).label('price'),
-        Pricing.availability
-    ).join(Pricing, Product.id == Pricing.product_id) \
-     .join(Dispensary, Pricing.dispensary_id == Dispensary.id) \
-     .filter(Product.strain.ilike(f"%{strain}%")) \
-     .filter(Dispensary.location.ilike(f"%{location}%")) \
-     .group_by(Product.strain, Dispensary.name, Dispensary.location, Pricing.availability)
-
-    # Convert the query results into JSON format
-    results = query.all()
-    return jsonify([{
-        "strain": row.strain,
-        "dispensary_name": row.dispensary_name,
-        "location": row.location,
-        "price": row.price,
-        "availability": row.availability
-    } for row in results])
-
-
 @api.route('/products', methods=['GET'])
-@jwt_required()  # Ensure the endpoint is protected
+@jwt_required()
 def get_products():
-    category = request.args.get('category', '')
-    strain = request.args.get('strain', '')
-    location = request.args.get('location', '')
-    cheapest = request.args.get('cheapest', 'false').lower() == 'true'
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
-
-    # Base query
-    query = db.session.query(Product).filter(Product.is_available_online == True)
-
-    # Apply filters
+    category = request.args.get('category')
+    strain = request.args.get('strain')
+    
+    query = Product.query
+    
     if category:
         query = query.filter(Product.category.ilike(f"%{category}%"))
     if strain:
         query = query.filter(Product.strain.ilike(f"%{strain}%"))
-
-    # Handle cheapest filter
-    if cheapest:
-        query = db.session.query(
-            Product.strain,
-            Dispensary.name.label('dispensary_name'),
-            Dispensary.location,
-            func.min(Pricing.price).label('price'),
-            Pricing.availability
-        ).join(Pricing, Product.id == Pricing.product_id) \
-         .join(Dispensary, Pricing.dispensary_id == Dispensary.id) \
-         .filter(Product.strain.ilike(f"%{strain}%")) \
-         .filter(Dispensary.location.ilike(f"%{location}%")) \
-         .group_by(Product.strain, Dispensary.name, Dispensary.location, Pricing.availability)
-        results = query.all()
-        return jsonify([{
-            "strain": row.strain,
-            "dispensary_name": row.dispensary_name,
-            "location": row.location,
-            "price": float(row.price),
-            "availability": row.availability
-        } for row in results]), 200
-
-    # Pagination and product data retrieval
-    products = query.paginate(page, per_page, False)
-    product_list = []
-
-    for product in products.items:
-        pricings = Pricing.query.filter_by(product_id=product.id).all()
-        pricing_data = [
-            {
-                "price": float(pricing.price),
-                "availability": pricing.availability,
-                "dispensary": pricing.dispensary.serialize(),
-                "updated_at": pricing.updated_at.isoformat() if pricing.updated_at else None,
-            }
-            for pricing in pricings
-        ]
-        serialized_product = product.serialize()
-        serialized_product["pricings"] = pricing_data
-        product_list.append(serialized_product)
-
+        
+    products = query.paginate(page=page, per_page=per_page, error_out=False)
+    
     return jsonify({
-        "products": product_list,
+        "products": [product.serialize() for product in products.items],
         "total": products.total,
         "pages": products.pages,
         "current_page": products.page
     }), 200
 
-# Enhanced POST /products with Pricing
 @api.route('/products', methods=['POST'])
 @jwt_required()
-@handle_errors
 def create_product():
-    product_schema = ProductSchema()
-    pricing_schema = PricingSchema()
+    data = request.json.get("product")
+    if not data:
+        return jsonify({"error": "No product data provided"}), 400
 
-    # Parse product data
-    product_data = product_schema.load(request.json.get("product"))
-    product = Product(**product_data)
-    db.session.add(product)
-    db.session.flush()  # Get the product ID before commit
-
-    # Parse pricing data
-    pricing_data = request.json.get("pricings", [])
-    for pricing_entry in pricing_data:
-        pricing = pricing_schema.load(pricing_entry)
-        new_pricing = Pricing(
-            product_id=product.id,
-            dispensary_id=pricing["dispensary_id"],
-            price=pricing["price"],
-            availability=pricing["availability"],
-            updated_at=datetime.utcnow()
+    # Generate SKU
+    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M')
+    category_prefix = data['category'][:3].upper()
+    sku = f"{category_prefix}{timestamp}"
+    
+    try:
+        new_product = Product(
+            name=data['name'],
+            sku=sku,
+            category=data['category'],
+            strain=data.get('strain'),
+            thc_content=data.get('thc_content'),
+            cbd_content=data.get('cbd_content'),
+            stock=int(data['stock']),
+            price=float(data['price']),
+            medical_benefits=data.get('medical_benefits'),
+            batch_number=data.get('batch_number'),
+            reorder_point=int(float(data['stock']) * 0.2)  # 20% of stock
         )
-        db.session.add(new_pricing)
+        
+        db.session.add(new_product)
+        db.session.commit()
+        return jsonify(new_product.serialize()), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
 
-    db.session.commit()
-    return jsonify(product.serialize()), 201
-
-# Enhanced PUT /products to Update Pricing
+# @api.route('/products/<int:id>', methods=['PUT'])
+# @jwt_required()
+# def update_product(id):
+#     product = Product.query.get_or_404(id)
+#     data = request.json.get("product")
+    
+#     if not data:
+#         return jsonify({"error": "No update data provided"}), 400
+        
+#     try:
+#         for key, value in data.items():
+#             if hasattr(product, key):
+#                 setattr(product, key, value)
+                
+#         db.session.commit()
+#         return jsonify(product.serialize()), 200
+        
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": str(e)}), 400
+    
 @api.route('/products/<int:id>', methods=['PUT'])
 @jwt_required()
-@handle_errors
 def update_product(id):
-    product_schema = ProductSchema()
-    pricing_schema = PricingSchema()
-
     product = Product.query.get_or_404(id)
-    product_data = product_schema.load(request.json.get("product"), partial=True)
+    data = request.json.get("product")
+    
+    if not data:
+        return jsonify({"error": "No update data provided"}), 400
+        
+    try:
+        # Update product fields
+        for key, value in data.items():
+            if hasattr(product, key):
+                setattr(product, key, value)
+                
+        # Update reorder point if stock has changed
+        if 'stock' in data:
+            product.reorder_point = int(float(data['stock']) * 0.2)  # 20% of stock
+                
+        db.session.commit()
+        return jsonify(product.serialize()), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+    
 
-    for key, value in product_data.items():
-        setattr(product, key, value)
 
-@api.route('/products/demand-forecast', methods=['GET'])
-def demand_forecast():
-    sales_data = pd.read_csv('sales_data.csv')  # Replace with actual data source
-    sales_data.rename(columns={'date': 'ds', 'sales': 'y'}, inplace=True)
-
-    model = Prophet()
-    model.fit(sales_data)
-    future = model.make_future_dataframe(periods=30)
-    forecast = model.predict(future)
-
-    return forecast[['ds', 'yhat']].to_json(orient='records'), 200
-
-    # Update Pricing Information
-    pricing_data = request.json.get("pricings", [])
-    for pricing_entry in pricing_data:
-        pricing = pricing_schema.load(pricing_entry)
-        existing_pricing = Pricing.query.filter_by(
-            product_id=product.id,
-            dispensary_id=pricing["dispensary_id"]
+@api.route('/products/<int:id>', methods=['DELETE'])
+@jwt_required()
+def delete_product(id):
+    try:
+        product = Product.query.get_or_404(id)
+        
+        # Optional: Add any checks before deletion
+        # For example, check if product is part of any active orders
+        has_active_orders = OrderItem.query.filter_by(
+            product_id=id
+        ).join(Order).filter(
+            Order.status == 'pending'
         ).first()
+        
+        if has_active_orders:
+            return jsonify({
+                "error": "Cannot delete product with pending orders"
+            }), 400
 
-        if existing_pricing:
-            existing_pricing.price = pricing["price"]
-            existing_pricing.availability = pricing["availability"]
-            existing_pricing.updated_at = datetime.utcnow()
-        else:
-            new_pricing = Pricing(
-                product_id=product.id,
-                dispensary_id=pricing["dispensary_id"],
-                price=pricing["price"],
-                availability=pricing["availability"],
-                updated_at=datetime.utcnow()
+        # Perform the deletion
+        db.session.delete(product)
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Product deleted successfully",
+            "id": id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+@api.route('/products/bulk', methods=['POST'])
+@jwt_required()
+def upload_products():
+    data = request.json.get("products")
+    if not data:
+        return jsonify({"error": "No product data provided"}), 400
+
+    try:
+        for product_data in data:
+            new_product = Product(
+                name=product_data['name'],
+                category=product_data['category'],
+                strain=product_data.get('strain'),
+                price=float(product_data['price']),
+                stock=int(product_data['stock']),
+                thc_content=float(product_data['thc_content']),
+                cbd_content=float(product_data['cbd_content']),
+                medical_benefits=product_data.get('medical_benefits'),
             )
-            db.session.add(new_pricing)
+            db.session.add(new_product)
 
-    db.session.commit()
-    return jsonify(product.serialize()), 200
+        db.session.commit()
+        return jsonify({"message": "Products uploaded successfully"}), 201
 
-@api.route('/products/search', methods=['GET'])
-def search_products():
-    name = request.args.get('name')
-    category = request.args.get('category')
-    products = Product.query
-    if name:
-        products = products.filter(Product.name.ilike(f'%{name}%'))
-    if category:
-        products = products.filter(Product.category == category)
-    return jsonify([product.serialize() for product in products.all()])
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
 
 
 
@@ -572,34 +551,6 @@ def predict_sales():
 
 # dashboard
 
-# @api.route('/dashboard/metrics', methods=['GET'])
-# @jwt_required()
-# def get_dashboard_metrics():
-#     try:
-#         orders = Order.query.filter(Order.status == 'completed').all()
-#         total_sales = sum(float(order.total_amount) for order in orders)
-#         order_count = len(orders)
-#         average_purchase_order = total_sales / order_count if order_count > 0 else 0
-
-#         metrics = [
-#             {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
-#             {"title": "Average Purchase Order", "value": f"${average_purchase_order:,.2f}"},
-#             { "title": "Average Purchase Order", "value": "$180", "icon": "🛒", "trend": 2, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
-#             { "title": "Users", "value": "1,345", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
-#             { "title": "Refunds", "value": "$320", "icon": "💸", "trend": -3, "bgColor": "bg-red-100", "textColor": "text-red-900" },
-#             { "title": "Product Availability", "value": "93%", "icon": "📊", "trend": 1, "bgColor": "bg-teal-100", "textColor": "text-teal-900" },
-#             { "title": "Supply Below Safety Stock", "value": "8", "icon": "📉", "trend": -2, "bgColor": "bg-gray-100", "textColor": "text-gray-900" },
-#             { "title": "Invoices", "value": "295", "icon": "🧾", "trend": 7, "bgColor": "bg-indigo-100", "textColor": "text-indigo-900" },
-#             { "title": "Today's Invoice", "value": "28", "icon": "📆", "trend": 3, "bgColor": "bg-orange-100", "textColor": "text-orange-900" },
-#             { "title": "Current Monthly", "value": "$22,560", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900" },
-#             { "title": "Inventory", "value": "965", "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900" },
-#             { "title": "Stores", "value": "4", "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
-#             # { "title": "Top Categories", "value": "Electronics, Clothing", "icon": "📂", "trend": 6, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
-#             # { "title": "Sales Performance", "value": "Trending Up", "icon": "📈", "trend": 12, "bgColor": "bg-teal-100", "textColor": "text-teal-900" }
-#         ]
-#         return jsonify(metrics), 200
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
     
 @api.route('/dashboard/metrics', methods=['GET'])
 @jwt_required()
@@ -3392,15 +3343,6 @@ def get_cart():
     return jsonify(cart.serialize()), 200
 
 
-# @api.route('/cart/<int:item_id>', methods=['PUT'])
-# @jwt_required()
-# def update_cart_item(item_id):
-#     cart_item = CartItem.query.get_or_404(item_id)
-#     data = request.json
-#     cart_item.quantity = data.get('quantity', cart_item.quantity)
-#     db.session.commit()
-#     return jsonify(cart_item.serialize()), 200
-
 @api.route('/cart/<int:item_id>', methods=['DELETE'])
 @jwt_required()
 def delete_cart_item(item_id):
@@ -3660,6 +3602,7 @@ def delete_deal(deal_id):
         return jsonify({"error": str(e)}), 500
     
     # Route to get all inventory logs
+
 @api.route('/inventory_logs', methods=['GET'])
 def get_inventory_logs():
     logs = InventoryLog.query.all()

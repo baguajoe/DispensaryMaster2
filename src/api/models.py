@@ -117,6 +117,7 @@ class Product(db.Model):
     batch_number = db.Column(db.String(50), nullable=True)  # Optional for tracking
     medical_benefits = db.Column(db.Text, nullable=True)  # Specific to cannabis industry
     test_results = db.Column(db.Text, nullable=True)  # Specific to cannabis industry
+    is_available_online=db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships

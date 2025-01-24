@@ -1,0 +1,108 @@
+
+# loyalty program
+
+@api.route('/loyalty/points/<int:customer_id>', methods=['GET'])
+@jwt_required()
+def get_loyalty_points(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    return jsonify({"loyalty_points": customer.loyalty_points}), 200
+
+@api.route('/loyalty/points/earn', methods=['POST'])
+@jwt_required()
+def earn_loyalty_points():
+    data = request.json
+    customer = Customer.query.get_or_404(data['customer_id'])
+    points_earned = int(data['amount_spent'] / 10)  # Example: $10 = 1 point
+    customer.loyalty_points += points_earned
+    db.session.commit()
+    return jsonify({"message": f"{points_earned} points added.", "loyalty_points": customer.loyalty_points}), 200
+
+#   loyalty program    
+
+
+@api.route('/loyalty/referrals', methods=['POST'])
+@jwt_required()
+def handle_referral():
+    data = request.json
+    referrer = Customer.query.get_or_404(data['referrer_id'])
+    referred = Customer.query.get_or_404(data['referred_id'])
+    points = 50  # Example referral reward
+    referrer.loyalty_points += points
+    db.session.commit()
+    return jsonify({"message": f"{points} points awarded to referrer.", "referrer": referrer.serialize()}), 200
+
+@api.route('/loyalty/upgrade-tier/<int:customer_id>', methods=['POST'])
+def upgrade_tier(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    if customer.loyalty_points >= 1000:
+        customer.loyalty_tier = 'Gold'
+    elif customer.loyalty_points >= 500:
+        customer.loyalty_tier = 'Silver'
+    else:
+        customer.loyalty_tier = 'Bronze'
+    db.session.commit()
+    return jsonify({"message": "Tier upgraded successfully", "customer": customer.serialize()}), 200
+
+
+
+@api.route('/loyalty/add-points', methods=['POST'])
+@jwt_required()
+@handle_errors
+def add_loyalty_points():
+    data = request.json
+    customer_id = data['customer_id']
+    points = data['points']
+    loyalty = LoyaltyProgram.query.filter_by(customer_id=customer_id).first()
+    
+    if not loyalty:
+        loyalty = LoyaltyProgram(customer_id=customer_id, points=0)
+        db.session.add(loyalty)
+    
+    loyalty.points += points
+    db.session.commit()
+    return jsonify({"message": "Points added successfully", "points": loyalty.points}), 200
+
+@api.route('/loyalty/rewards', methods=['GET'])
+@jwt_required()
+def get_rewards():
+    rewards = Reward.query.all()
+    return jsonify([reward.serialize() for reward in rewards]), 200
+
+@api.route('/loyalty/rewards/redeem', methods=['POST'])
+@jwt_required()
+def redeem_reward():
+    data = request.json
+    customer = Customer.query.get_or_404(data['customer_id'])
+    reward = Reward.query.get_or_404(data['reward_id'])
+    
+    if customer.loyalty_points < reward.point_cost:
+        return jsonify({"error": "Insufficient points"}), 400
+    
+    customer.loyalty_points -= reward.point_cost
+    db.session.commit()
+    return jsonify({"message": f"Redeemed {reward.name}", "remaining_points": customer.loyalty_points}), 200
+
+@api.route('/loyalty/expire-points', methods=['POST'])
+def expire_loyalty_points():
+    now = datetime.utcnow()
+    expired_customers = Customer.query.filter(Customer.points_expiry <= now).all()
+    for customer in expired_customers:
+        customer.loyalty_points = 0
+    db.session.commit()
+    return jsonify({"message": "Expired points cleaned up"}), 200
+
+@api.route('/loyalty/transfer-points', methods=['POST'])
+@jwt_required()
+def transfer_points():
+    data = request.json
+    sender = Customer.query.get_or_404(data['sender_id'])
+    receiver = Customer.query.get_or_404(data['receiver_id'])
+    points = data['points']
+    
+    if sender.loyalty_points < points:
+        return jsonify({"error": "Insufficient points"}), 400
+    
+    sender.loyalty_points -= points
+    receiver.loyalty_points += points
+    db.session.commit()
+    return jsonify({"message": f"{points} points transferred.", "sender_points": sender.loyalty_points, "receiver_points": receiver.loyalty_points}), 200J

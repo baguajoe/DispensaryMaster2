@@ -1,0 +1,40 @@
+@api.route('/analytics/customer-segmentation', methods=['GET'])
+@jwt_required()
+def customer_segmentation():
+    customers = Customer.query.all()
+    analytics_data = []
+
+    for customer in customers:
+        # Example: Calculate total spent, purchase frequency, and churn probability
+        total_spent = sum(order.total_amount for order in customer.orders)
+        purchase_frequency = len(customer.orders) / (datetime.utcnow() - customer.created_at).days
+        last_purchase_date = max(order.created_at for order in customer.orders) if customer.orders else None
+        churn_probability = 1 - purchase_frequency if purchase_frequency < 0.05 else 0.0
+
+        analytics_data.append({
+            "customer_id": customer.id,
+            "total_spent": total_spent,
+            "purchase_frequency": purchase_frequency,
+            "last_purchase_date": last_purchase_date,
+            "churn_probability": churn_probability,
+        })
+
+    return jsonify(analytics_data), 200
+
+@api.route('/analytics/customer', methods=['GET'])
+@jwt_required()
+def get_customer_analytics():
+    user_id = get_jwt_identity()
+    customer = Customer.query.get_or_404(user_id)
+
+    # Example: Analytics calculation
+    total_spent = db.session.query(func.sum(Order.total_amount)).filter(Order.customer_id == user_id).scalar() or 0
+    order_count = Order.query.filter_by(customer_id=user_id).count()
+    avg_order_value = total_spent / order_count if order_count > 0 else 0
+
+    return jsonify({
+        "total_spent": total_spent,
+        "order_count": order_count,
+        "avg_order_value": avg_order_value,
+        "loyalty_points": customer.loyalty_points,
+    }), 200

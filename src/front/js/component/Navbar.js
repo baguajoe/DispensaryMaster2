@@ -7,10 +7,10 @@ import logo from "../../../../docs/assets/DispenseMaster.png"
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const isLoggedIn = !!sessionStorage.getItem("token");
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const handleSignOut = () => {
-    sessionStorage.clear()
+    localStorage.clear()
     navigate('/login'); // Redirect to login page
   };
 

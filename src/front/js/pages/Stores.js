@@ -6,7 +6,7 @@ const Stores = () => {
   const [stores, setStores]=useState([])
     useEffect(() => {
       // Fetch stores from the backend
-      fetch(process.env.BACKEND_URL + "/api/store", { headers: { "Content-Type": "application/json","Authorization": "Bearer " + sessionStorage.getItem("token") } })
+      fetch(process.env.BACKEND_URL + "/api/store", { headers: { "Content-Type": "application/json","Authorization": "Bearer " + localStorage.getItem("token") } })
         .then((response) => response.json())
         .then((data) => {
           setStores(data);

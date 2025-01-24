@@ -13,7 +13,7 @@ const DealsPage = () => {
         fetch(`${process.env.BACKEND_URL}/api/deals`, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         })
             .then((res) => {
@@ -37,7 +37,7 @@ const DealsPage = () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify(newDeal),
         })
@@ -58,7 +58,7 @@ const DealsPage = () => {
         fetch(`${process.env.BACKEND_URL}/api/deals/${dealId}`, {
             method: "DELETE",
             headers: {
-                "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         })
             .then(() => {
@@ -85,7 +85,7 @@ const DealsPage = () => {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify(selectedDeal),
         })

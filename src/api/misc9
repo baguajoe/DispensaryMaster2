@@ -1,0 +1,38 @@
+@api.route('/settings', methods=['PUT'])
+@jwt_required()
+def update_settings():
+    user_id = get_jwt_identity()
+    data = request.json
+    settings = Settings.query.filter_by(customer_id=user_id).first()
+    
+    if not settings:
+        settings = Settings(customer_id=user_id)
+        db.session.add(settings)
+
+    for key, value in data.items():
+        setattr(settings, key, value)
+    db.session.commit()
+    return jsonify(settings.serialize()), 200
+
+@api.route('/settings', methods=['GET'])
+@jwt_required()
+def get_settings():
+    user_id = get_jwt_identity()
+    settings = Settings.query.filter_by(customer_id=user_id).first()
+    return jsonify(settings.serialize()), 200
+
+@api.route('/settings', methods=['PUT'])
+@jwt_required()
+def update_settings():
+    user_id = get_jwt_identity()
+    data = request.json
+    settings = Settings.query.filter_by(customer_id=user_id).first()
+    
+    if not settings:
+        settings = Settings(customer_id=user_id)
+        db.session.add(settings)
+
+    for key, value in data.items():
+        setattr(settings, key, value)
+    db.session.commit()
+    return jsonify(settings.serialize()), 200

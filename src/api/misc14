@@ -1,0 +1,6 @@
+@api.route('/api/products/<string:barcode>', methods=['GET'])
+def get_product_by_barcode(barcode):
+    product = Product.query.filter_by(barcode=barcode).first()
+    if product:
+        return jsonify(product.serialize()), 200
+    else:

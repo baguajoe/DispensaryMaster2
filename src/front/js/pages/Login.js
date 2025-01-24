@@ -17,8 +17,8 @@ const Login = () => {
             alert("Login successful! ");
             // navigate("/"); // Redirect to the login page
             console.log("data from login", data)
-            sessionStorage.setItem("token", data.data.access_token)
-            sessionStorage.setItem("currentUser", JSON.stringify(data.data.user))
+            localStorage.setItem("token", data.data.access_token)
+            localStorage.setItem("currentUser", JSON.stringify(data.data.user))
 
         } else {
             // const errorMessage=data.data?.message || data.error || "unknown error ocurred";

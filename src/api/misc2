@@ -1,0 +1,38 @@
+@api.route('/checkout', methods=['POST'])
+@jwt_required()
+def checkout():
+    user_id = get_jwt_identity()  # Get the current user's ID
+    cart_items = Cart.query.filter_by(user_id=user_id).all()
+    if not cart_items:
+        return jsonify({"error": "Cart is empty"}), 400
+
+    # Create an order
+    order = Order(user_id=user_id, status="pending", total_amount=0)
+    db.session.add(order)
+    db.session.flush()  # Get the order ID before committing
+
+    # Calculate total and move items to the order
+    total = 0
+    for item in cart_items:
+        product = Product.query.get(item.product_id)
+        if not product or product.current_stock < item.quantity:
+            return jsonify({"error": f"Insufficient stock for {product.name}"}), 400
+
+        product.current_stock -= item.quantity
+        db.session.add(product)
+
+        total += item.quantity * item.product.unit_price
+        order_item = OrderItem(
+            order_id=order.id,
+            product_id=item.product_id,
+            quantity=item.quantity,
+            unit_price=item.product.unit_price,
+        )
+        db.session.add(order_item)
+        db.session.delete(item)  # Remove from cart
+
+    order.total_amount = total
+    order.status = "completed"  # Update the status to completed
+    db.session.commit()
+
+    return jsonify({"message": "Order created", "order_id": order.id, "total": total}), 201

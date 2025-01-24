@@ -10,7 +10,7 @@ const Reports = () => {
         const response = await fetch(`${process.env.BACKEND_URL}/api/pos/reports?type=${selectedReportType}`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
         const data = await response.json();

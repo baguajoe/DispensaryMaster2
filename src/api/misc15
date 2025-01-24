@@ -1,0 +1,90 @@
+@api.route('/analytics/sales', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_sales_analytics():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    
+    # Validate date range
+    try:
+        if start_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if end_date:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+    
+    query = Order.query.filter(Order.status == 'completed')
+    if start_date:
+        query = query.filter(Order.created_at >= start_date)
+    if end_date:
+        query = query.filter(Order.created_at <= end_date)
+    
+    orders = query.all()
+    total_sales = sum(float(order.total_amount) for order in orders)
+    order_count = len(orders)
+    
+    daily_sales = {}
+    for order in orders:
+        order_date = order.created_at.date()
+        daily_sales[order_date] = daily_sales.get(order_date, 0) + float(order.total_amount)
+    
+    return jsonify({
+        "start_date": start_date.strftime("%Y-%m-%d") if start_date else None,
+        "end_date": end_date.strftime("%Y-%m-%d") if end_date else None,
+        "total_sales": total_sales,
+        "order_count": order_count,
+        "daily_sales": [{"date": str(date), "sales": sales} for date, sales in daily_sales.items()]
+    }), 200
+
+@api.route('/analytics/sales/export', methods=['GET'])
+@jwt_required()
+@handle_errors
+def export_sales_report():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    output_format = request.args.get('format', 'pdf').lower()
+
+    # Validate date range
+    try:
+        if start_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if end_date:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    query = Order.query.filter(Order.status == 'completed')
+    if start_date:
+        query = query.filter(Order.created_at >= start_date)
+    if end_date:
+        query = query.filter(Order.created_at <= end_date)
+
+    orders = query.all()
+
+    if output_format == 'pdf':
+        from io import BytesIO
+        buffer = BytesIO()
+        pdf = canvas.Canvas(buffer)
+        pdf.drawString(100, 750, f"Sales Report ({start_date} to {end_date})")
+        pdf.drawString(100, 730, f"Total Sales: {sum(float(o.total_amount) for o in orders)}")
+        pdf.drawString(100, 710, f"Total Orders: {len(orders)}")
+        pdf.showPage()
+        pdf.save()
+
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name="sales_report.pdf", mimetype="application/pdf")
+    elif output_format == 'excel':
+        import pandas as pd
+        from io import BytesIO
+
+        data = [{"Order ID": o.id, "Total Amount": o.total_amount, "Date": o.created_at} for o in orders]
+        df = pd.DataFrame(data)
+
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name="Sales Report")
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name="sales_report.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    else:
+        return jsonify({"error": "Invalid format. Use 'pdf' or 'excel'."}), 400

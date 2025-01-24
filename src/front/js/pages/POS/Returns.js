@@ -9,7 +9,7 @@ const Returns = () => {
       const response = await fetch(`${process.env.BACKEND_URL}/api/pos/transaction/${transactionId}`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       const data = await response.json();
@@ -25,7 +25,7 @@ const Returns = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ transactionId, returnItems: returnDetails.items }),
       });

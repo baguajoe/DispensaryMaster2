@@ -61,7 +61,7 @@ const POS = () => {
     const fetchLoyaltyPoints = async () => {
       try {
         const response = await fetch(`${process.env.BACKEND_URL}/api/loyalty/points/${customerId}`, {
-          headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         const data = await response.json();
         setLoyaltyPoints(data.loyalty_points);
@@ -80,7 +80,7 @@ const POS = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ start_balance: 1000 }), // Example start balance
         });
@@ -156,7 +156,7 @@ const POS = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ customer_id: customerId, points }),
       });
@@ -202,7 +202,7 @@ const POS = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ drawer_id: drawerId, type, amount: parseFloat(transactionAmount) }),
       });

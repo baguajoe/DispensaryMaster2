@@ -1,0 +1,91 @@
+@api.route('/deals', methods=['GET'])
+def get_deals():
+    deals = Deal.query.all()
+    grouped_deals = {}
+    for deal in deals:
+        grouped_deals.setdefault(deal.stage, []).append(deal.serialize())
+    return jsonify(grouped_deals), 200
+
+@api.route('/deals/<int:deal_id>', methods=['PUT'])
+def update_deal_stage(deal_id):
+    deal = Deal.query.get_or_404(deal_id)
+    new_stage = request.json.get('stage')
+    deal.stage = new_stage
+    db.session.commit()
+    return jsonify(deal.serialize()), 200
+
+@api.route('/deals/<int:deal_id>', methods=['GET'])
+def get_deal(deal_id):
+    deal = Deal.query.get(deal_id)
+    if not deal:
+        return jsonify({"error": "Deal not found"}), 404
+    return jsonify(deal.serialize()), 200
+
+# Route to create a new deal
+@api.route('/deals', methods=['POST'])
+def create_deal():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('name', 'stage', 'value', 'customer_id')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        new_deal = Deal(
+            name=data['name'],
+            description=data.get('description', None),
+            stage=data['stage'],
+            value=data['value'],
+            customer_id=data['customer_id'],
+            assigned_to=data.get('assigned_to', None)
+        )
+        db.session.add(new_deal)
+        db.session.commit()
+        return jsonify(new_deal.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to update a specific deal by ID
+@api.route('/deals/<int:deal_id>', methods=['PUT'])
+def update_deal(deal_id):
+    data = request.get_json()
+    deal = Deal.query.get(deal_id)
+
+    if not deal:
+        return jsonify({"error": "Deal not found"}), 404
+
+    try:
+        if 'name' in data:
+            deal.name = data['name']
+        if 'description' in data:
+            deal.description = data['description']
+        if 'stage' in data:
+            deal.stage = data['stage']
+        if 'value' in data:
+            deal.value = data['value']
+        if 'customer_id' in data:
+            deal.customer_id = data['customer_id']
+        if 'assigned_to' in data:
+            deal.assigned_to = data['assigned_to']
+
+        db.session.commit()
+        return jsonify(deal.serialize()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to delete a specific deal by ID
+@api.route('/deals/<int:deal_id>', methods=['DELETE'])
+def delete_deal(deal_id):
+    deal = Deal.query.get(deal_id)
+
+    if not deal:
+        return jsonify({"error": "Deal not found"}), 404
+
+    try:
+        db.session.delete(deal)
+        db.session.commit()
+        return jsonify({"message": f"Deal with ID {deal_id} deleted"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

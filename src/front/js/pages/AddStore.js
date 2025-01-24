@@ -13,7 +13,7 @@ const AddStore = () => {
     const navigate = useNavigate();
 
     const handleAddStore = async () => {
-        const data = await fetch(process.env.BACKEND_URL + "/api/store", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + sessionStorage.getItem("token") }, body: JSON.stringify({ name, location, store_manager, phone, status, employee_count }) })
+        const data = await fetch(process.env.BACKEND_URL + "/api/store", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("token") }, body: JSON.stringify({ name, location, store_manager, phone, status, employee_count }) })
 
         if (data.ok) {
             alert("Add Store was successful! ");

@@ -1,0 +1,65 @@
+# Route to get all plans
+@api.route('/plans', methods=['GET'])
+def get_plans():
+    plans = Plan.query.all()
+    return jsonify([plan.serialize() for plan in plans]), 200
+
+# Route to create a new plan (Admin use)
+@api.route('/plans', methods=['POST'])
+def create_plan():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('name', 'price', 'features')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        new_plan = Plan(
+            name=data['name'],
+            price=data['price'],
+            features=data['features']
+        )
+        db.session.add(new_plan)
+        db.session.commit()
+        return jsonify(new_plan.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to update a specific plan by ID (Admin use)
+@api.route('/plans/<int:plan_id>', methods=['PUT'])
+def update_plan(plan_id):
+    data = request.get_json()
+    plan = Plan.query.get(plan_id)
+
+    if not plan:
+        return jsonify({"error": "Plan not found"}), 404
+
+    try:
+        if 'name' in data:
+            plan.name = data['name']
+        if 'price' in data:
+            plan.price = data['price']
+        if 'features' in data:
+            plan.features = data['features']
+
+        db.session.commit()
+        return jsonify(plan.serialize()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to delete a specific plan by ID (Admin use)
+@api.route('/plans/<int:plan_id>', methods=['DELETE'])
+def delete_plan(plan_id):
+    plan = Plan.query.get(plan_id)
+
+    if not plan:
+        return jsonify({"error": "Plan not found"}), 404
+
+    try:
+        db.session.delete(plan)
+        db.session.commit()
+        return jsonify({"message": f"Plan with ID {plan_id} deleted"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

@@ -16,7 +16,7 @@ const ReportsPage = () => {
     try {
       const data = await ReportsService.getAllReports(
         selectedType,
-        sessionStorage.getItem("token"),
+        localStorage.getItem("token"),
         filters
       );
       setReports(data);
@@ -33,7 +33,7 @@ const ReportsPage = () => {
       const data = await ReportsService.generateReport(
         selectedType,
         filters,
-        sessionStorage.getItem("token")
+        localStorage.getItem("token")
       );
       alert("Report generated successfully!");
       setReports((prev) => [data, ...prev]);
@@ -49,7 +49,7 @@ const ReportsPage = () => {
       const file = await ReportsService.exportReport(
         reportId,
         format,
-        sessionStorage.getItem("token")
+        localStorage.getItem("token")
       );
       const blob = new Blob([file], {
         type: format === "pdf" ? "application/pdf" : "text/csv",

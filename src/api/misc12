@@ -1,0 +1,104 @@
+# Route to get all payroll records
+@api.route('/payroll', methods=['GET'])
+def get_payrolls():
+    store_id = request.args.get('store_id')  # Get the store_id from query parameters
+    if store_id:
+        # Filter payrolls based on the provided store ID
+        payrolls = Payroll.query.filter_by(store_id=store_id).all()
+        if not payrolls:
+            return jsonify({"message": "No payrolls found for the specified store"}), 404
+    else:
+        # Return all payrolls if no store ID is provided
+        payrolls = Payroll.query.all()
+    
+    return jsonify([payroll.serialize() for payroll in payrolls]), 200
+
+
+# Route to get a specific payroll record by ID
+@api.route('/payroll/<int:payroll_id>', methods=['GET'])
+def get_payroll(payroll_id):
+    payroll = Payroll.query.get(payroll_id)
+    if not payroll:
+        return jsonify({"error": "Payroll not found"}), 404
+    return jsonify(payroll.serialize()), 200
+
+# Route to create a new payroll record
+@api.route('/payroll', methods=['POST'])
+def create_payroll():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('employee_id', 'pay_period_start', 'pay_period_end', 'hourly_rate')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        total_hours = data.get('total_hours', 0.0)
+        total_pay = total_hours * data['hourly_rate']
+
+        new_payroll = Payroll(
+            employee_id=data['employee_id'],
+            pay_period_start=data['pay_period_start'],
+            pay_period_end=data['pay_period_end'],
+            total_hours=total_hours,
+            hourly_rate=data['hourly_rate'],
+            total_pay=total_pay
+        )
+        db.session.add(new_payroll)
+        db.session.commit()
+        return jsonify(new_payroll.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# Route to get all time logs
+@api.route('/time_logs', methods=['GET'])
+def get_time_logs():
+    logs = TimeLog.query.all()
+    return jsonify([log.serialize() for log in logs]), 200
+
+# Route to create a new time log
+@api.route('/time_logs', methods=['POST'])
+def create_time_log():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('employee_id', 'clock_in_time')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        new_log = TimeLog(
+            employee_id=data['employee_id'],
+            clock_in_time=data['clock_in_time'],
+            clock_out_time=data.get('clock_out_time', None),
+            status=data.get('status', 'clocked_in')
+        )
+        db.session.add(new_log)
+        db.session.commit()
+        return jsonify(new_log.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+@api.route('/payroll', methods=['POST'])
+def create_payroll():
+    data = request.get_json()
+
+    if not data or not all(key in data for key in ('employee_id', 'pay_period_start', 'pay_period_end', 'hourly_rate')):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        total_hours = data.get('total_hours', 0.0)
+        total_pay = total_hours * data['hourly_rate']
+
+        new_payroll = Payroll(
+            employee_id=data['employee_id'],
+            pay_period_start=data['pay_period_start'],
+            pay_period_end=data['pay_period_end'],
+            total_hours=total_hours,
+            hourly_rate=data['hourly_rate'],
+            total_pay=total_pay
+        )
+        db.session.add(new_payroll)
+        db.session.commit()
+        return jsonify(new_payroll.serialize()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

@@ -14,7 +14,7 @@ const Leads = () => {
 
     useEffect(() => {
         fetch(process.env.BACKEND_URL + "/api/leads", {
-            headers: { Authorization: "Bearer " + sessionStorage.getItem("token") },
+            headers: { Authorization: "Bearer " + localStorage.getItem("token") },
         })
             .then((response) => response.json())
             .then((data) => setLeads(data))
@@ -26,7 +26,7 @@ const Leads = () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: "Bearer " + sessionStorage.getItem("token"),
+                Authorization: "Bearer " + localStorage.getItem("token"),
             },
             body: JSON.stringify(newLead),
         });
@@ -51,7 +51,7 @@ const Leads = () => {
 
         const response = await fetch(`${process.env.BACKEND_URL}/api/leads/${leadId}`, {
             method: "DELETE",
-            headers: { Authorization: "Bearer " + sessionStorage.getItem("token") },
+            headers: { Authorization: "Bearer " + localStorage.getItem("token") },
         });
 
         if (response.ok) {

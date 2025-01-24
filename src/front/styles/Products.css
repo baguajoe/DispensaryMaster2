@@ -1,27 +1,23 @@
-/* Main container to prevent overlap with the sidebar */
 .main-content {
-    margin-left: 16rem; /* Matches the sidebar width */
+    margin-left: 16rem;
     padding: 24px;
-    min-height: calc(100vh - 90px); /* Adjust for navbar height */
-    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
-    color: white; /* Matches sidebar color */
-    overflow-x: auto; /* Prevent horizontal scroll if sidebar collapses */
-    transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
+    min-height: calc(100vh - 90px);
+    background: linear-gradient(to right, #2a4365, #285e61);
+    color: white;
+    overflow-x: auto;
+    transition: margin-left 0.3s ease;
 }
 
-/* Adjust margin when sidebar is collapsed */
-.sidebar-collapsed + .main-content {
-    margin-left: 4rem; /* Matches collapsed sidebar width */
+.sidebar-collapsed+.main-content {
+    margin-left: 4rem;
 }
 
-/* Style for the entire page background */
 .products-page {
     padding: 24px;
-    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
-    color: white; /* Matches the sidebar theme */
+    background: linear-gradient(to right, #2a4365, #285e61);
+    color: white;
 }
 
-/* Style for the header */
 .products-header {
     display: flex;
     justify-content: space-between;
@@ -32,108 +28,129 @@
 .products-header h1 {
     font-size: 2rem;
     font-weight: bold;
-    color: #cbd5e0; /* Light Gray to match sidebar headings */
+    color: #cbd5e0;
+    margin: 0;
 }
 
-.products-header button {
-    background-color: #2a4365; /* Matches sidebar background */
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    border: none;
-    margin-right: 8px; /* Space between buttons */
-    cursor: pointer;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.products-header button:hover {
-    background-color: #1e3a4c; /* Darker blue-teal for hover effect */
-    transform: scale(1.05);
-}
-
-/* Table Styles */
 .products-table-container {
-    overflow-x: auto; /* Prevent table overflow */
-    margin-top: 16px;
-}
-
-.products-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #2a4365; /* Matches sidebar background */
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.products-table th,
-.products-table td {
     padding: 16px;
-    text-align: left;
-    color: #cbd5e0; /* Matches sidebar text color */
+    margin-top: 24px;
 }
 
-.products-table thead {
-    background: #1e3a4c; /* Dark Blue Teal */
-    color: white;
+/* Table Customization */
+.products-page {
+    .table {
+        color: white !important;
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        background-color: rgba(0, 0, 0, 0.2);
+        color: #cbd5e0;
+        padding: 12px;
+    }
+
+    .table tbody td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 12px;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        td {
+            color: #fc8d32;
+        }
+    }
 }
 
-.products-table tbody tr:nth-child(odd) {
-    background: #285e61; /* Slightly lighter teal for alternating rows */
+
+/* Modal Customization */
+.products-page {
+
+    .modal-content {
+        background-color: #2a4365;
+        color: white;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .form-control,
+    .form-select {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    }
+
+    .form-select option {
+        background-color: #2a4365;
+        color: white;
+    }
+
+    .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
 }
 
-.products-table tbody tr:hover {
-    background: #1e3a4c; /* Darker teal on hover */
-}
-
-.products-table .edit-btn {
-    background-color: #2a4365; /* Matches sidebar background */
-    color: white;
-    padding: 8px 16px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.products-table .edit-btn:hover {
-    background-color: #1e3a4c; /* Darker Blue Teal on Hover */
-    transform: scale(1.05);
-}
-
-/* Responsive Table Adjustments */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .products-table-container {
-        overflow-x: scroll;
-    }
-
-    .products-header h1 {
-        font-size: 1.5rem;
-    }
-
-    .products-header button {
-        padding: 8px 16px;
-    }
-
-    .products-table th,
-    .products-table td {
-        padding: 12px; /* Reduce padding for smaller screens */
-    }
-}
-
-/* Additional Adjustments for Extra Small Screens */
-@media (max-width: 576px) {
     .main-content {
-        margin-left: 4rem; /* Matches collapsed sidebar */
+        margin-left: 0;
     }
 
     .products-header {
         flex-direction: column;
-        align-items: flex-start;
+        gap: 16px;
     }
 
     .products-header button {
-        margin-top: 12px;
-        width: 100%; /* Full width buttons */
+        width: 100%;
     }
+
+    .products-page .table-responsive {
+        margin: 0 -16px;
+    }
+}
+
+/* Dark mode form validations */
+.products-page {
+    .form-control:valid {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+        border-color: rgba(25, 135, 84, 0.4) !important;
+    }
+
+    .form-control:invalid {
+        background-color: rgba(220, 53, 69, 0.1) !important;
+        border-color: rgba(220, 53, 69, 0.4) !important;
+    }
+
+    /* Loading spinner customization */
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }    
 }

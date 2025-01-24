@@ -1,0 +1,11 @@
+@api.route('/warehouse/inventory', methods=['GET'])
+@jwt_required()
+def get_warehouse_inventory():
+    warehouse_id = request.args.get('warehouse_id')
+    inventory = Inventory.query.filter_by(warehouse_id=warehouse_id).all()
+    return jsonify([item.serialize() for item in inventory]), 200
+
+@api.route('/suppliers', methods=['GET'])
+def get_suppliers():
+    suppliers = Supplier.query.all()
+    return jsonify([supplier.to_dict() for supplier in suppliers])

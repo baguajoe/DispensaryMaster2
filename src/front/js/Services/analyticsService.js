@@ -11,7 +11,7 @@ const analyticsService = {
         try {
             const response = await axios.get(`${API_BASE_URL}/api/analytics/customer`, {
                 headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('token')}`, // Example: Adding JWT token for authentication
+                    Authorization: `Bearer ${localStorage.getItem('token')}`, // Example: Adding JWT token for authentication
                 },
             });
             return response.data;
@@ -29,7 +29,7 @@ const analyticsService = {
         try {
             const response = await axios.get(`${API_BASE_URL}/api/dashboard/analytics`, {
                 headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -47,7 +47,7 @@ const analyticsService = {
         try {
             const response = await axios.get(`${API_BASE_URL}/api/analytics/predict-sales`, {
                 headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -65,7 +65,7 @@ const analyticsService = {
         try {
             const response = await axios.post(`${API_BASE_URL}/api/analytics/clv-prediction`, {}, {
                 headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -83,7 +83,7 @@ const analyticsService = {
         try {
             const response = await axios.post(`${API_BASE_URL}/api/analytics/inventory-forecast`, {}, {
                 headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -101,7 +101,7 @@ const analyticsService = {
         try {
             const response = await axios.get(`${API_BASE_URL}/api/medical/compliance`, {
                 headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
             return response.data;
