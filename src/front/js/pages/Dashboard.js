@@ -75,13 +75,17 @@ const Dashboard = () => {
         setMetrics(staticMetrics);
 
         // Fetch top categories
-        fetch(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/top-categories`)
+        fetch(`${process.env.BACKEND_URL}/api/dashboard/top-categories`)
             .then((response) => response.json())
             .then((data) => setTopCategories(data))
+
+        fetch(`${process.env.BACKEND_URL}/api/dashboard/metrics`,{headers:{"Authorization":`Bearer ${localStorage.getItem("token")}`}})
+            .then((response) => response.json())
+            .then((data) => setMetrics(data))
             .catch((error) => console.error("Error fetching top categories:", error));
 
         // Fetch sales performance data
-        fetch(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/sales-performance`)
+        fetch(`${process.env.BACKEND_URL}/api/dashboard/sales-performance`)
             .then((response) => response.json())
             .then((data) => {
                 setSalesPerformance(data);

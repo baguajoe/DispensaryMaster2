@@ -1,7 +1,10 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ScrollToTop from "./component/scrollToTop";
 import injectContext from "./store/appContext"; // Context for global state
+import Navbar from "./component/Navbar";
+import Sidebar from "./component/Sidebar";
+import { Footer } from "./component/footer";
+import ScrollToTop from "./component/scrollToTop";
 
 // Non-Medical Pages
 import Home from "./pages/Home";
@@ -121,11 +124,6 @@ import Subscriptions from "./pages/CustomerDashboard/Subscriptions";
 import CustomerAnalytics from "./pages/CustomerDashboard/CustomerAnalytics";
 import Address from "./pages/CustomerDashboard/Address";
 import CustomerSettings from "./pages/CustomerDashboard/Settings";
-
-
-import Navbar from "./component/Navbar";
-import Sidebar from "./component/Sidebar";
-import { Footer } from "./component/footer";
 import SalesReport from "./pages/SalesReport";
 // import { Settings, Accounts, Profile, Messaging, Help } from "./pages/NewPages";
 
@@ -157,7 +155,7 @@ const Layout = () => {
                             <Route path="/price-comparison" element={<PriceComparison />} />
                             <Route path="/personalized-recommendations" element={<PersonalizedRecommendations customerId={1} />} />
                             <Route path="/inventory" element={<Inventory />} />
-                            <Route path="/inventory" element={<InventoryPage />} />;
+                            <Route path="/inventory-page" element={<InventoryPage />} />;
                             <Route path="/invoices" element={<Invoices />} />
                             <Route path="/stores" element={<Stores />} />
                             <Route path="/stores/add" element={<AddStore />} />

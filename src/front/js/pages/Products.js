@@ -3,6 +3,11 @@ import { Context } from "../store/appContext"
 import "../../styles/Products.css";
 import jsPDF from "jspdf"; // For generating PDF files
 import "jspdf-autotable"; // For creating tables in PDFs
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+
+// Set the worker source
+GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs`;
+
 
 
 
@@ -221,12 +226,13 @@ const Products = () => {
     const file = e.target.files[0];
 
     if (!file) return;
-
+      console.log("break point one")
     const reader = new FileReader();
+    reader.readAsArrayBuffer(file);
     reader.onload = async (event) => {
       const pdfData = new Uint8Array(event.target.result);
       const pdf = await getDocument({ data: pdfData }).promise;
-
+      console.log("break point two")
       let textContent = "";
       for (let i = 0; i < pdf.numPages; i++) {
         const page = await pdf.getPage(i + 1);
@@ -272,11 +278,11 @@ const Products = () => {
       }
     };
 
-    reader.readAsArrayBuffer(file);
+    
   };
 
   return (
-    <div className="main-content">
+    <div className="products-main-content">
       <div className="products-page">
         {error && (
           <div className="alert alert-danger alert-dismissible fade show" role="alert">
@@ -379,22 +385,37 @@ const Products = () => {
           </table>
         </div>
 
-        {/* Add Product Modal */}
-        {showAddModal && (
+        {(showAddModal || showEditModal) && (
           <>
             <div className="modal fade show d-block" tabIndex="-1">
               <div className="modal-dialog">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title">Add New Product</h5>
+                    <h5 className="modal-title">
+                      {showAddModal ? 'Add New Product' : 'Edit Product'}
+                    </h5>
                     <button
                       type="button"
                       className="btn-close"
-                      onClick={() => setShowAddModal(false)}
+                      onClick={() => {
+                        setShowAddModal(false);
+                        setShowEditModal(false);
+                        setSelectedProduct(null);
+                        setFormData({
+                          name: '',
+                          category: '',
+                          strain: '',
+                          price: '',
+                          stock: '',
+                          thc_content: '',
+                          cbd_content: '',
+                          medical_benefits: ''
+                        });
+                      }}
                     ></button>
                   </div>
                   <div className="modal-body">
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={showAddModal ? handleSubmit : handleEditSubmit}>
                       <div className="mb-3">
                         <label className="form-label">Product Name</label>
                         <input
@@ -424,12 +445,17 @@ const Products = () => {
 
                       <div className="mb-3">
                         <label className="form-label">Strain</label>
-                        <input
-                          type="text"
-                          className="form-control"
+                        <select
+                          className="form-select"
                           value={formData.strain}
                           onChange={(e) => setFormData({ ...formData, strain: e.target.value })}
-                        />
+                          required
+                        >
+                          <option value="">Select strain</option>
+                          <option value="Sativa">Sativa</option>
+                          <option value="Indica">Indica</option>
+                          <option value="Hybrid">Hybrid</option>
+                        </select>
                       </div>
 
                       <div className="row">
@@ -441,6 +467,11 @@ const Products = () => {
                             className="form-control"
                             value={formData.price}
                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                            style={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              borderColor: 'rgba(255, 255, 255, 0.2)',
+                              color: 'white'
+                            }}
                             required
                           />
                         </div>
@@ -465,6 +496,7 @@ const Products = () => {
                             className="form-control"
                             value={formData.thc_content}
                             onChange={(e) => setFormData({ ...formData, thc_content: e.target.value })}
+                            required
                           />
                         </div>
                         <div className="col-md-6 mb-3">
@@ -475,6 +507,7 @@ const Products = () => {
                             className="form-control"
                             value={formData.cbd_content}
                             onChange={(e) => setFormData({ ...formData, cbd_content: e.target.value })}
+                            required
                           />
                         </div>
                       </div>
@@ -486,6 +519,7 @@ const Products = () => {
                           rows="3"
                           value={formData.medical_benefits}
                           onChange={(e) => setFormData({ ...formData, medical_benefits: e.target.value })}
+                          required
                         ></textarea>
                       </div>
 
@@ -493,12 +527,26 @@ const Products = () => {
                         <button
                           type="button"
                           className="btn btn-secondary"
-                          onClick={() => setShowAddModal(false)}
+                          onClick={() => {
+                            setShowAddModal(false);
+                            setShowEditModal(false);
+                            setSelectedProduct(null);
+                            setFormData({
+                              name: '',
+                              category: '',
+                              strain: '',
+                              price: '',
+                              stock: '',
+                              thc_content: '',
+                              cbd_content: '',
+                              medical_benefits: ''
+                            });
+                          }}
                         >
                           Cancel
                         </button>
                         <button type="submit" className="btn btn-primary">
-                          Add Product
+                          {showAddModal ? 'Add Product' : 'Save Changes'}
                         </button>
                       </div>
                     </form>

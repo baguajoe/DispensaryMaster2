@@ -1,4 +1,4 @@
-.main-content {
+.products-main-content {
     margin-left: 16rem;
     padding: 24px;
     min-height: calc(100vh - 90px);
@@ -8,7 +8,7 @@
     transition: margin-left 0.3s ease;
 }
 
-.sidebar-collapsed+.main-content {
+.sidebar-collapsed+.products-main-content {
     margin-left: 4rem;
 }
 
@@ -60,12 +60,12 @@
 
     .table tbody tr:hover {
         background-color: rgba(255, 255, 255, 0.05);
+
         td {
             color: #fc8d32;
         }
     }
 }
-
 
 /* Modal Customization */
 .products-page {
@@ -86,7 +86,8 @@
     .form-control,
     .form-select {
         background-color: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        /* border: 1px solid rgba(255, 255, 255, 0.2); */
+        border: 1px solid white;
         color: white;
     }
 
@@ -140,7 +141,7 @@
 .products-page {
     .form-control:valid {
         background-color: rgba(25, 135, 84, 0.1) !important;
-        border-color: rgba(25, 135, 84, 0.4) !important;
+        border-color: white !important;
     }
 
     .form-control:invalid {
@@ -152,5 +153,5 @@
     .spinner-border {
         width: 3rem;
         height: 3rem;
-    }    
+    }
 }

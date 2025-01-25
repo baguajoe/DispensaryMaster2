@@ -552,21 +552,105 @@ def predict_sales():
 # dashboard
 
     
+# @api.route('/dashboard/metrics', methods=['GET'])
+# @jwt_required()
+# @handle_errors
+# def get_dashboard_metrics():
+#     # Query parameter to toggle between formats
+#     format_type = request.args.get('format', 'user_friendly')  # Default to 'user_friendly'
+
+#     try:
+#         # Shared Data
+#         orders = Order.query.filter(Order.status == 'completed').all()
+#         total_sales = sum(float(order.total_amount) for order in orders)
+#         order_count = len(orders)
+#         average_order_value = total_sales / order_count if order_count > 0 else 0
+
+#         low_stock_products = Product.query.filter(Product.stock <= Product.reorder_point).all()
+#         top_products = Product.query.order_by(Product.sales.desc()).limit(5).all()
+
+#         total_customers = Customer.query.count()
+#         top_customer = db.session.query(Customer).join(Order).group_by(Customer.id).order_by(db.func.sum(Order.total_amount).desc()).first()
+
+#         # User-Friendly Metrics
+#         if format_type == 'user_friendly':
+#             metrics = [
+#                  {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
+#             {"title": "Average Purchase Order", "value": f"${average_order_value:,.2f}"},
+#             { "title": "Average Purchase Order", "value": "$180", "icon": "🛒", "trend": 2, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
+#             { "title": "Users", "value": "1,345", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
+#             { "title": "Refunds", "value": "$320", "icon": "💸", "trend": -3, "bgColor": "bg-red-100", "textColor": "text-red-900" },
+#             { "title": "Product Availability", "value": "93%", "icon": "📊", "trend": 1, "bgColor": "bg-teal-100", "textColor": "text-teal-900" },
+#             { "title": "Supply Below Safety Stock", "value": "8", "icon": "📉", "trend": -2, "bgColor": "bg-gray-100", "textColor": "text-gray-900" },
+#             { "title": "Invoices", "value": "295", "icon": "🧾", "trend": 7, "bgColor": "bg-indigo-100", "textColor": "text-indigo-900" },
+#             { "title": "Today's Invoice", "value": "28", "icon": "📆", "trend": 3, "bgColor": "bg-orange-100", "textColor": "text-orange-900" },
+#             { "title": "Current Monthly", "value": "$22,560", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900" },
+#             { "title": "Inventory", "value": "965", "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900" },
+#             { "title": "Stores", "value": "4", "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
+#             ]
+#             return jsonify(metrics), 200
+
+#         # Data-Centric Metrics
+#         elif format_type == 'data_centric':
+#             return jsonify({
+#                 "sales": {
+#                     "total_sales": total_sales,
+#                     "order_count": order_count,
+#                     "average_order_value": round(average_order_value, 2)
+#                 },
+#                 "inventory": {
+#                     "low_stock_count": len(low_stock_products),
+#                     "top_products": [{"name": p.name, "sales": p.sales} for p in top_products]
+#                 },
+#                 "customers": {
+#                     "total_customers": total_customers,
+#                     "top_customer": {
+#                         "id": top_customer.id if top_customer else None,
+#                         "name": f"{top_customer.first_name} {top_customer.last_name}" if top_customer else None,
+#                         "total_spent": round(top_customer.total_spent, 2) if top_customer else None
+#                     }
+#                 }
+#             }), 200
+#         else:
+#             return jsonify({"error": "Invalid format type"}), 400
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+    
 @api.route('/dashboard/metrics', methods=['GET'])
 @jwt_required()
 @handle_errors
 def get_dashboard_metrics():
-    # Query parameter to toggle between formats
+    # Query parameters to filter specific orders
+    customer_id = request.args.get('customer_id')
+    start_date = request.args.get('start_date')  # Expected format: 'YYYY-MM-DD'
+    end_date = request.args.get('end_date')  # Expected format: 'YYYY-MM-DD'
+    product_id = request.args.get('product_id')  # Optional filter for orders with a specific product
     format_type = request.args.get('format', 'user_friendly')  # Default to 'user_friendly'
 
     try:
+        # Build a base query for filtering
+        query = Order.query.filter(Order.status == 'completed')
+
+        # Apply filters dynamically based on query parameters
+        if customer_id:
+            query = query.filter(Order.customer_id == customer_id)
+        if start_date:
+            query = query.filter(Order.date >= start_date)
+        if end_date:
+            query = query.filter(Order.date <= end_date)
+        if product_id:
+            query = query.join(OrderDetail).filter(OrderDetail.product_id == product_id)
+
+        # Execute the filtered query
+        orders = query.all()
+
         # Shared Data
-        orders = Order.query.filter(Order.status == 'completed').all()
         total_sales = sum(float(order.total_amount) for order in orders)
         order_count = len(orders)
         average_order_value = total_sales / order_count if order_count > 0 else 0
 
-        low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).all()
+        low_stock_products = Product.query.filter(Product.stock <= Product.reorder_point).all()
         top_products = Product.query.order_by(Product.sales.desc()).limit(5).all()
 
         total_customers = Customer.query.count()
@@ -575,18 +659,22 @@ def get_dashboard_metrics():
         # User-Friendly Metrics
         if format_type == 'user_friendly':
             metrics = [
-                 {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
-            {"title": "Average Purchase Order", "value": f"${average_purchase_order:,.2f}"},
-            { "title": "Average Purchase Order", "value": "$180", "icon": "🛒", "trend": 2, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
-            { "title": "Users", "value": "1,345", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
-            { "title": "Refunds", "value": "$320", "icon": "💸", "trend": -3, "bgColor": "bg-red-100", "textColor": "text-red-900" },
-            { "title": "Product Availability", "value": "93%", "icon": "📊", "trend": 1, "bgColor": "bg-teal-100", "textColor": "text-teal-900" },
-            { "title": "Supply Below Safety Stock", "value": "8", "icon": "📉", "trend": -2, "bgColor": "bg-gray-100", "textColor": "text-gray-900" },
-            { "title": "Invoices", "value": "295", "icon": "🧾", "trend": 7, "bgColor": "bg-indigo-100", "textColor": "text-indigo-900" },
-            { "title": "Today's Invoice", "value": "28", "icon": "📆", "trend": 3, "bgColor": "bg-orange-100", "textColor": "text-orange-900" },
-            { "title": "Current Monthly", "value": "$22,560", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900" },
-            { "title": "Inventory", "value": "965", "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900" },
-            { "title": "Stores", "value": "4", "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
+                {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
+                {"title": "Average Order Value", "value": f"${average_order_value:,.2f}"},
+                {"title": "Order Count", "value": order_count},
+                {"title": "Low Stock Products", "value": len(low_stock_products)},
+                {"title": "Total Customers", "value": total_customers},
+                {"title": "Top Customer", "value": f"{top_customer.first_name} {top_customer.last_name}" if top_customer else "N/A"},
+                { "title": "Users", "value": "1,345", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
+                { "title": "Refunds", "value": "$320", "icon": "💸", "trend": -3, "bgColor": "bg-red-100", "textColor": "text-red-900" },
+                { "title": "Product Availability", "value": "93%", "icon": "📊", "trend": 1, "bgColor": "bg-teal-100", "textColor": "text-teal-900" },
+                { "title": "Supply Below Safety Stock", "value": "8", "icon": "📉", "trend": -2, "bgColor": "bg-gray-100", "textColor": "text-gray-900" },
+                { "title": "Invoices", "value": "295", "icon": "🧾", "trend": 7, "bgColor": "bg-indigo-100", "textColor": "text-indigo-900" },
+                { "title": "Today's Invoice", "value": "28", "icon": "📆", "trend": 3, "bgColor": "bg-orange-100", "textColor": "text-orange-900" },
+                { "title": "Current Monthly", "value": "$22,560", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900" },
+                { "title": "Inventory", "value": "965", "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900" },
+                { "title": "Stores", "value": "4", "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
+            
             ]
             return jsonify(metrics), 200
 
@@ -596,26 +684,29 @@ def get_dashboard_metrics():
                 "sales": {
                     "total_sales": total_sales,
                     "order_count": order_count,
-                    "average_order_value": round(average_order_value, 2)
+                    "average_order_value": round(average_order_value, 2),
                 },
                 "inventory": {
                     "low_stock_count": len(low_stock_products),
-                    "top_products": [{"name": p.name, "sales": p.sales} for p in top_products]
+                    "top_products": [{"name": p.name, "sales": p.sales} for p in top_products],
                 },
                 "customers": {
                     "total_customers": total_customers,
                     "top_customer": {
                         "id": top_customer.id if top_customer else None,
                         "name": f"{top_customer.first_name} {top_customer.last_name}" if top_customer else None,
-                        "total_spent": round(top_customer.total_spent, 2) if top_customer else None
-                    }
-                }
+                        "total_spent": round(top_customer.total_spent, 2) if top_customer else None,
+                    },
+                },
             }), 200
         else:
             return jsonify({"error": "Invalid format type"}), 400
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+    
+
 
     
 @api.route('/dashboard/analytics', methods=['GET'])
@@ -667,6 +758,92 @@ def get_layout():
         {"user_id": user_id},
     ).fetchone()
     return jsonify({"layout": layout}), 200
+
+@api.route('/analytics/top-categories', methods=['GET'])
+@jwt_required()
+def get_top_categories():
+    """
+    Fetch the top-performing categories based on total sales.
+    """
+    try:
+        # Aggregate sales by category
+        results = db.session.query(
+            Product.category,
+            func.sum(OrderItem.quantity * OrderItem.unit_price).label('total_sales')
+        ).join(OrderItem, Product.id == OrderItem.product_id)\
+         .group_by(Product.category)\
+         .order_by(func.sum(OrderItem.quantity * OrderItem.unit_price).desc())\
+         .limit(5).all()  # Limit to top 5 categories
+
+        # Format the response
+        top_categories = [{"category": row[0], "total_sales": float(row[1])} for row in results]
+
+        return jsonify({"top_categories": top_categories}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@api.route('/analytics/sales-performance', methods=['GET'])
+@jwt_required()
+def get_sales_performance():
+    """
+    Fetch sales performance based on a specified time breakdown.
+    Query Parameters:
+    - start_date: Start date in 'YYYY-MM-DD' format.
+    - end_date: End date in 'YYYY-MM-DD' format.
+    - breakdown: 'daily', 'weekly', 'monthly' (default: daily).
+    """
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    breakdown = request.args.get('breakdown', 'daily')
+
+    try:
+        # Validate date range
+        if start_date:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        if end_date:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+        # Base query for completed orders
+        query = Order.query.filter(Order.status == 'completed')
+        if start_date:
+            query = query.filter(Order.created_at >= start_date)
+        if end_date:
+            query = query.filter(Order.created_at <= end_date)
+
+        # Aggregate sales based on breakdown
+        if breakdown == 'daily':
+            results = query.with_entities(
+                func.date(Order.created_at).label('date'),
+                func.sum(Order.total_amount).label('total_sales')
+            ).group_by(func.date(Order.created_at)).order_by('date').all()
+        elif breakdown == 'weekly':
+            results = query.with_entities(
+                func.year(Order.created_at).label('year'),
+                func.week(Order.created_at).label('week'),
+                func.sum(Order.total_amount).label('total_sales')
+            ).group_by('year', 'week').order_by('year', 'week').all()
+        elif breakdown == 'monthly':
+            results = query.with_entities(
+                func.year(Order.created_at).label('year'),
+                func.month(Order.created_at).label('month'),
+                func.sum(Order.total_amount).label('total_sales')
+            ).group_by('year', 'month').order_by('year', 'month').all()
+        else:
+            return jsonify({"error": "Invalid breakdown type"}), 400
+
+        # Format the response
+        performance = []
+        for row in results:
+            if breakdown == 'daily':
+                performance.append({"date": row[0].strftime("%Y-%m-%d"), "total_sales": float(row[1])})
+            elif breakdown == 'weekly':
+                performance.append({"year": row[0], "week": row[1], "total_sales": float(row[2])})
+            elif breakdown == 'monthly':
+                performance.append({"year": row[0], "month": row[1], "total_sales": float(row[2])})
+
+        return jsonify({"sales_performance": performance}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # store routes

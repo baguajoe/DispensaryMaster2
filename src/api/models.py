@@ -110,6 +110,7 @@ class Product(db.Model):
     thc_content = db.Column(db.Float, nullable=True)  # Specific to cannabis industry
     cbd_content = db.Column(db.Float, nullable=True)  # Specific to cannabis industry
     stock = db.Column(db.Integer, nullable=False)  # Current stock
+    sales = db.Column(db.Integer, nullable=True)  # Current sales
     reorder_point = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Numeric(8, 2), nullable=False)  # Unified naming
     supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'), nullable=True)  # Rich supplier data
