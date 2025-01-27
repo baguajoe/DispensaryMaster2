@@ -1,9 +1,33 @@
 .main-content {
-    margin-left: 16rem; /* Matches the sidebar width */
+    margin-left: 16rem; /* Adjust as per your layout */
     padding: 24px;
-    min-height: calc(100vh - 90px); /* Adjust for navbar height */
+    min-height: calc(100vh - 90px);
     background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
-    color: white; /* Matches sidebar color */
-    overflow-x: auto; /* Prevent horizontal scroll if sidebar collapses */
-    transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
-}
+    color: white; /* Set default text color to white for contrast */
+  }
+  
+  .invoice-header h2 {
+    color: white; /* Ensure the header text is visible */
+  }
+  
+  .invoice-actions button,
+  .invoice-actions label {
+    color: white; /* Set text color for buttons */
+  }
+  
+  .table-container {
+    background: white; /* Set table container background to white for readability */
+    color: black; /* Set table text to black */
+    border-radius: 8px;
+    padding: 16px;
+  }
+  
+  .table-container th {
+    color: #2a4365; /* Set table header text color */
+    background: #edf2f7; /* Light gray for contrast */
+  }
+  
+  .table-container td {
+    color: black; /* Set table cell text to black */
+  }
+  

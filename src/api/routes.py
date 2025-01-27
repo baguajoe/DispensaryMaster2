@@ -1976,18 +1976,46 @@ def get_invoices():
 @api.route('/invoices', methods=['POST'])
 @jwt_required()
 def create_invoice():
-    data = request.json
-    invoice = Invoice(
-        customer_id=data['customer_id'],
-        order_id=data['order_id'],
-        total_amount=data['total_amount'],
-        due_date=datetime.strptime(data['due_date'], '%Y-%m-%d') if 'due_date' in data else None,
-        payment_method=data.get('payment_method'),
-        notes=data.get('notes')
-    )
-    db.session.add(invoice)
-    db.session.commit()
-    return jsonify(invoice.serialize()), 201
+    try:
+        data = request.json
+
+        # Validate required fields
+        required_fields = ['customer_id', 'order_id', 'total_amount']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+
+        # Parse due_date if provided
+        due_date = None
+        if 'due_date' in data:
+            try:
+                due_date = datetime.strptime(data['due_date'], '%Y-%m-%d')
+            except ValueError:
+                return jsonify({"error": "Invalid due_date format, expected YYYY-MM-DD"}), 400
+
+        # Create the invoice
+        invoice = Invoice(
+            customer_id=data['customer_id'],
+            order_id=data['order_id'],
+            invoice_type=data.get('invoice_type'),
+            total_amount=float(data['total_amount']),
+            payments_made=float(data.get('payments_made', 0)),
+            due_date=due_date,
+            payment_method=data.get('payment_method'),
+            sent_status=data.get('sent_status', False),
+            payment_status=data.get('payment_status', "unpaid"),
+            notes=data.get('notes')
+        )
+
+        db.session.add(invoice)
+        db.session.commit()
+
+        return jsonify(invoice.serialize()), 201
+
+    except Exception as e:
+        print(f"Error creating invoice: {e}")
+        return jsonify({"error": "An unexpected error occurred while creating the invoice"}), 500
+
 
 
 @api.route('/invoices/<int:id>', methods=['PUT'])

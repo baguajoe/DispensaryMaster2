@@ -809,35 +809,43 @@ class CashLog(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Invoice(db.Model):
+    __tablename__ = 'invoice'
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
-    issue_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    invoice_type = db.Column(db.String(50), nullable=True)  # e.g., proforma, final
+    invoice_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # renamed from issue_date
     due_date = db.Column(db.DateTime, nullable=True)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
-    status = db.Column(db.String(20), default="unpaid")  # unpaid, paid, overdue
-    payment_method = db.Column(db.String(50), nullable=True)  # e.g., cash, card, digital wallet
-    notes = db.Column(db.Text, nullable=True)  # Optional notes for the invoice
+    sent_status = db.Column(db.Boolean, default=False, nullable=False)
+    payment_status = db.Column(db.String(20), default="unpaid")  # unpaid, paid, overdue
+    payments_made = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
+    payment_method = db.Column(db.String(50), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
 
     # Relationships
     customer = db.relationship('Customer', backref='invoices')
-    order = db.relationship('Order', backref='invoice')
 
     def __repr__(self):
-        return f'<Invoice {self.id} - {self.status}>'
+        return f'<Invoice {self.id} - {self.payment_status}>'
 
     def serialize(self):
         return {
             "id": self.id,
             "customer_id": self.customer_id,
+            "customer_name": self.customer.name if self.customer else None,
             "order_id": self.order_id,
-            "issue_date": self.issue_date.isoformat() if self.issue_date else None,
+            "invoice_type": self.invoice_type,
+            "invoice_date": self.invoice_date.isoformat() if self.invoice_date else None,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "total_amount": float(self.total_amount),
-            "status": self.status,
+            "amount_due": float(self.total_amount - self.payments_made),
+            "sent_status": self.sent_status,
+            "payment_status": self.payment_status,
             "payment_method": self.payment_method,
             "notes": self.notes,
         }
+
     
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -18,6 +18,7 @@ const Products = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -42,12 +43,24 @@ const Products = () => {
     setLoading(false);
   };
 
+  const handleCategoryChange = (e) => {
+    const selectedValue = e.target.value;
+    if (selectedValue === "custom") {
+      setIsCustomCategory(true);
+      setFormData({ ...formData, category: '' });
+    } else {
+      setIsCustomCategory(false);
+      setFormData({ ...formData, category: selectedValue });
+    }
+  };
+
   // CRUD functions
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await actions.addProduct(formData);
     if (result.success) {
       setShowAddModal(false);
+      setIsCustomCategory(false);
       setFormData({
         name: '',
         category: '',
@@ -63,8 +76,33 @@ const Products = () => {
     }
   };
 
+  // const handleEdit = (product) => {
+  //   setSelectedProduct(product);
+  //   setFormData({
+  //     name: product.name,
+  //     category: product.category,
+  //     strain: product.strain,
+  //     price: product.price,
+  //     stock: product.stock,
+  //     thc_content: product.thc_content,
+  //     cbd_content: product.cbd_content,
+  //     medical_benefits: product.medical_benefits
+  //   });
+  //   setShowEditModal(true);
+  // };
+
+  const predefinedCategories = [
+    "Flower", "Edible", "Concentrate", "Topical", "Pre-rolls",
+    "Vape", "Tincture", "Capsules", "CBD Products", "Accessories",
+    "Clones and Seeds", "Beverages", "Pet Products", "Suppositories", "Miscellaneous"
+  ];
+
   const handleEdit = (product) => {
     setSelectedProduct(product);
+    // Check if the product's category is in the predefined list
+    const isCustom = !predefinedCategories.includes(product.category);
+    setIsCustomCategory(isCustom);
+
     setFormData({
       name: product.name,
       category: product.category,
@@ -83,6 +121,7 @@ const Products = () => {
     const result = await actions.editProduct(selectedProduct.id, formData);
     if (result.success) {
       setShowEditModal(false);
+      setIsCustomCategory(false);
       setSelectedProduct(null);
       setFormData({
         name: '',
@@ -226,7 +265,7 @@ const Products = () => {
     const file = e.target.files[0];
 
     if (!file) return;
-      console.log("break point one")
+    console.log("break point one")
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
     reader.onload = async (event) => {
@@ -278,7 +317,7 @@ const Products = () => {
       }
     };
 
-    
+
   };
 
   return (
@@ -427,20 +466,96 @@ const Products = () => {
                         />
                       </div>
 
+                      {/* <div className="mb-3">
+                        <label className="form-label">Category</label>
+                        {!isCustomCategory ? (
+                          <select
+                            className="form-select"
+                            value={formData.category}
+                            onChange={handleCategoryChange}
+                            required
+                          >
+                            <option value="">Select category</option>
+                            <option value="Flower">Flower</option>
+                            <option value="Edible">Edible</option>
+                            <option value="Concentrate">Concentrate</option>
+                            <option value="Topical">Topical</option>
+                            <option value="Pre-rolls">Pre-rolls</option>
+                            <option value="Vape">Vape</option>
+                            <option value="Tincture">Tincture</option>
+                            <option value="Capsules">Capsules</option>
+                            <option value="CBD Products">CBD Products</option>
+                            <option value="Accessories">Accessories</option>
+                            <option value="Clones and Seeds">Clones and Seeds</option>
+                            <option value="Beverages">Beverages</option>
+                            <option value="Pet Products">Pet Products</option>
+                            <option value="Suppositories">Suppositories</option>
+                            <option value="Miscellaneous">Miscellaneous</option>
+                            <option value="custom">+ Add New Category</option>
+                          </select>
+                        ) : (
+                          <div>
+                            <input
+                              type="text"
+                              className="form-control mb-2"
+                              value={formData.category}
+                              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                              placeholder="Enter new category"
+                              required
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => {
+                                setIsCustomCategory(false);
+                                setFormData({ ...formData, category: '' });
+                              }}
+                            >
+                              Back to Category List
+                            </button>
+                          </div>
+                        )}
+                      </div> */}
+
                       <div className="mb-3">
                         <label className="form-label">Category</label>
-                        <select
-                          className="form-select"
-                          value={formData.category}
-                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          required
-                        >
-                          <option value="">Select category</option>
-                          <option value="Flower">Flower</option>
-                          <option value="Edible">Edible</option>
-                          <option value="Concentrate">Concentrate</option>
-                          <option value="Topical">Topical</option>
-                        </select>
+                        {!isCustomCategory ? (
+                          <select
+                            className="form-select"
+                            value={formData.category}
+                            onChange={handleCategoryChange}
+                            required
+                          >
+                            <option value="">Select category</option>
+                            {predefinedCategories.map(category => (
+                              <option key={category} value={category}>
+                                {category}
+                              </option>
+                            ))}
+                            <option value="custom">+ Add New Category</option>
+                          </select>
+                        ) : (
+                          <div>
+                            <input
+                              type="text"
+                              className="form-control mb-2"
+                              value={formData.category}
+                              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                              placeholder="Enter new category"
+                              required
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => {
+                                setIsCustomCategory(false);
+                                setFormData({ ...formData, category: '' });
+                              }}
+                            >
+                              Back to Category List
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="mb-3">
