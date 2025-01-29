@@ -22,7 +22,6 @@ import Inventory from "./pages/Inventory";
 import InventoryPage from "./pages/InventoryPage";
 import Invoices from "./pages/Invoices";
 import Stores from "./pages/Stores";
-import AddStore from "./pages/AddStore";
 import Suppliers from "./pages/Suppliers";
 import Orders from "./pages/Orders";
 import CartManagement from "./pages/CartManagement";
@@ -158,7 +157,6 @@ const Layout = () => {
                             <Route path="/inventory-page" element={<InventoryPage />} />;
                             <Route path="/invoices" element={<Invoices />} />
                             <Route path="/stores" element={<Stores />} />
-                            <Route path="/stores/add" element={<AddStore />} />
                             <Route path="/suppliers" element={<Suppliers />} />
                             <Route path="/orders" element={<Orders />} />
                             <Route path="/pos" element={<POS />} />

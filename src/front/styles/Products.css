@@ -20,16 +20,18 @@
 
 .products-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 24px;
 }
 
 .products-header h1 {
     font-size: 2rem;
     font-weight: bold;
-    color: #cbd5e0;
+    color: white;
     margin: 0;
+}
+
+.products-header .button-group {
+    margin-left: 0;
 }
 
 .products-table-container {
@@ -37,6 +39,13 @@
     border-radius: 8px;
     padding: 16px;
     margin-top: 24px;
+}
+
+/* Dropdown Button Customization */
+.products-main-content {
+    .dropdown-toggle {
+        border: 1px solid;
+    }
 }
 
 /* Table Customization */

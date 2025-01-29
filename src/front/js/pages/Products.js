@@ -9,8 +9,6 @@ import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs`;
 
 
-
-
 const Products = () => {
   const { store, actions } = useContext(Context);
   const [loading, setLoading] = useState(true);
@@ -76,20 +74,6 @@ const Products = () => {
     }
   };
 
-  // const handleEdit = (product) => {
-  //   setSelectedProduct(product);
-  //   setFormData({
-  //     name: product.name,
-  //     category: product.category,
-  //     strain: product.strain,
-  //     price: product.price,
-  //     stock: product.stock,
-  //     thc_content: product.thc_content,
-  //     cbd_content: product.cbd_content,
-  //     medical_benefits: product.medical_benefits
-  //   });
-  //   setShowEditModal(true);
-  // };
 
   const predefinedCategories = [
     "Flower", "Edible", "Concentrate", "Topical", "Pre-rolls",
@@ -329,16 +313,117 @@ const Products = () => {
             <button type="button" className="btn-close" onClick={() => setError(null)}></button>
           </div>
         )}
-        <header className="products-header">
+        <header className="products-header flex-column align-items-start">
           <h1>Products</h1>
-          <div className="button-group">
+          <div className="button-group d-flex gap-2 mt-3 w-100 justify-content-end">
+            {/* <button
+              className="btn btn-dark me-2"
+              onClick={() => setShowAddModal(true)}
+            >
+              Add Product
+            </button> */}
+            <div className="dropdown">
+              <button className="btn btn-dark btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Import Products
+              </button>
+              <ul className="dropdown-menu mt-0">
+                <li>
+                  <label className="dropdown-item" style={{ cursor: 'pointer' }}>
+                    <i className="fa-regular fa-file-pdf me-2"></i>Import PDF
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handlePDFUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </li>
+                <li>
+                  <label className="dropdown-item" style={{ cursor: 'pointer' }}>
+                    <i className="fa-solid fa-file-csv me-2"></i>Import CSV
+                    <input
+                      type="file"
+                      accept=".csv"
+                      onChange={handleCSVUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </li>
+              </ul>
+            </div>
+            <div className="dropdown">
+              <button className="btn btn-dark btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Export Products
+              </button>
+              <ul className="dropdown-menu mt-0">
+                <li>
+                  <button className="dropdown-item" onClick={handleGeneratePDF}>
+                    <i className="fa-regular fa-file-pdf me-2"></i>Download PDF
+                  </button>
+                </li>
+                <li>
+                  <button className="dropdown-item" onClick={handleGenerateCSV}>
+                    <i className="fa-solid fa-file-csv me-2"></i>Download CSV
+                  </button>
+                </li>
+              </ul>
+
+            </div>
+          </div>
+          {/* <div className="button-group">
             <button
               className="btn btn-dark me-2"
               onClick={() => setShowAddModal(true)}
             >
               Add Product
             </button>
-            <button
+            <div className="dropdown">
+              <button className="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Export Products
+              </button>
+              <ul className="dropdown-menu">
+                <li>
+                  <button className="dropdown-item" onClick={handleGeneratePDF}>
+                    <i className="fa-regular fa-file-pdf me-2"></i>Download PDF
+                  </button>
+                </li>
+                <li>
+                  <button className="dropdown-item" onClick={handleGenerateCSV}>
+                    <i className="fa-regular fa-file-csv me-2"></i>Download CSV
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <div className="dropdown">
+              <button className="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Import Products
+              </button>
+              <ul className="dropdown-menu">
+                <li>
+                  <label className="dropdown-item" style={{ cursor: 'pointer' }}>
+                    <i className="fa-regular fa-file-csv me-2"></i>Import CSV
+                    <input
+                      type="file"
+                      accept=".csv"
+                      onChange={handleCSVUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </li>
+                <li>
+                  <label className="dropdown-item" style={{ cursor: 'pointer' }}>
+                    <i className="fa-regular fa-file-pdf me-2"></i>Import PDF
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handlePDFUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </li>
+              </ul>
+            </div> */}
+          {/* <button
               className="btn btn-primary me-2"
               onClick={handleGeneratePDF}
             >
@@ -349,12 +434,12 @@ const Products = () => {
               onClick={handleGenerateCSV}
             >
               Download CSV
-            </button>
-          </div>
+            </button> */}
+          {/* </div> */}
         </header>
 
         {/* Upload Section */}
-        <div className="upload-section">
+        {/* <div className="upload-section">
           <h2>Upload Files</h2>
           <div className="mb-3">
             <label htmlFor="csvUpload" className="form-label">Upload CSV</label>
@@ -376,11 +461,18 @@ const Products = () => {
               onChange={handlePDFUpload}
             />
           </div>
-        </div>
-
+        </div> */}
 
 
         <div className="products-table-container">
+          <div className="d-flex justify-content-end mb-3">
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowAddModal(true)}
+            >
+              <b><i className="fa-solid fa-circle-plus"></i> Product</b>
+            </button>
+          </div>
           <table className="table table-hover">
             <thead>
               <tr>
@@ -466,56 +558,6 @@ const Products = () => {
                         />
                       </div>
 
-                      {/* <div className="mb-3">
-                        <label className="form-label">Category</label>
-                        {!isCustomCategory ? (
-                          <select
-                            className="form-select"
-                            value={formData.category}
-                            onChange={handleCategoryChange}
-                            required
-                          >
-                            <option value="">Select category</option>
-                            <option value="Flower">Flower</option>
-                            <option value="Edible">Edible</option>
-                            <option value="Concentrate">Concentrate</option>
-                            <option value="Topical">Topical</option>
-                            <option value="Pre-rolls">Pre-rolls</option>
-                            <option value="Vape">Vape</option>
-                            <option value="Tincture">Tincture</option>
-                            <option value="Capsules">Capsules</option>
-                            <option value="CBD Products">CBD Products</option>
-                            <option value="Accessories">Accessories</option>
-                            <option value="Clones and Seeds">Clones and Seeds</option>
-                            <option value="Beverages">Beverages</option>
-                            <option value="Pet Products">Pet Products</option>
-                            <option value="Suppositories">Suppositories</option>
-                            <option value="Miscellaneous">Miscellaneous</option>
-                            <option value="custom">+ Add New Category</option>
-                          </select>
-                        ) : (
-                          <div>
-                            <input
-                              type="text"
-                              className="form-control mb-2"
-                              value={formData.category}
-                              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                              placeholder="Enter new category"
-                              required
-                            />
-                            <button
-                              type="button"
-                              className="btn btn-secondary btn-sm"
-                              onClick={() => {
-                                setIsCustomCategory(false);
-                                setFormData({ ...formData, category: '' });
-                              }}
-                            >
-                              Back to Category List
-                            </button>
-                          </div>
-                        )}
-                      </div> */}
 
                       <div className="mb-3">
                         <label className="form-label">Category</label>
@@ -673,7 +715,7 @@ const Products = () => {
           </>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 
