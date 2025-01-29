@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Context } from "../store/appContext";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import "../../styles/stores.css";
 
 const Stores = () => {
@@ -89,6 +91,64 @@ const Stores = () => {
       employee_count: ''
     });
     setSelectedStore(null);
+  };
+
+
+  // Export functions
+  const handleGeneratePDF = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.text("Stores List", 14, 10);
+
+    // Prepare table headers and rows
+    const tableColumn = ["Name", "Location", "Store Manager", "Phone", "Status", "Employee Count"];
+    const tableRows = store.stores.map((store) => [
+      store.name,
+      store.location,
+      store.store_manager,
+      store.phone,
+      store.status,
+      store.employee_count,
+    ]);
+
+    // Add table to the PDF
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+
+    // Save the PDF
+    doc.save("StoresList.pdf");
+  };
+
+  const handleGenerateCSV = () => {
+    // Prepare CSV headers and rows
+    const headers = ["Name,Location,Store Manager,Phone,Status,Employee Count"];
+    const rows = store.stores.map((store) => [
+      `"${store.name}"`,
+      `"${store.location}"`,
+      `"${store.store_manager}"`,
+      `"${store.phone}"`,
+      `"${store.status}"`,
+      `${store.employee_count}`,
+    ]);
+
+    // Combine headers and rows into a single CSV string
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+
+    // Create a Blob object and trigger file download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "StoresList.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (isLoading) {
@@ -223,9 +283,29 @@ const Stores = () => {
 
   return (
     <div className="stores-page">
-      <div className="stores-header">
+      <header className="stores-header flex-column align-items-start">
         <h1>Stores</h1>
-      </div>
+        <div className="button-group d-flex gap-2 mt-3 w-100 justify-content-end">
+          <div className="dropdown">
+            <button className="btn btn-dark btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Export Stores
+            </button>
+            <ul className="dropdown-menu dropdown-menu-end mt-0">
+              <li>
+                <button className="dropdown-item" onClick={handleGeneratePDF}>
+                  <i className="fa-regular fa-file-pdf me-2"></i>Export PDF
+                </button>
+              </li>
+              <li>
+                <button className="dropdown-item" onClick={handleGenerateCSV}>
+                  <i className="fa-solid fa-file-csv me-2"></i>Export CSV
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
 
       <div className="stores-table-container">
         <div className="d-flex justify-content-end mb-3">

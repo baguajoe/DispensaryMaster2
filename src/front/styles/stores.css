@@ -11,8 +11,6 @@
     /* Header Styles */
     .stores-header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
         margin-bottom: 24px;
 
         h1 {
@@ -20,6 +18,31 @@
             font-weight: bold;
             color: white;
             margin: 0;
+        }
+
+        .button-group {
+            margin-left: 0;
+        }
+
+        .dropdown-menu {
+            background-color: #1F2937;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            right: 0 !important;
+            left: auto !important;
+            transform-origin: top right !important;
+        }
+
+        .dropdown-item {
+            color: white;
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+        }
+
+        .btn-dark.dropdown-toggle {
+            border: 1px solid;
         }
     }
 

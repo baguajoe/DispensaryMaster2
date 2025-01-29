@@ -358,110 +358,19 @@ const Products = () => {
               <ul className="dropdown-menu mt-0">
                 <li>
                   <button className="dropdown-item" onClick={handleGeneratePDF}>
-                    <i className="fa-regular fa-file-pdf me-2"></i>Download PDF
+                    <i className="fa-regular fa-file-pdf me-2"></i>Export PDF
                   </button>
                 </li>
                 <li>
                   <button className="dropdown-item" onClick={handleGenerateCSV}>
-                    <i className="fa-solid fa-file-csv me-2"></i>Download CSV
+                    <i className="fa-solid fa-file-csv me-2"></i>Export CSV
                   </button>
                 </li>
               </ul>
 
             </div>
           </div>
-          {/* <div className="button-group">
-            <button
-              className="btn btn-dark me-2"
-              onClick={() => setShowAddModal(true)}
-            >
-              Add Product
-            </button>
-            <div className="dropdown">
-              <button className="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Export Products
-              </button>
-              <ul className="dropdown-menu">
-                <li>
-                  <button className="dropdown-item" onClick={handleGeneratePDF}>
-                    <i className="fa-regular fa-file-pdf me-2"></i>Download PDF
-                  </button>
-                </li>
-                <li>
-                  <button className="dropdown-item" onClick={handleGenerateCSV}>
-                    <i className="fa-regular fa-file-csv me-2"></i>Download CSV
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div className="dropdown">
-              <button className="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Import Products
-              </button>
-              <ul className="dropdown-menu">
-                <li>
-                  <label className="dropdown-item" style={{ cursor: 'pointer' }}>
-                    <i className="fa-regular fa-file-csv me-2"></i>Import CSV
-                    <input
-                      type="file"
-                      accept=".csv"
-                      onChange={handleCSVUpload}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                </li>
-                <li>
-                  <label className="dropdown-item" style={{ cursor: 'pointer' }}>
-                    <i className="fa-regular fa-file-pdf me-2"></i>Import PDF
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handlePDFUpload}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                </li>
-              </ul>
-            </div> */}
-          {/* <button
-              className="btn btn-primary me-2"
-              onClick={handleGeneratePDF}
-            >
-              Download PDF
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={handleGenerateCSV}
-            >
-              Download CSV
-            </button> */}
-          {/* </div> */}
         </header>
-
-        {/* Upload Section */}
-        {/* <div className="upload-section">
-          <h2>Upload Files</h2>
-          <div className="mb-3">
-            <label htmlFor="csvUpload" className="form-label">Upload CSV</label>
-            <input
-              type="file"
-              className="form-control"
-              id="csvUpload"
-              accept=".csv"
-              onChange={handleCSVUpload}
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="pdfUpload" className="form-label">Upload PDF</label>
-            <input
-              type="file"
-              className="form-control"
-              id="pdfUpload"
-              accept=".pdf"
-              onChange={handlePDFUpload}
-            />
-          </div>
-        </div> */}
 
 
         <div className="products-table-container">
