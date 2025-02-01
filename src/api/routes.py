@@ -759,7 +759,7 @@ def get_layout():
     ).fetchone()
     return jsonify({"layout": layout}), 200
 
-@api.route('/analytics/top-categories', methods=['GET'])
+@api.route('/dashboard/top-categories', methods=['GET'])
 @jwt_required()
 def get_top_categories():
     """
@@ -782,7 +782,7 @@ def get_top_categories():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-@api.route('/analytics/sales-performance', methods=['GET'])
+@api.route('/dashboard/sales-performance', methods=['GET'])
 @jwt_required()
 def get_sales_performance():
     """

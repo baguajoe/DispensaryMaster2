@@ -17,7 +17,7 @@ const TableCard = ({ data, columns }) => (
         </tr>
       </thead>
       <tbody>
-        {data.map((row, rowIndex) => (
+        {data&&data.map((row, rowIndex) => (
           <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
             {columns.map((col, colIndex) => (
               <td

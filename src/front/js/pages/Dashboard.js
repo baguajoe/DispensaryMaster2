@@ -75,9 +75,9 @@ const Dashboard = () => {
         setMetrics(staticMetrics);
 
         // Fetch top categories
-        fetch(`${process.env.BACKEND_URL}/api/dashboard/top-categories`)
+        fetch(`${process.env.BACKEND_URL}/api/dashboard/top-categories`,{headers:{"Authorization":`Bearer ${localStorage.getItem("token")}`}})
             .then((response) => response.json())
-            .then((data) => setTopCategories(data))
+            .then((data) => setTopCategories(data.top_categories))
 
         fetch(`${process.env.BACKEND_URL}/api/dashboard/metrics`,{headers:{"Authorization":`Bearer ${localStorage.getItem("token")}`}})
             .then((response) => response.json())
@@ -85,10 +85,10 @@ const Dashboard = () => {
             .catch((error) => console.error("Error fetching top categories:", error));
 
         // Fetch sales performance data
-        fetch(`${process.env.BACKEND_URL}/api/dashboard/sales-performance`)
+        fetch(`${process.env.BACKEND_URL}/api/dashboard/sales-performance`,{headers:{"Authorization":`Bearer ${localStorage.getItem("token")}`}})
             .then((response) => response.json())
             .then((data) => {
-                setSalesPerformance(data);
+                setSalesPerformance(data.sales_performance);
             })
             .catch((error) => {
                 console.error("Error fetching sales performance:", error);
