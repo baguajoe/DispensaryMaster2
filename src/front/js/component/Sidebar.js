@@ -22,6 +22,9 @@ export const Sidebar = () => {
             { name: "Orders", path: "/orders" },
             { name: "Cart Management", path: "/cart-management" },
             { name: "Users", path: "/users" },
+            { name: "Manager Shifts", path: "/manager-shifts" },
+            { name: "Employee Shifts", path: "/employee-shifts" },
+
             { name: "Analytics Dashboard", path: "/analytics-dashboard" },
             { name: "Reports", path: "/reports" },
             { name: "Barcode Scanner", path: "/barcode-scanner" },
@@ -77,6 +80,7 @@ export const Sidebar = () => {
         medical: [
             { name: "Compliance Dashboard", path: "/medical/compliance-dashboard" },
             { name: "Compliance Reports", path: "/medical/compliance-reports" },
+            { name: "Appointment Management", path: "/medical/appointment-management" },
             { name: "Medical Analytics", path: "/medical/medical-analytics" },
             { name: "Patient Dashboard", path: "/medical/patient-dashboard" },
             { name: "Patient List", path: "/medical/patient-list" },
@@ -176,9 +180,8 @@ export const Sidebar = () => {
                                 {links.map((link) => (
                                     <Link
                                         key={link.path}
-                                        className={`nav-link ${
-                                            location.pathname === link.path ? "active" : ""
-                                        }`}
+                                        className={`nav-link ${location.pathname === link.path ? "active" : ""
+                                            }`}
                                         to={link.path}
                                     >
                                         {link.name}

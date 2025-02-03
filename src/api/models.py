@@ -266,7 +266,27 @@ class Order(db.Model):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
+class OrderDetail(db.Model):
+    __tablename__ = 'order_detail'
 
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    price_per_unit = db.Column(db.Float, nullable=False)
+
+    # Relationships
+    order = db.relationship('Order', backref='order_details', lazy=True)
+    product = db.relationship('Product', backref='order_details', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "price_per_unit": self.price_per_unit
+        }
 
 # Customer Model
 class Customer(db.Model):
@@ -302,16 +322,56 @@ class Customer(db.Model):
             "lifecycle_stage": self.lifecycle_stage,
         }
 
-
-
 class CustomerInteraction(db.Model):
+    __tablename__ = 'customer_interaction'
+
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    interaction_type = db.Column(db.String(50))  # Example: "purchase", "support", "feedback"
-    notes = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    customer = db.relationship('Customer', backref='interactions')
+    interaction_type = db.Column(db.String(100), nullable=False)  # E.g., Chat, Visit, Purchase
+    interaction_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    notes = db.Column(db.Text, nullable=True)
 
+    # Relationship to Customer
+    customer = db.relationship('Customer', backref='interactions', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "interaction_type": self.interaction_type,
+            "interaction_date": self.interaction_date.isoformat(),
+            "notes": self.notes,
+        }
+class ShiftSchedule(db.Model):
+    __tablename__ = 'shift_schedule'
+
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    shift_date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    shift_type = db.Column(db.String(50), nullable=True)  # E.g., Morning, Evening, Night
+    status = db.Column(db.String(50), default="Scheduled")  # E.g., Scheduled, Completed, Canceled
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship to Employee
+    employee = db.relationship('Employee', backref='shift_schedules', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "employee_id": self.employee_id,
+            "shift_date": self.shift_date.isoformat(),
+            "start_time": self.start_time.strftime("%H:%M:%S"),
+            "end_time": self.end_time.strftime("%H:%M:%S"),
+            "shift_type": self.shift_type,
+            "status": self.status,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
+        
 class LoyaltyProgram(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
@@ -425,6 +485,10 @@ class Compliance(db.Model):
             "audits": self.audits,
         }
     
+class ComplianceAudit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(50))  # Pending, Completed, Passed
+    
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50), nullable=False)  # e.g., 'sales', 'inventory', 'compliance', etc.
@@ -473,6 +537,30 @@ class Education(db.Model):
             "category": self.category,
         }
 
+class Resource(db.Model):
+    __tablename__ = 'resource'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    resource_type = db.Column(db.String(100), nullable=False)  # E.g., "Document", "Video", "Guide"
+    category = db.Column(db.String(100), nullable=False)  # E.g., "Patient Education", "Staff Training"
+    url = db.Column(db.String(500), nullable=True)  # Link to an external resource or file path
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "resource_type": self.resource_type,
+            "category": self.category,
+            "url": self.url,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
+    
 # Store Model
 class Store(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -684,6 +772,7 @@ class Patient(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20), nullable=False)
+    insurances = db.relationship('Insurance', backref='patient', lazy=True)
     medical_card_number = db.Column(db.String(50), unique=True, nullable=False)
     expiration_date = db.Column(db.Date, nullable=False)
     physician_name = db.Column(db.String(100), nullable=False)
@@ -696,6 +785,7 @@ class Patient(db.Model):
             "last_name": self.last_name,
             "email": self.email,
             "phone": self.phone,
+            "insurances": self.insurances,
             "medical_card_number": self.medical_card_number,
             "expiration_date": self.expiration_date.isoformat(),
             "physician_name": self.physician_name,
@@ -868,13 +958,14 @@ class Appointment(db.Model):
         }
 
 class Insurance(db.Model):
+    __tablename__ = 'insurances'
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
     provider_name = db.Column(db.String(100), nullable=False)
     policy_number = db.Column(db.String(50), nullable=False, unique=True)
     coverage_details = db.Column(db.JSON, nullable=True)
-
-    patient = db.relationship('Patient', backref='insurance')
+    copay = db.Column(db.Float, nullable=True)
+    coverage_limit = db.Column(db.Float, nullable=True)
 
     def serialize(self):
         return {
@@ -883,7 +974,37 @@ class Insurance(db.Model):
             "provider_name": self.provider_name,
             "policy_number": self.policy_number,
             "coverage_details": self.coverage_details,
+            "copay": self.copay,
+            "coverage_limit": self.coverage_limit
         }
+
+class Claim(db.Model):
+    __tablename__ = 'claims'
+    id = db.Column(db.Integer, primary_key=True)
+    insurance_id = db.Column(db.Integer, db.ForeignKey('insurances.id'), nullable=False)
+    claim_date = db.Column(db.DateTime, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(50), default='Pending')
+    description = db.Column(db.String(255))
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "insurance_id": self.insurance_id,
+            "claim_date": self.claim_date.isoformat(),
+            "amount": self.amount,
+            "status": self.status,
+            "description": self.description
+        }
+
+    
+class Physician(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    specialty = db.Column(db.String(100), nullable=True)
+
+    
+
 
 class PatientEducationResource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1116,32 +1237,63 @@ class Employee(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
-class TimeLog(db.Model):
+class Shift(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     clock_in_time = db.Column(db.DateTime, nullable=True)
     clock_out_time = db.Column(db.DateTime, nullable=True)
-    total_hours = db.Column(db.Float, nullable=True, default=0.0)  # Hours worked in this session
-    status = db.Column(db.String(20), default="clocked_out")  # clocked_in, clocked_out
+    total_hours = db.Column(db.Float, nullable=True, default=0.0)  # Hours worked in this shift
+    shift_status = db.Column(db.String(20), default="clocked_out")  # clocked_in, clocked_out
 
-    employee = db.relationship('User', backref='time_logs')
+    # Relationships
+    employee = db.relationship('User', backref='shifts')
 
     def calculate_hours(self):
         if self.clock_in_time and self.clock_out_time:
             delta = self.clock_out_time - self.clock_in_time
             self.total_hours = delta.total_seconds() / 3600  # Convert seconds to hours
 
-# Payroll
+    def serialize(self):
+        return {
+            "id": self.id,
+            "employee_id": self.employee_id,
+            "clock_in_time": self.clock_in_time.isoformat() if self.clock_in_time else None,
+            "clock_out_time": self.clock_out_time.isoformat() if self.clock_out_time else None,
+            "total_hours": self.total_hours,
+            "shift_status": self.shift_status,
+        }
+    
+
+
+    
+
+class TimeLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    shift_id = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=True)
+    clock_in_time = db.Column(db.DateTime, nullable=True)
+    clock_out_time = db.Column(db.DateTime, nullable=True)
+    total_hours = db.Column(db.Float, nullable=True, default=0.0)  # Hours worked in this session
+    status = db.Column(db.String(20), default="clocked_out")  # clocked_in, clocked_out
+
+    employee = db.relationship('Employee', backref='time_logs')
+    shift = db.relationship('Shift', backref='time_logs')
+
+    def calculate_hours(self):
+        if self.clock_in_time and self.clock_out_time:
+            delta = self.clock_out_time - self.clock_in_time
+            self.total_hours = delta.total_seconds() / 3600  # Convert seconds to hours
+
 class Payroll(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
     pay_period_start = db.Column(db.Date, nullable=False)
     pay_period_end = db.Column(db.Date, nullable=False)
     total_hours = db.Column(db.Float, nullable=False, default=0.0)
     hourly_rate = db.Column(db.Float, nullable=False)
     total_pay = db.Column(db.Float, nullable=False, default=0.0)
 
-    employee = db.relationship('User', backref='payrolls')
+    employee = db.relationship('Employee', backref='payrolls')
 
     def calculate_pay(self):
         self.total_pay = self.total_hours * self.hourly_rate
@@ -1155,23 +1307,37 @@ class Feedback(db.Model):
 
 class SalesHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sale.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    date_sold = db.Column(db.Date, nullable=False)
     quantity_sold = db.Column(db.Integer, nullable=False)
+    unit_price = db.Column(db.Float, nullable=False)  # Price per unit of product
+    date_sold = db.Column(db.DateTime, nullable=False)
 
     def serialize(self):
         return {
             "id": self.id,
+            "sale_id": self.sale_id,
             "product_id": self.product_id,
-            "date_sold": self.date_sold.isoformat(),
             "quantity_sold": self.quantity_sold,
+            "unit_price": self.unit_price,
+            "subtotal": self.quantity_sold * self.unit_price,
+            "date_sold": self.date_sold.isoformat()
         }
+
     
-class SalesReport(db.Model):
+class Sale(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=False)
-    total_sales = db.Column(db.Numeric(10, 2), nullable=False)
-    total_transactions = db.Column(db.Integer, nullable=False)
+    sale_date = db.Column(db.DateTime, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)  # Total for the entire transaction
+    sales_history = db.relationship('SalesHistory', backref='sale', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "sale_date": self.sale_date.isoformat(),
+            "total_amount": self.total_amount,
+            "products": [history.serialize() for history in self.sales_history]
+        }
 
     
 class PromotionalDeal(db.Model):
@@ -1502,6 +1668,37 @@ class Payment(db.Model):
 
     order = db.relationship('Order', backref='payments')
 
+from api.models import db
+from datetime import datetime
+
+class PaymentMethod(db.Model):
+    __tablename__ = 'payment_method'
+
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    method_type = db.Column(db.String(50), nullable=False)  # E.g., "Credit Card", "Cash", "PayPal"
+    provider = db.Column(db.String(100), nullable=True)  # E.g., "Visa", "Mastercard", "PayPal"
+    account_number = db.Column(db.String(50), nullable=True)  # Masked or partially stored
+    expiry_date = db.Column(db.Date, nullable=True)  # For cards
+    is_default = db.Column(db.Boolean, default=False)  # Flag for the default payment method
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship to Customer
+    customer = db.relationship('Customer', backref='payment_methods', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "method_type": self.method_type,
+            "provider": self.provider,
+            "account_number": self.account_number[-4:] if self.account_number else None,  # Show only last 4 digits
+            "expiry_date": self.expiry_date.isoformat() if self.expiry_date else None,
+            "is_default": self.is_default,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
 
 
 class PaymentLog(db.Model):
@@ -1603,30 +1800,41 @@ class GiftCard(db.Model):
         }
 
 
-class Shift(db.Model):
+class BillingHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    clock_in_time = db.Column(db.DateTime, nullable=True)
-    clock_out_time = db.Column(db.DateTime, nullable=True)
-    total_hours = db.Column(db.Float, nullable=True, default=0.0)  # Hours worked in this shift
-    shift_status = db.Column(db.String(20), default="clocked_out")  # clocked_in, clocked_out
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    payment_amount = db.Column(db.Float, nullable=False)
+    payment_date = db.Column(db.DateTime, nullable=False)
+    payment_status = db.Column(db.String(50), nullable=False)
 
-    # Relationships
-    employee = db.relationship('User', backref='shifts')
+    def serialize(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "payment_amount": self.payment_amount,
+            "payment_date": self.payment_date.isoformat(),
+            "payment_status": self.payment_status
+        }
 
-    def calculate_hours(self):
-        if self.clock_in_time and self.clock_out_time:
-            delta = self.clock_out_time - self.clock_in_time
-            self.total_hours = delta.total_seconds() / 3600  # Convert seconds to hours
+class Schedule(db.Model):
+    __tablename__ = 'schedule'
+
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    shift_date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    shift_type = db.Column(db.String(50), nullable=True)  # e.g., Morning, Evening
+
+    employee = db.relationship('Employee', backref='schedules', lazy=True)
 
     def serialize(self):
         return {
             "id": self.id,
             "employee_id": self.employee_id,
-            "clock_in_time": self.clock_in_time.isoformat() if self.clock_in_time else None,
-            "clock_out_time": self.clock_out_time.isoformat() if self.clock_out_time else None,
-            "total_hours": self.total_hours,
-            "shift_status": self.shift_status,
-        }
-    
+            "shift_date": self.shift_date.isoformat(),
+            "start_time": self.start_time.strftime("%H:%M:%S"),
+            "end_time": self.end_time.strftime("%H:%M:%S"),
+            "shift_type": self.shift_type,
+        }    
 

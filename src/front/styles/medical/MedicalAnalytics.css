@@ -1,0 +1,33 @@
+.medical-analytics-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.time-period-filter {
+    margin-bottom: 20px;
+}
+
+.analytics-table-container {
+    overflow-x: auto;
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.analytics-table th, .analytics-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.analytics-table th {
+    background-color: #f4f4f4;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+}

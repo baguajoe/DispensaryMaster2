@@ -1,0 +1,38 @@
+.compliance-dashboard-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h3 {
+    margin-top: 15px;
+    color: #333;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+li {
+    padding: 8px;
+    border-bottom: 1px solid #ccc;
+}
+
+.alert-high {
+    color: red;
+    font-weight: bold;
+}
+
+.alert-medium {
+    color: orange;
+    font-weight: bold;
+}
+
+.alert-low {
+    color: green;
+}

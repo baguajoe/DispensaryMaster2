@@ -1,28 +1,67 @@
 import React from "react";
+import MedicalMetricCard from "./MedicalMetricCard";
+import MedicalChartCard from "./MedicalChartCard";
+import MedicalTableCard from "./MedicalTableCard";
 
-const PatientTable = ({ patients }) => {
+const MedicalDashboardComponent = ({ metrics, complianceData, auditStatus, loading }) => {
   return (
-    <table className="table-auto w-full bg-white shadow-md rounded-lg">
-      <thead>
-        <tr>
-          <th className="px-4 py-2">Name</th>
-          <th className="px-4 py-2">Age</th>
-          <th className="px-4 py-2">Prescription</th>
-          <th className="px-4 py-2">Last Visit</th>
-        </tr>
-      </thead>
-      <tbody>
-        {patients.map((patient) => (
-          <tr key={patient.id} className="border-t">
-            <td className="px-4 py-2">{patient.name}</td>
-            <td className="px-4 py-2">{patient.age}</td>
-            <td className="px-4 py-2">{patient.prescription}</td>
-            <td className="px-4 py-2">{new Date(patient.last_visit).toLocaleDateString()}</td>
-          </tr>
+    <div>
+      {/* Metrics Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+        {metrics.map((metric, index) => (
+          <MedicalMetricCard
+            key={index}
+            title={metric.title}
+            value={metric.value}
+            icon={metric.icon}
+            trend={metric.trend}
+            bgColor={metric.bgColor}
+            textColor={metric.textColor}
+          />
         ))}
-      </tbody>
-    </table>
+      </div>
+
+      {/* Compliance Audit Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+        <MedicalMetricCard
+          title="Pending Audits"
+          value={auditStatus.pending}
+          icon="📋"
+          bgColor="bg-yellow-100"
+          textColor="text-yellow-900"
+        />
+        <MedicalMetricCard
+          title="Completed Audits"
+          value={auditStatus.completed}
+          icon="✅"
+          bgColor="bg-green-100"
+          textColor="text-green-900"
+        />
+        <MedicalMetricCard
+          title="Passed Audits"
+          value={auditStatus.passed}
+          icon="🎉"
+          bgColor="bg-blue-100"
+          textColor="text-blue-900"
+        />
+      </div>
+
+      {/* Compliance Details Table */}
+      <div>
+        <h2 className="section-title">Compliance Details</h2>
+        <MedicalTableCard
+          data={complianceData}
+          columns={["Business ID", "Licenses", "Reports", "Audits"]}
+          keyMapping={{
+            "Business ID": "business_id",
+            Licenses: "licenses",
+            Reports: "reports",
+            Audits: "audits",
+          }}
+        />
+      </div>
+    </div>
   );
 };
 
-export default PatientTable;
+export default MedicalDashboardComponent;

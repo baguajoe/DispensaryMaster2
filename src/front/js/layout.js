@@ -26,6 +26,9 @@ import Suppliers from "./pages/Suppliers";
 import Orders from "./pages/Orders";
 import CartManagement from "./pages/CartManagement";
 import Users from "./pages/Users";
+import ManagerShifts from "./pages/ManagerShifts";
+import EmployeeShifts from "./pages/EmployeeShifts";
+
 import AnalyticsDashboard from "./pages/AnalyticsDashboard"; // Assuming the file is in the 'pages' folder
 import Reports from "./pages/ReportsPage";
 import Leads from "./pages/Leads";
@@ -163,6 +166,9 @@ const Layout = () => {
                             <Route path="/cart-management" element={<CartManagement />} />
                             <Route path="/checkout" element={<CheckoutPage />} />
                             <Route path="/users" element={<Users />} />
+                            <Route path="/manager-shifts" element={<ManagerShifts />} />
+                            <Route path="/employee-shifts" element={<EmployeeShifts />} />
+
                             <Route path="/analytics-dashboard" element={<AnalyticsDashboard />} />
                             <Route path="/reports" element={<Reports />} />
                             <Route path="/barcode-scanner" element={<BarcodeScanner />} />

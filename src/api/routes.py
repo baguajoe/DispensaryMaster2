@@ -2,9 +2,55 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 from flask_login import login_required, current_user
 from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
+from sqlalchemy.exc import SQLAlchemyError
 
 from datetime import datetime, timedelta
-from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource, Cart, CartItem, Wishlist, PaymentLog, Subscription, SupportTicket, LoyaltyHistory, Discount, Address, Supplier      
+# from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource, Cart, CartItem, Wishlist, PaymentLog, Subscription, SupportTicket, LoyaltyHistory, Discount, Address, Supplier, BillingHistory, Claim, Compliance, ComplianceAudit, Shift, Employee, Schedule  
+from api.models import (
+    # Core database connection
+    db,
+
+    # Authentication / Users
+    User, Customer,
+
+    # Orders and Payments
+    Order, OrderItem, OrderDetail, Invoice, Cart, CartItem, PaymentLog, BillingHistory, Plan,
+
+    # Customer
+    CustomerInteraction, Subscription, Address,
+
+    # Business and Store Operations
+    Business, Store, CashDrawer, CashLog, Supplier, Pricing, Dispensary, Lead,
+
+    # Medical and Patient Management
+    Patient, Insurance, Appointment, Prescription, MedicalResource, PatientEducationResource, Symptom, Claim,
+
+    # Compliance
+    Compliance, ComplianceAudit, Task,
+
+    # Inventory Management
+    Inventory, InventoryLog, Product,
+
+    # Grow Farms and Yield Tracking
+    GrowFarm, PlantBatch, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, GrowTask,
+
+    # Sales and Campaigns
+    Deal, PromotionalDeal, Campaign, CampaignMetrics, Recommendation, Sale, Transaction, PaymentMethod, SalesHistory, PaymentLog,
+
+    # Loyalty Programs
+    LoyaltyProgram, Reward, LoyaltyHistory, Wishlist, Discount,
+
+    # Feedback / Support
+    Feedback, SupportTicket, Review, Settings,
+
+    # Scheduling and Employee Management
+    Shift, Employee, Schedule, Payroll, TimeLog, ShiftSchedule, StaffTrainingResource, Resource,
+
+    # Reporting and Analytics 
+    Report, EnvironmentData
+)
+
+    
 from api.send_email import send_email                           
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -518,14 +564,14 @@ def personalized_recommendations():
 # analytic routes
 
 
-@api.route('/analytics', methods=['GET'])
-@jwt_required()
-def get_analytics():
-    analytics_type = request.args.get('type', 'sales')
-    if analytics_type == 'sales':
-        orders = Order.query.filter(Order.status == 'completed').all()
-        total_sales = sum(float(order.total_amount) for order in orders)
-        return jsonify({"total_sales": total_sales}), 200
+# @api.route('/analytics', methods=['GET'])
+# @jwt_required()
+# def get_analytics():
+#     analytics_type = request.args.get('type', 'sales')
+#     if analytics_type == 'sales':
+#         orders = Order.query.filter(Order.status == 'completed').all()
+#         total_sales = sum(float(order.total_amount) for order in orders)
+#         return jsonify({"total_sales": total_sales}), 200
     
 @api.route('/analytics/predict-sales', methods=['GET'])
 @jwt_required()
@@ -1378,11 +1424,21 @@ def inventory_forecast():
 
 # medical routes
 
-@api.route('/medical/patients', methods=['GET'])
-@jwt_required()
+api.route('/api/medical/patients', methods=['GET'])
 def get_patients():
     patients = Patient.query.all()
-    return jsonify([patient.serialize() for patient in patients])
+
+    response = [
+        {
+            "name": f"{patient.first_name} {patient.last_name}",
+            "age": patient.age,
+            "prescription": patient.prescription,
+            "last_visit": patient.last_visit.isoformat() if patient.last_visit else "N/A",
+        }
+        for patient in patients
+    ]
+
+    return jsonify(response), 200
 
 
 @api.route('/patients', methods=['POST'])
@@ -1429,6 +1485,20 @@ def get_compliance_trends():
         ],
     }
     return jsonify(trends)
+
+@api.route('/api/medical/compliance/audits', methods=['GET'])
+def get_compliance_audit_status():
+    pending_audits = ComplianceAudit.query.filter_by(status="Pending").count()
+    completed_audits = ComplianceAudit.query.filter_by(status="Completed").count()
+    passed_audits = ComplianceAudit.query.filter_by(status="Passed").count()
+
+    response = {
+        "pending": pending_audits,
+        "completed": completed_audits,
+        "passed": passed_audits
+    }
+
+    return jsonify(response), 200
 
 @api.route('/reports', methods=['GET'])
 @jwt_required()
@@ -1538,6 +1608,61 @@ def delete_symptom(id):
     db.session.commit()
     return jsonify({"message": "Symptom deleted successfully"}), 200
 
+@api.route('/api/medical/metrics', methods=['GET'])
+def get_metrics():
+    metrics = {
+        "active_patients": Patient.query.count(),
+        "dispensed_products": db.session.query(func.sum(Sale.quantity)).scalar() or 0,
+        "pending_compliance_audits": ComplianceAudit.query.filter_by(status="Pending").count(),
+        "monthly_revenue": db.session.query(func.sum(Sale.total_amount)).scalar() or 0,
+        "new_patients": Patient.query.filter(func.date(Patient.date_created) >= func.date('now', '-30 days')).count(),
+        "appointments_this_week": Appointment.query.filter(func.date(Appointment.date) >= func.date('now', 'weekday 0')).count(),
+        "no_show_rate": Appointment.query.filter_by(status="No-Show").count(),
+        "low_stock_products": Inventory.query.filter(Inventory.quantity < 5).count(),
+        "pending_refills": db.session.query(func.count()).filter_by(refill_status="Pending").scalar() or 0,
+        "average_fill_time": 15,  # Placeholder, adjust if tracked dynamically
+        "patient_satisfaction": 4.8,  # Placeholder, replace with real calculation if available
+    }
+
+    # Return the metrics in a format suitable for the frontend
+    response = [
+        {"title": "Active Patients", "value": f"{metrics['active_patients']}", "icon": "👨‍⚕️", "trend": 5},
+        {"title": "Dispensed Products", "value": f"{metrics['dispensed_products']}", "icon": "💊", "trend": 8},
+        {"title": "Pending Compliance Audits", "value": f"{metrics['pending_compliance_audits']}", "icon": "📋", "trend": -1},
+        {"title": "Revenue (Monthly)", "value": f"${metrics['monthly_revenue']:,}", "icon": "💰", "trend": 10},
+        {"title": "New Patients (Monthly)", "value": f"{metrics['new_patients']}", "icon": "👥", "trend": 12},
+        {"title": "Appointments (This Week)", "value": f"{metrics['appointments_this_week']}", "icon": "📅", "trend": 4},
+        {"title": "No-Show Rate", "value": f"{metrics['no_show_rate']}%", "icon": "🚫", "trend": -3},
+        {"title": "Products with Low Stock", "value": f"{metrics['low_stock_products']}", "icon": "⚠️", "trend": -1},
+        {"title": "Pending Refills", "value": f"{metrics['pending_refills']}", "icon": "🔄", "trend": 3},
+        {"title": "Average Prescription Fill Time", "value": "15 mins", "icon": "⏱️", "trend": -1},
+        {"title": "Patient Satisfaction Score", "value": "4.8/5", "icon": "⭐", "trend": 5},
+    ]
+
+    return jsonify(response), 200
+@api.route('/api/medical/revenue-chart', methods=['GET'])
+def get_revenue_chart():
+    result = db.session.query(
+        func.strftime('%Y-%m', Sale.sale_date).label('month'),
+        func.sum(Sale.total_amount).label('monthly_revenue')
+    ).group_by('month').order_by('month').all()
+
+    response = {
+        "labels": [row[0] for row in result],  # Months
+        "datasets": [
+            {
+                "label": "Revenue",
+                "data": [row[1] for row in result],  # Revenue values
+                "backgroundColor": "rgba(75, 192, 192, 0.6)",
+                "borderColor": "rgba(75, 192, 192, 1)",
+                "borderWidth": 1,
+            }
+        ]
+    }
+
+    return jsonify(response), 200
+
+
 @api.route('/medical-resources', methods=['GET'])
 def get_medical_resources():
     resources = MedicalResource.query.all()
@@ -1583,83 +1708,204 @@ def delete_medical_resource(id):
 
 @api.route('/appointments', methods=['GET'])
 def get_appointments():
-    appointments = Appointment.query.all()
-    return jsonify([appointment.serialize() for appointment in appointments]), 200
+    try:
+        appointments = Appointment.query.all()
+        return jsonify([appointment.serialize() for appointment in appointments]), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
 
+# ----------------------------
+# GET: Fetch a specific appointment by ID
+# ----------------------------
 @api.route('/appointments/<int:appointment_id>', methods=['GET'])
 def get_appointment(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
     return jsonify(appointment.serialize()), 200
 
+# ----------------------------
+# POST: Create a new appointment
+# ----------------------------
 @api.route('/appointments', methods=['POST'])
 def create_appointment():
     data = request.get_json()
-    appointment = Appointment(
-        patient_id=data['patient_id'],
-        physician_id=data['physician_id'],
-        appointment_date=data['appointment_date'],
-        status=data.get('status', 'Scheduled'),
-        notes=data.get('notes')
-    )
-    db.session.add(appointment)
-    db.session.commit()
-    return jsonify(appointment.serialize()), 201
 
+    # Basic validation
+    if not data.get('patient_id') or not data.get('physician_id') or not data.get('appointment_date'):
+        return jsonify({"error": "patient_id, physician_id, and appointment_date are required"}), 400
+
+    try:
+        appointment = Appointment(
+            patient_id=data['patient_id'],
+            physician_id=data['physician_id'],
+            appointment_date=data['appointment_date'],
+            status=data.get('status', 'Scheduled'),
+            notes=data.get('notes')
+        )
+        db.session.add(appointment)
+        db.session.commit()
+        return jsonify(appointment.serialize()), 201
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# PUT: Update an existing appointment
+# ----------------------------
 @api.route('/appointments/<int:appointment_id>', methods=['PUT'])
 def update_appointment(appointment_id):
     data = request.get_json()
     appointment = Appointment.query.get_or_404(appointment_id)
-    appointment.status = data.get('status', appointment.status)
-    appointment.notes = data.get('notes', appointment.notes)
-    db.session.commit()
-    return jsonify(appointment.serialize()), 200
 
+    try:
+        appointment.status = data.get('status', appointment.status)
+        appointment.notes = data.get('notes', appointment.notes)
+        appointment.appointment_date = data.get('appointment_date', appointment.appointment_date)
+        
+        db.session.commit()
+        return jsonify(appointment.serialize()), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# DELETE: Delete an appointment
+# ----------------------------
 @api.route('/appointments/<int:appointment_id>', methods=['DELETE'])
 def delete_appointment(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
-    db.session.delete(appointment)
-    db.session.commit()
-    return jsonify({"message": "Appointment deleted"}), 200
 
-@api.route('/insurances', methods=['GET'])
-def get_insurances():
-    insurances = Insurance.query.all()
-    return jsonify([insurance.serialize() for insurance in insurances]), 200
+    try:
+        db.session.delete(appointment)
+        db.session.commit()
+        return jsonify({"message": "Appointment deleted"}), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
 
+# ----------------------------
+# GET: Fetch insurance by ID
+# ----------------------------
 @api.route('/insurances/<int:insurance_id>', methods=['GET'])
 def get_insurance(insurance_id):
     insurance = Insurance.query.get_or_404(insurance_id)
     return jsonify(insurance.serialize()), 200
 
+# ----------------------------
+# GET: Fetch insurance policies by patient ID
+# ----------------------------
+@api.route('/insurances/patient/<int:patient_id>', methods=['GET'])
+def get_patient_insurances(patient_id):
+    try:
+        insurances = Insurance.query.filter_by(patient_id=patient_id).all()
+        if not insurances:
+            return jsonify({"message": "No insurance records found for this patient"}), 404
+        return jsonify([insurance.serialize() for insurance in insurances]), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# POST: Create a new insurance record
+# ----------------------------
 @api.route('/insurances', methods=['POST'])
 def create_insurance():
     data = request.get_json()
-    insurance = Insurance(
-        patient_id=data['patient_id'],
-        provider_name=data['provider_name'],
-        policy_number=data['policy_number'],
-        coverage_details=data.get('coverage_details')
-    )
-    db.session.add(insurance)
-    db.session.commit()
-    return jsonify(insurance.serialize()), 201
 
+    # Basic validation
+    if not data.get('provider_name') or not data.get('policy_number'):
+        return jsonify({"error": "Provider name and policy number are required"}), 400
+
+    try:
+        insurance = Insurance(
+            patient_id=data['patient_id'],
+            provider_name=data['provider_name'],
+            policy_number=data['policy_number'],
+            coverage_details=data.get('coverage_details')
+        )
+        db.session.add(insurance)
+        db.session.commit()
+        return jsonify(insurance.serialize()), 201
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# PUT: Update an existing insurance record
+# ----------------------------
 @api.route('/insurances/<int:insurance_id>', methods=['PUT'])
 def update_insurance(insurance_id):
-    data = request.get_json()
     insurance = Insurance.query.get_or_404(insurance_id)
-    insurance.provider_name = data.get('provider_name', insurance.provider_name)
-    insurance.policy_number = data.get('policy_number', insurance.policy_number)
-    insurance.coverage_details = data.get('coverage_details', insurance.coverage_details)
-    db.session.commit()
-    return jsonify(insurance.serialize()), 200
+    data = request.get_json()
 
+    try:
+        # Update fields if provided
+        insurance.provider_name = data.get('provider_name', insurance.provider_name)
+        insurance.policy_number = data.get('policy_number', insurance.policy_number)
+        insurance.coverage_details = data.get('coverage_details', insurance.coverage_details)
+        
+        db.session.commit()
+        return jsonify(insurance.serialize()), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# DELETE: Delete an insurance record
+# ----------------------------
 @api.route('/insurances/<int:insurance_id>', methods=['DELETE'])
 def delete_insurance(insurance_id):
     insurance = Insurance.query.get_or_404(insurance_id)
-    db.session.delete(insurance)
-    db.session.commit()
-    return jsonify({"message": "Insurance deleted"}), 200
+
+    try:
+        db.session.delete(insurance)
+        db.session.commit()
+        return jsonify({"message": "Insurance deleted successfully"}), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# POST: Check coverage for a procedure or service
+# ----------------------------
+@api.route('/insurances/coverage-check', methods=['POST'])
+def coverage_check():
+    data = request.get_json()
+
+    # Example validation: Check if the insurance covers the procedure
+    insurance = Insurance.query.get_or_404(data['insurance_id'])
+    covered_procedures = insurance.coverage_details.get('covered_procedures', [])
+
+    if data['procedure'] in covered_procedures:
+        return jsonify({"message": "Procedure is covered"}), 200
+    else:
+        return jsonify({"message": "Procedure is not covered"}), 400
+
+# ----------------------------
+# POST: Create a new insurance claim
+# ----------------------------
+@api.route('/insurances/<int:insurance_id>/claims', methods=['POST'])
+def create_claim(insurance_id):
+    data = request.get_json()
+
+    try:
+        # Create and save a new claim record
+        claim = Claim(
+            insurance_id=insurance_id,
+            claim_date=data['claim_date'],
+            amount=data['amount'],
+            status=data.get('status', 'Pending'),
+            description=data.get('description')
+        )
+        db.session.add(claim)
+        db.session.commit()
+        return jsonify(claim.serialize()), 201
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# GET: Fetch all claims related to a specific insurance policy
+# ----------------------------
+@api.route('/insurances/<int:insurance_id>/claims', methods=['GET'])
+def get_claims(insurance_id):
+    try:
+        claims = Claim.query.filter_by(insurance_id=insurance_id).all()
+        return jsonify([claim.serialize() for claim in claims]), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @api.route('/education-resources', methods=['GET'])
 def get_education_resources():
@@ -2995,6 +3241,29 @@ def customer_segmentation():
 
     return jsonify(analytics_data), 200
 
+@api.route('/api/analytics', methods=['GET'])
+def get_analytics():
+    try:
+        # Example metrics calculations
+        total_patients = Patient.query.count()
+        revenue = db.session.query(db.func.sum(Sale.total_amount)).scalar() or 0
+        top_product = db.session.query(Inventory.product_name).order_by(Inventory.quantity.asc()).first()
+
+        low_stock_count = Inventory.query.filter(Inventory.quantity < 5).count()
+        missed_appointments = Appointment.query.filter(Appointment.status == 'Missed').count()
+
+        analytics = [
+            {"name": "Total Patients Served", "value": total_patients, "category": "Patient Metrics"},
+            {"name": "Revenue (This Month)", "value": f"${revenue:,.2f}", "category": "Sales and Revenue"},
+            {"name": "Top-Selling Product (Strain)", "value": top_product[0] if top_product else "N/A", "category": "Sales and Revenue"},
+            {"name": "Products with Low Stock", "value": f"{low_stock_count} products", "category": "Inventory Analytics"},
+            {"name": "Missed Appointments", "value": missed_appointments, "category": "Appointments"}
+        ]
+
+        return jsonify(analytics), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # predictive analytics
 
 @api.route('/analytics/clv-prediction', methods=['POST'])
@@ -3044,36 +3313,67 @@ def trigger_report():
 # Clock-In Route
 @api.route('/clock-in', methods=['POST'])
 def clock_in():
-    employee_id = request.json.get('employee_id')
-    # Check if the employee is already clocked in
-    time_log = TimeLog.query.filter_by(employee_id=employee_id, status='clocked_in').first()
+    try:
+        employee_id = request.json.get('employee_id')
+        shift_id = request.json.get('shift_id')
 
-    if time_log:
-        return jsonify({"error": "Employee is already clocked in"}), 400
+        # Check if the employee is already clocked in
+        time_log = TimeLog.query.filter_by(employee_id=employee_id, status='clocked_in').first()
+        if time_log:
+            return jsonify({"error": "Employee is already clocked in"}), 400
 
-    # Create a new time log entry
-    new_log = TimeLog(employee_id=employee_id, clock_in_time=datetime.utcnow(), status='clocked_in')
-    db.session.add(new_log)
-    db.session.commit()
-    return jsonify({"message": "Clock-in successful", "time_log": new_log.id}), 200
+        # Create a new time log entry
+        new_log = TimeLog(
+            employee_id=employee_id,
+            shift_id=shift_id,
+            clock_in_time=datetime.utcnow(),
+            status='clocked_in'
+        )
+        db.session.add(new_log)
+        db.session.commit()
+        return jsonify({
+            "message": "Clock-in successful",
+            "time_log": {
+                "id": new_log.id,
+                "clock_in_time": new_log.clock_in_time.isoformat(),
+                "status": new_log.status
+            }
+        }), 200
 
-# Clock-Out Route
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": "Database error occurred", "details": str(e)}), 500
+
+
 @api.route('/clock-out', methods=['POST'])
 def clock_out():
-    employee_id = request.json.get('employee_id')
-    # Check if the employee is clocked in
-    time_log = TimeLog.query.filter_by(employee_id=employee_id, status='clocked_in').first()
+    try:
+        employee_id = request.json.get('employee_id')
 
-    if not time_log:
-        return jsonify({"error": "Employee is not clocked in"}), 400
+        # Check if the employee is clocked in
+        time_log = TimeLog.query.filter_by(employee_id=employee_id, status='clocked_in').first()
+        if not time_log:
+            return jsonify({"error": "Employee is not clocked in"}), 400
 
-    # Update the time log entry
-    time_log.clock_out_time = datetime.utcnow()
-    time_log.calculate_hours()
-    time_log.status = 'clocked_out'
-    db.session.commit()
+        # Update the time log entry
+        time_log.clock_out_time = datetime.utcnow()
+        time_log.calculate_hours()
+        time_log.status = 'clocked_out'
+        db.session.commit()
 
-    return jsonify({"message": "Clock-out successful", "total_hours": time_log.total_hours}), 200
+        return jsonify({
+            "message": "Clock-out successful",
+            "time_log": {
+                "id": time_log.id,
+                "clock_in_time": time_log.clock_in_time.isoformat(),
+                "clock_out_time": time_log.clock_out_time.isoformat(),
+                "total_hours": time_log.total_hours
+            }
+        }), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": "Database error occurred", "details": str(e)}), 500
 
 # Retrieve Payroll Data Route
 
@@ -3897,6 +4197,53 @@ def create_payroll():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
+@api.route('/payroll/calculate', methods=['POST'])
+def calculate_payroll():
+    data = request.json
+    employee_id = data['employee_id']
+    pay_period_start = datetime.fromisoformat(data['pay_period_start']).date()
+    pay_period_end = datetime.fromisoformat(data['pay_period_end']).date()
+    hourly_rate = data['hourly_rate']
+
+    # Step 1: Calculate total hours worked within the pay period
+    total_hours = db.session.query(
+        db.func.sum(TimeLog.total_hours)
+    ).filter(
+        TimeLog.employee_id == employee_id,
+        TimeLog.clock_in_time >= pay_period_start,
+        TimeLog.clock_out_time <= pay_period_end
+    ).scalar() or 0.0
+
+    # Step 2: Calculate overtime (if applicable)
+    standard_hours = min(total_hours, 40)  # Assuming 40 hours is standard
+    overtime_hours = max(0, total_hours - 40)
+    overtime_rate = 1.5 * hourly_rate  # 1.5x pay for overtime
+
+    # Step 3: Calculate total pay
+    total_pay = (standard_hours * hourly_rate) + (overtime_hours * overtime_rate)
+
+    # Step 4: Create payroll record
+    payroll = Payroll(
+        employee_id=employee_id,
+        pay_period_start=pay_period_start,
+        pay_period_end=pay_period_end,
+        total_hours=total_hours,
+        hourly_rate=hourly_rate,
+        total_pay=total_pay
+    )
+    db.session.add(payroll)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Payroll calculated successfully",
+        "employee_id": employee_id,
+        "total_hours": total_hours,
+        "standard_hours": standard_hours,
+        "overtime_hours": overtime_hours,
+        "total_pay": total_pay
+    }), 200
+
+
 # Route to get all time logs
 @api.route('/time_logs', methods=['GET'])
 def get_time_logs():
@@ -4100,6 +4447,39 @@ def get_sales_report():
         "breakdown": breakdown,
         "results": formatted_results
     }), 200
+
+@api.route('/shifts', methods=['POST'])
+def create_shift():
+    data = request.json
+    shift = Shift(
+        employee_id=data['employee_id'],
+        shift_start=datetime.fromisoformat(data['shift_start']),
+        shift_end=datetime.fromisoformat(data['shift_end']),
+        status="scheduled"
+    )
+    db.session.add(shift)
+    db.session.commit()
+    return jsonify({"message": "Shift created successfully", "shift": shift.id}), 201
+
+@api.route('/shifts/validate', methods=['POST'])
+def validate_shift():
+    data = request.json
+    start_time = datetime.fromisoformat(data['start_time'])
+    end_time = datetime.fromisoformat(data['end_time'])
+    employee_id = data['employee_id']
+
+    conflicting_shift = Shift.query.filter(
+        Shift.employee_id == employee_id,
+        db.or_(
+            db.and_(Shift.start_time <= start_time, Shift.end_time >= start_time),
+            db.and_(Shift.start_time <= end_time, Shift.end_time >= end_time)
+        )
+    ).first()
+
+    if conflicting_shift:
+        return jsonify({"error": "Shift overlaps with an existing shift"}), 400
+
+    return jsonify({"message": "No conflicts found"}), 200
 
 # @api.route('/dashboard/metrics', methods=['GET'])
 # @jwt_required()
