@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import "../../styles/suppliers.css";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { getDocument } from "pdfjs-dist";
+import "../../styles/suppliers.css";
 
 
 const Suppliers = () => {

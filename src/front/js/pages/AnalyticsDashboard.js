@@ -41,6 +41,7 @@ const AnalyticsDashboard = () => {
       setInventoryData(inventory);
     } catch (err) {
       setError("Failed to fetch analytics data.");
+      console.log(err)
     } finally {
       setLoading(false);
     }

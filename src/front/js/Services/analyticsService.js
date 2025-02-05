@@ -20,7 +20,23 @@ const analyticsService = {
             throw error;
         }
     },
-
+    /**
+        * Fetches customer analytics.
+        * @returns {Promise} Resolves to customer analytics data.
+        */
+    getSalesAnalytics: async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/analytics/sales`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`, // Example: Adding JWT token for authentication
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching sales analytics:', error);
+            throw error;
+        }
+    },
     /**
      * Fetches admin dashboard analytics.
      * @returns {Promise} Resolves to dashboard analytics data.
@@ -110,6 +126,25 @@ const analyticsService = {
             throw error;
         }
     },
+    /**
+       * Fetches inventory analytics.
+       * @returns {Promise} Resolves to inventory analytics data.
+       */
+    getInventoryAnalytics: async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/inventory/analytics`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching inventory analytics:', error);
+            throw error;
+        }
+    },
 };
+
+
 
 export default analyticsService;

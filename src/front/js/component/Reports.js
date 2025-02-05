@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const BASE_URL = process.env.BACKEND_URL || "http://localhost:5000/api";
 
 const ReportsService = {
   /**
@@ -8,7 +8,7 @@ const ReportsService = {
    */
   getAllReports: async (type, token, filters = {}) => {
     try {
-      const response = await axios.get(`${BASE_URL}/reports`, {
+      const response = await axios.get(`${BASE_URL}/api/reports`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { type, ...filters }, // Include additional filters (e.g., start_date, end_date)
       });
@@ -25,7 +25,7 @@ const ReportsService = {
   generateReport: async (type, filters, token) => {
     try {
       const response = await axios.post(
-        `${BASE_URL}/reports/generate`,
+        `${BASE_URL}/api/reports/generate`,
         { type, filters },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -42,7 +42,7 @@ const ReportsService = {
   exportReport: async (reportId, format, token) => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/reports/export/${reportId}`,
+        `${BASE_URL}/api/reports/export/${reportId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params: { format },
@@ -61,7 +61,7 @@ const ReportsService = {
    */
   getTimeBasedReports: async (type, startDate, endDate, token) => {
     try {
-      const response = await axios.get(`${BASE_URL}/analytics/sales`, {
+      const response = await axios.get(`${BASE_URL}/api/analytics/sales`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { type, start_date: startDate, end_date: endDate },
       });

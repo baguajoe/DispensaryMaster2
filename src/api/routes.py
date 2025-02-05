@@ -1418,6 +1418,62 @@ def inventory_forecast():
 
     except Exception as e:
         return jsonify({"error": f"An error occurred during forecasting: {str(e)}"}), 500
+    
+
+@api.route('/inventory/analytics', methods=['GET'])
+def get_inventory_analytics():
+    try:
+        # Total number of products
+        total_products = Product.query.count()
+
+        # Total stock across all products
+        total_stock = db.session.query(func.sum(Product.stock)).scalar() or 0
+
+        # Out-of-stock products
+        out_of_stock = Product.query.filter(Product.stock == 0).all()
+        out_of_stock_list = [{"id": p.id, "name": p.name} for p in out_of_stock]
+
+        # Low-stock products (threshold = 10 units)
+        low_stock = Product.query.filter(Product.stock < 10, Product.stock > 0).all()
+        low_stock_list = [{"id": p.id, "name": p.name, "stock": p.stock} for p in low_stock]
+
+        # Products with the highest and lowest stock
+        highest_stock_product = Product.query.order_by(Product.stock.desc()).first()
+        lowest_stock_product = Product.query.order_by(Product.stock).first()
+
+        # Average stock per product
+        average_stock = total_stock / total_products if total_products > 0 else 0
+
+        # Breakdown of products by category
+        category_breakdown = db.session.query(Product.category, func.count(Product.id))\
+            .group_by(Product.category).all()
+        category_data = [{"category": category, "count": count} for category, count in category_breakdown]
+
+        # Prepare the response
+        response = {
+            "total_products": total_products,
+            "total_stock": total_stock,
+            "out_of_stock_products": out_of_stock_list,
+            "low_stock_products": low_stock_list,
+            "average_stock": average_stock,
+            "category_breakdown": category_data,
+            "highest_stock_product": {
+                "id": highest_stock_product.id,
+                "name": highest_stock_product.name,
+                "stock": highest_stock_product.stock
+            } if highest_stock_product else None,
+            "lowest_stock_product": {
+                "id": lowest_stock_product.id,
+                "name": lowest_stock_product.name,
+                "stock": lowest_stock_product.stock
+            } if lowest_stock_product else None
+        }
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 
