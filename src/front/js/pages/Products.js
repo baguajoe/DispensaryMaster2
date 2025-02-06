@@ -329,7 +329,7 @@ const Products = () => {
               <ul className="dropdown-menu mt-0">
                 <li>
                   <label className="dropdown-item" style={{ cursor: 'pointer' }}>
-                    <i className="fa-regular fa-file-pdf me-2"></i>Import PDF
+                    <i className="fa-regular fa-file-pdf me-2"></i>Import XML
                     <input
                       type="file"
                       accept=".pdf"

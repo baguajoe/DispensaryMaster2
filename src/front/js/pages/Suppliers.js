@@ -172,199 +172,221 @@ const Suppliers = () => {
 
 
   return (
-    <div className="p-6 main-content suppliers">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Suppliers Information</h1>
-        <div className="flex gap-2">
-          <div className="flex gap-2">
-            {/* Add Supplier */}
-            <button
-              className="bg-black text-white px-4 py-2 rounded"
-              onClick={() => {
-                setFormData({
-                  name: "",
-                  company: "",
-                  registrationDate: "",
-                  email: "",
-                  phone: "",
-                  address: ""
-                });
-                setEditingSupplier(null); // Changed from `false` to `null`
-                setShowModal(true);
-              }}
-            >
-              Add Supplier
+    <div className="suppliers-page">
+      <header className="suppliers-header flex-column align-items-start">
+        <h1>Suppliers Information</h1>
+        <div className="button-group d-flex gap-2 mt-3 w-100 justify-content-end">
+          {/* Import Dropdown */}
+          <div className="dropdown">
+            <button className="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Import Products
             </button>
-
-
-            {/* Import PDF */}
-            <button
-              className="bg-black text-white px-4 py-2 rounded"
-              onClick={() => document.getElementById("pdfUpload").click()}
-            >
-              Import PDF
-            </button>
-
-            {/* Import CSV */}
-            <button
-              className="bg-black text-white px-4 py-2 rounded"
-              onClick={() => document.getElementById("csvUpload").click()}
-            >
-              Import CSV
-            </button>
-
-            {/* Export PDF */}
-            <button
-              className="bg-black text-white px-4 py-2 rounded"
-              onClick={handleExportPDF}
-            >
-              Export PDF
-            </button>
-
-            {/* Export CSV */}
-            <button
-              className="bg-black text-white px-4 py-2 rounded"
-              onClick={handleExportCSV}
-            >
-              Export CSV
-            </button>
+            <ul className="dropdown-menu dropdown-menu-end mt-0">
+              <li>
+                <button className="dropdown-item" onClick={() => document.getElementById('csvUpload').click()}>
+                  <i className="fa-solid fa-file-csv me-2"></i>Import CSV
+                </button>
+              </li>
+            </ul>
           </div>
 
-          {/* Hidden Inputs for File Upload */}
-          <input
-            type="file"
-            id="pdfUpload"
-            accept=".pdf"
-            style={{ display: "none" }}
-            onChange={handlePDFUpload}
-          />
-          <input
-            type="file"
-            id="csvUpload"
-            accept=".csv"
-            style={{ display: "none" }}
-            onChange={handleCSVUpload}
-          />
-
+          {/* Export Dropdown */}
+          <div className="dropdown">
+            <button className="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Export Products
+            </button>
+            <ul className="dropdown-menu dropdown-menu-end mt-0">
+              <li>
+                <button className="dropdown-item" onClick={handleExportPDF}>
+                  <i className="fa-regular fa-file-pdf me-2"></i>Export PDF
+                </button>
+              </li>
+              <li>
+                <button className="dropdown-item" onClick={handleExportCSV}>
+                  <i className="fa-solid fa-file-csv me-2"></i>Export CSV
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-      <table className="table-auto w-full rounded shadow-md">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2 text-left">Name</th>
-            <th className="px-4 py-2 text-left">Company</th>
-            <th className="px-4 py-2 text-left">Registration Date</th>
-            <th className="px-4 py-2 text-left">Email</th>
-            <th className="px-4 py-2 text-left">Phone</th>
-            <th className="px-4 py-2 text-left">Address</th>
-            <th className="px-4 py-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {suppliers.map((supplier) => (
-            <tr key={supplier.id}>
-              <td className="px-4 py-2">{supplier.name}</td>
-              <td className="px-4 py-2">{supplier.company}</td>
-              <td className="px-4 py-2">{supplier.registrationDate}</td>
-              <td className="px-4 py-2">{supplier.email}</td>
-              <td className="px-4 py-2">{supplier.phone}</td>
-              <td className="px-4 py-2">{supplier.address}</td>
-              <td className="px-4 py-2">
-                <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
-                  onClick={() => handleEditSupplier(supplier)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 text-white px-3 py-1 rounded"
-                  onClick={() => handleDeleteSupplier(supplier.id)}
-                >
-                  Delete
-                </button>
-              </td>
+      </header>
+
+      <div className="suppliers-table-container">
+        <div className="d-flex justify-content-end mb-3">
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              setFormData({
+                name: "",
+                company: "",
+                registrationDate: "",
+                email: "",
+                phone: "",
+                address: ""
+              });
+              setEditingSupplier(null);
+              setShowModal(true);
+            }}
+          >
+            <i className="fa-solid fa-circle-plus"></i> Add Supplier
+          </button>
+        </div>
+
+        <table className="suppliers-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Company</th>
+              <th>Registration Date</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {suppliers.map((supplier) => (
+              <tr key={supplier.id}>
+                <td>{supplier.name}</td>
+                <td>{supplier.company}</td>
+                <td>{supplier.registrationDate}</td>
+                <td>{supplier.email}</td>
+                <td>{supplier.phone}</td>
+                <td>{supplier.address}</td>
+                <td>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => handleEditSupplier(supplier)}
+                    >
+                      <i className="fa-regular fa-pen-to-square"></i>
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDeleteSupplier(supplier.id)}
+                    >
+                      <i className="fa-regular fa-trash-can"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Modal */}
       {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2 className="text-xl font-bold mb-4">
-              {editingSupplier ? "Edit Supplier" : "Add Supplier"}
-            </h2>
-            <form onSubmit={handleFormSubmit}>
-              <div className="mb-3">
-                <label>Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
+        <>
+          <div className="modal fade show d-block" tabIndex="-1">
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    {editingSupplier ? "Edit Supplier" : "Add Supplier"}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <form onSubmit={handleFormSubmit}>
+                    <div className="mb-3">
+                      <label className="form-label">Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Company</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.company}
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Registration Date</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={formData.registrationDate}
+                        onChange={(e) => setFormData({ ...formData, registrationDate: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Email</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Phone</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Address</label>
+                      <textarea
+                        className="form-control"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        required
+                      ></textarea>
+                    </div>
+                    <div className="modal-footer px-0 pb-0">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setShowModal(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button type="submit" className="btn btn-primary">
+                        {editingSupplier ? "Save Changes" : "Add Supplier"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
-              <div className="mb-3">
-                <label>Company</label>
-                <input
-                  type="text"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label>Registration Date</label>
-                <input
-                  type="date"
-                  value={formData.registrationDate}
-                  onChange={(e) => setFormData({ ...formData, registrationDate: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label>Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label>Phone</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label>Address</label>
-                <textarea
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  required
-                ></textarea>
-              </div>
-              <div className="flex gap-2">
-                <button type="submit" className="bg-black text-white px-4 py-2 rounded">
-                  Save
-                </button>
-                <button
-                  type="button"
-                  className="bg-gray-300 px-4 py-2 rounded"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
       )}
+
+      {/* Hidden file inputs */}
+      <input
+        type="file"
+        id="pdfUpload"
+        accept=".pdf"
+        style={{ display: "none" }}
+        onChange={handlePDFUpload}
+      />
+      <input
+        type="file"
+        id="csvUpload"
+        accept=".csv"
+        style={{ display: "none" }}
+        onChange={handleCSVUpload}
+      />
     </div>
   );
 };

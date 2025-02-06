@@ -1,0 +1,169 @@
+/* body {
+    font-family: 'Arial, sans-serif';
+    background: linear-gradient(to right, #1a202c, #2a4365);
+    color: white;
+    margin: 0;
+    padding: 0;
+} */
+
+.profile-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.profile-container {
+.profile-title {
+    text-align: center;
+    font-size: 2.5rem;
+    color: #cbd5e0;
+    margin-bottom: 2rem;
+}
+
+.patient-details, .prescription-history, .medical-records, .recent-purchases, .loyalty-status {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    color: #edf2f7;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #4a5568;
+    padding-bottom: 0.5rem;
+}
+
+h3 {
+    color: #a0aec0;
+    margin-bottom: 1rem;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 1rem;
+}
+
+p {
+    font-size: 1rem;
+    color: #e2e8f0;
+    margin: 0.3rem 0;
+}
+
+/* Prescription Table Customization */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+th {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #cbd5e0;
+}
+
+td {
+    color: #e2e8f0;
+}
+
+/* Forms & Buttons */
+.patient-edit-form input {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.patient-edit-form input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.patient-edit-form input:focus {
+    outline: none;
+    border-color: #63b3ed;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+button {
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    background-color: #2b6cb0;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #2c5282;
+}
+
+.edit-button {
+    background-color: #48bb78;
+}
+
+.edit-button:hover {
+    background-color: #2f855a;
+}
+
+/* Loyalty Program Section */
+.loyalty-status {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #c6f6d5;
+}
+
+.loyalty-status h2 {
+    color: #48bb78;
+}
+
+.loyalty-points {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+}
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 1rem;
+    }
+
+    .profile-container h2 {
+        font-size: 1.5rem;
+    }
+
+    .profile-container table th, .profile-container table td {
+        font-size: 0.9rem;
+    }
+
+    .profile-container button {
+        padding: 0.5rem 1rem;
+    }
+}

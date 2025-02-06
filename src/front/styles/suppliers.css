@@ -1,32 +1,205 @@
-.main-content {
-    margin-left: 16rem; /* Matches the sidebar width */
-    padding: 24px;
-    min-height: calc(100vh - 90px); /* Adjust for navbar height */
-    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
-    color: white; /* Matches sidebar color */
-    overflow-x: auto; /* Prevent horizontal scroll if sidebar collapses */
-    transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
-}
+/* suppliers.css */
+.suppliers-page {
+  margin-left: 16rem;
+  padding: 24px;
+  min-height: calc(100vh - 90px);
+  background: linear-gradient(to right, #2a4365, #285e61);
+  color: white;
+  overflow-x: auto;
+  transition: margin-left 0.3s ease;
 
-.suppliers {
-  .modal {
-    display: block !important;  /* Force visibility */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
+  .suppliers-header {
+    display: flex;
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      color: white;
+      margin: 0;
+    }
   }
-  
+
+  .button-group {
+    margin-left: 0;
+  }
+
+  .dropdown-menu {
+    background-color: #1F2937;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    right: 0 !important;
+    left: auto !important;
+    transform-origin: top right !important;
+  }
+
+  .dropdown-item {
+    color: white;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+  }
+
+  .btn-dark.dropdown-toggle {
+    border: 1px solid;
+  }
+
+  .suppliers-table-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 24px;
+  }
+
+  .suppliers-table {
+    width: 100%;
+    color: white !important;
+    margin-bottom: 0;
+
+    th {
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      /* background-color: rgba(0, 0, 0, 0.2); */
+      background-color: #152f3d;
+      color: #cbd5e0;
+      padding: 12px;
+    }
+
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px;
+    }
+
+    tbody tr {
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+
+        td {
+          color: #fc8d32;
+        }
+      }
+    }
+  }
+
   .modal-content {
-    background: white;
-    background-color: #274263;
-    color: red;
-    width: 500px;
-    margin: 100px auto;
-    padding: 20px;
-    border-radius: 5px;
+    background-color: #2a4365;
+    color: white;
+  }
+
+  .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    .btn-close {
+      filter: invert(1) grayscale(100%) brightness(200%);
+    }
+  }
+
+  .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .form-control,
+  .form-select {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid white;
+    color: white;
+
+    &:focus {
+      background-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: white;
+      box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+    option {
+      background-color: #2a4365;
+      color: white;
+    }
+  }
+
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .alert-danger {
+    background-color: rgba(229, 62, 62, 0.1);
+    border-color: rgba(229, 62, 62, 0.2);
+    color: #fc8181;
+  }
+
+  .form-control:valid {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+    border-color: white !important;
+  }
+
+  .form-control:invalid {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.4) !important;
+  }
+
+  .edit-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+  }
+
+  .header-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .btn-outline-light {
+    border: 1px solid white;
+    color: white;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .suppliers-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+
+      h1 {
+        font-size: 1.75rem;
+      }
+    }
+
+    .suppliers-table {
+
+      th,
+      td {
+        padding: 12px;
+      }
+    }
   }
 }

@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import BatchStatusBadge from './BatchStatusBadge';
+import React from "react";
+import PropTypes from "prop-types";
+import BatchStatusBadge from "./BatchStatusBadge";
 
 const BatchTable = ({ batches }) => {
   return (
-    <table>
+    <table className="batch-table">
       <thead>
         <tr>
           <th>Strain</th>
@@ -12,6 +12,7 @@ const BatchTable = ({ batches }) => {
           <th>Status</th>
           <th>Start Date</th>
           <th>End Date</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -23,7 +24,11 @@ const BatchTable = ({ batches }) => {
               <BatchStatusBadge status={batch.status} />
             </td>
             <td>{batch.startDate}</td>
-            <td>{batch.endDate || 'N/A'}</td>
+            <td>{batch.endDate || "N/A"}</td>
+            <td>
+              <Link to={`/batches/${batch.id}/edit`}>Edit</Link> |{" "}
+              <Link to={`/batches/${batch.id}/view`}>View</Link>
+            </td>
           </tr>
         ))}
       </tbody>

@@ -46,6 +46,15 @@
     .dropdown-toggle {
         border: 1px solid;
     }
+
+    .dropdown-item {
+        color: white;
+        border-radius: 5px;
+    }
+
+    .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
 }
 
 /* Table Customization */

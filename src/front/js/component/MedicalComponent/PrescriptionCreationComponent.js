@@ -1,11 +1,14 @@
 import React from 'react';
+import PrescriptionCreationComponent from '../../component/MedicalComponent/PrescriptionCreationComponent';
+import '../../../styles/medical/PrescriptionCreation.css';
 
-const PrescriptionCreationComponent = () => {
+const PrescriptionCreation = () => {
     return (
-        <div>
-            <p>Create and manage patient prescriptions here.</p>
+        <div className="prescription-creation-container">
+            <h1 className="prescription-title">Create Prescription</h1>
+            <PrescriptionCreationComponent />
         </div>
     );
 };
 
-export default PrescriptionCreationComponent;
+export default PrescriptionCreation;

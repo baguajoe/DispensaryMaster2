@@ -1,0 +1,96 @@
+/* body {
+    font-family: 'Arial, sans-serif';
+    background: linear-gradient(to right, #2a4365, #285e61);
+    color: white;
+    margin: 0;
+    padding: 0;
+} */
+.patient-list-page {
+    .patient-list-container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .header h2 {
+        margin: 0;
+        color: #cbd5e0;
+    }
+
+    .search-input {
+        padding: 0.6rem;
+        font-size: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-radius: 5px;
+        width: 300px;
+    }
+
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .patient-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: rgba(0, 0, 0, 0.4);
+        color: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .patient-table thead th {
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.6);
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        text-align: left;
+    }
+
+    .patient-table tbody tr {
+        transition: background-color 0.3s;
+    }
+
+    .patient-table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .patient-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .no-results {
+        text-align: center;
+        color: #f87171;
+        padding: 1rem;
+        font-style: italic;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .patient-list-container {
+            padding: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+        }
+    }
+}
