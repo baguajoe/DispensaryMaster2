@@ -1,4 +1,4 @@
-.main-content {
+.orders-page {
     margin-left: 16rem; /* Matches the sidebar width */
     padding: 24px;
     min-height: calc(100vh - 90px); /* Adjust for navbar height */
@@ -6,4 +6,156 @@
     color: white; /* Matches sidebar color */
     overflow-x: auto; /* Prevent horizontal scroll if sidebar collapses */
     transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
+}
+
+.orders-page {
+    padding: 24px;
+    background: linear-gradient(to right, #2a4365, #285e61);
+    color: white;
+    min-height: calc(100vh - 90px);
+}
+
+.orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.orders-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.orders-table-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: white;
+}
+
+.orders-table th {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.orders-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.orders-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.pending {
+    background: #f6e05e;
+    color: #744210;
+}
+
+.status-badge.completed {
+    background: #68d391;
+    color: #22543d;
+}
+
+.status-badge.refunded {
+    background: #fc8181;
+    color: #742a2a;
+}
+
+.status-badge.unpaid {
+    background: #fc8181;
+    color: #742a2a;
+}
+
+.status-badge.partially_paid {
+    background: #f6e05e;
+    color: #744210;
+}
+
+.status-badge.paid {
+    background: #68d391;
+    color: #22543d;
+}
+
+/* Modal Styles */
+.modal-content {
+    background: #2d3748;
+    color: white;
+}
+
+.modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.form-control:focus, .form-select:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    box-shadow: none;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-select option {
+    background: #2d3748;
+}
+
+/* Table in Modal */
+.modal-body .table {
+    color: white;
+}
+
+.modal-body .table thead th {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body .table td {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .orders-page {
+        padding: 16px;
+    }
+
+    .orders-table-container {
+        padding: 1rem;
+    }
+
+    .orders-table {
+        display: block;
+        overflow-x: auto;
+    }
 }

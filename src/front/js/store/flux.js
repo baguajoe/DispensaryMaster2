@@ -221,6 +221,114 @@ const getState = ({ getStore, getActions, setStore }) => {
                 }
             },
 
+            // ****************** ORDERS ******************
+            // ****************** ORDERS ******************
+            // ****************** ORDERS ******************
+            fetchOrders: async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) throw new Error('Authentication required');
+
+                    const response = await fetch(process.env.BACKEND_URL + '/api/orders', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 422) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.message || 'Validation error occurred');
+                        }
+                        throw new Error('Failed to fetch orders');
+                    }
+
+                    const data = await response.json();
+                    setStore({ orders: data });
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            },
+
+            addOrder: async (orderData) => {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) throw new Error('Authentication required');
+
+                    const response = await fetch(process.env.BACKEND_URL + '/api/orders', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(orderData),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to add order');
+                    }
+
+                    await getActions().fetchOrders();
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            },
+
+            editOrder: async (orderId, orderData) => {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) throw new Error('Authentication required');
+
+                    const response = await fetch(`${process.env.BACKEND_URL}/api/orders/${orderId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(orderData),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to update order');
+                    }
+
+                    await getActions().fetchOrders();
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            },
+
+            deleteOrder: async (orderId) => {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) throw new Error('Authentication required');
+
+                    const response = await fetch(`${process.env.BACKEND_URL}/api/orders/${orderId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to delete order');
+                    }
+
+                    await getActions().fetchOrders();
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
 
         }
     };
