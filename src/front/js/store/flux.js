@@ -253,10 +253,85 @@ const getState = ({ getStore, getActions, setStore }) => {
                 }
             },
 
+            // addOrder: async (orderData) => {
+            //     try {
+            //         const token = localStorage.getItem('token');
+            //         if (!token) throw new Error('Authentication required');
+
+            //         const response = await fetch(process.env.BACKEND_URL + '/api/orders', {
+            //             method: 'POST',
+            //             headers: {
+            //                 'Content-Type': 'application/json',
+            //                 'Authorization': `Bearer ${token}`
+            //             },
+            //             body: JSON.stringify(orderData),
+            //         });
+
+            //         if (!response.ok) {
+            //             const errorData = await response.json();
+            //             throw new Error(errorData.message || 'Failed to add order');
+            //         }
+
+            //         await getActions().fetchOrders();
+            //         return { success: true };
+            //     } catch (error) {
+            //         return { success: false, error: error.message };
+            //     }
+            // },
+
+            // addOrder: async (orderData) => {
+            //     try {
+            //         const token = localStorage.getItem('token');
+            //         if (!token) throw new Error('Authentication required');
+
+            //         // Format the order data according to the backend expectations
+            //         const formattedData = {
+            //             customer_id: parseInt(orderData.customer_id),
+            //             items: orderData.items.map(item => ({
+            //                 product_id: parseInt(item.product_id),
+            //                 quantity: parseInt(item.quantity),
+            //                 unit_price: parseInt(item.unit_price)
+            //             }))
+            //         };
+
+            //         const response = await fetch(process.env.BACKEND_URL + '/api/orders', {
+            //             method: 'POST',
+            //             headers: {
+            //                 'Content-Type': 'application/json',
+            //                 'Authorization': `Bearer ${token}`
+            //             },
+            //             body: JSON.stringify(formattedData),
+            //         });
+
+            //         if (!response.ok) {
+            //             const errorData = await response.json();
+            //             throw new Error(errorData.message || 'Failed to add order');
+            //         }
+
+            //         await getActions().fetchOrders();
+            //         return { success: true };
+            //     } catch (error) {
+            //         return { success: false, error: error.message };
+            //     }
+            // },
+
             addOrder: async (orderData) => {
                 try {
                     const token = localStorage.getItem('token');
                     if (!token) throw new Error('Authentication required');
+
+                    // Format the order data
+                    const formattedData = {
+                        customer_id: parseInt(orderData.customer_id),
+                        items: orderData.items.map(item => ({
+                            product_id: parseInt(item.product_id),
+                            quantity: parseInt(item.quantity),
+                            unit_price: parseFloat(item.unit_price)
+                        }))
+                    };
+
+                    // Log the formatted data for debugging
+                    console.log('Sending order data:', formattedData);
 
                     const response = await fetch(process.env.BACKEND_URL + '/api/orders', {
                         method: 'POST',
@@ -264,17 +339,18 @@ const getState = ({ getStore, getActions, setStore }) => {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify(orderData),
+                        body: JSON.stringify(formattedData),
                     });
 
+                    const data = await response.json();
+
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Failed to add order');
+                        throw new Error(data.error || 'Failed to add order');
                     }
 
-                    await getActions().fetchOrders();
-                    return { success: true };
+                    return { success: true, data };
                 } catch (error) {
+                    console.error('Error adding order:', error);
                     return { success: false, error: error.message };
                 }
             },

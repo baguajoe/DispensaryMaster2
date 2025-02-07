@@ -2,7 +2,10 @@ import React, { useEffect, useState, useContext } from "react";
 import { Context } from "../store/appContext";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import OrderItemsComponent from "../component/OrderItems";
+
 import "../../styles/orders.css";
+
 
 const Orders = () => {
   const { store, actions } = useContext(Context);
@@ -11,14 +14,13 @@ const Orders = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // Simplified form data to match backend expectations
   const [formData, setFormData] = useState({
     customer_id: '',
-    total_amount: '',
-    refund_amount: '0.00',
-    status: 'pending',
-    payment_status: 'unpaid',
     items: []
   });
+
   const [orderItemForm, setOrderItemForm] = useState({
     product_id: '',
     quantity: '',
@@ -53,11 +55,7 @@ const Orders = () => {
   const handleEdit = (order) => {
     setSelectedOrder(order);
     setFormData({
-      customer_id: order.customer_id,
-      total_amount: order.total_amount,
-      refund_amount: order.refund_amount,
-      status: order.status,
-      payment_status: order.payment_status,
+      customer_id: order.customer_id.toString(),
       items: order.order_items || []
     });
     setShowEditModal(true);
@@ -89,10 +87,6 @@ const Orders = () => {
   const resetForm = () => {
     setFormData({
       customer_id: '',
-      total_amount: '',
-      refund_amount: '0.00',
-      status: 'pending',
-      payment_status: 'unpaid',
       items: []
     });
     setOrderItemForm({
@@ -104,38 +98,41 @@ const Orders = () => {
   };
 
   const handleAddItem = () => {
-    setFormData({
-      ...formData,
-      items: [...formData.items, orderItemForm],
-      total_amount: parseFloat(formData.total_amount || 0) +
-        (parseFloat(orderItemForm.unit_price) * parseInt(orderItemForm.quantity))
+    const newItem = {
+      product_id: parseInt(orderItemForm.product_id),
+      quantity: parseInt(orderItemForm.quantity),
+      unit_price: parseInt(orderItemForm.unit_price)
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, newItem]
+    }));
+
+    setOrderItemForm({
+      product_id: '',
+      quantity: '',
+      unit_price: ''
     });
-    setOrderItemForm({ product_id: '', quantity: '', unit_price: '' });
   };
 
   const handleRemoveItem = (index) => {
-    const items = [...formData.items];
-    const removedItem = items[index];
-    items.splice(index, 1);
-    setFormData({
-      ...formData,
-      items,
-      total_amount: parseFloat(formData.total_amount) -
-        (parseFloat(removedItem.unit_price) * parseInt(removedItem.quantity))
-    });
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index)
+    }));
   };
 
   const handleGeneratePDF = () => {
     const doc = new jsPDF();
     doc.text("Orders List", 14, 10);
 
-    const tableColumn = ["Order ID", "Customer", "Total Amount", "Status", "Payment Status"];
+    const tableColumn = ["Order ID", "Customer", "Total Amount", "Items"];
     const tableRows = store.orders.map((order) => [
       order.id,
       order.customer_id,
-      `$${order.total_amount}`,
-      order.status,
-      order.payment_status
+      `$${(order.items || []).reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}`,
+      (order.items || []).length
     ]);
 
     doc.autoTable({
@@ -148,13 +145,12 @@ const Orders = () => {
   };
 
   const handleGenerateCSV = () => {
-    const headers = ["Order ID,Customer,Total Amount,Status,Payment Status"];
+    const headers = ["Order ID,Customer,Total Amount,Items"];
     const rows = store.orders.map((order) => [
       order.id,
       order.customer_id,
-      order.total_amount,
-      order.status,
-      order.payment_status
+      (order.items || []).reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2),
+      (order.items || []).length
     ]);
 
     const csvContent = [
@@ -169,6 +165,67 @@ const Orders = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const renderModal = (isEdit = false) => {
+    const modalShow = isEdit ? showEditModal : showAddModal;
+    const handleClose = () => {
+      isEdit ? setShowEditModal(false) : setShowAddModal(false);
+      resetForm();
+    };
+    const handleSubmitForm = isEdit ? handleEditSubmit : handleSubmit;
+
+    return modalShow ? (
+      <>
+        <div className="modal fade show d-block" tabIndex="-1">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{isEdit ? 'Edit Order' : 'Add New Order'}</h5>
+                <button type="button" className="btn-close" onClick={handleClose}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleSubmitForm}>
+                  <div className="mb-3">
+                    <label className="form-label">Customer ID</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={formData.customer_id}
+                      onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <OrderItemsComponent
+                    orderItemForm={orderItemForm}
+                    setOrderItemForm={setOrderItemForm}
+                    handleAddItem={handleAddItem}
+                    items={formData.items}
+                    handleRemoveItem={handleRemoveItem}
+                    totalAmount={formData.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)}
+                  />
+
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={handleClose}>
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={formData.items.length === 0}
+                    >
+                      {isEdit ? 'Save Changes' : 'Create Order'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-backdrop fade show"></div>
+      </>
+    ) : null;
   };
 
   if (isLoading) {
@@ -193,197 +250,6 @@ const Orders = () => {
       </div>
     );
   }
-
-  const renderModal = (isEdit = false) => {
-    const modalShow = isEdit ? showEditModal : showAddModal;
-    const handleClose = () => {
-      isEdit ? setShowEditModal(false) : setShowAddModal(false);
-      resetForm();
-    };
-    const handleSubmitForm = isEdit ? handleEditSubmit : handleSubmit;
-
-    return modalShow ? (
-      <>
-        <div className="modal fade show d-block" tabIndex="-1">
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{isEdit ? 'Edit Order' : 'Add New Order'}</h5>
-                <button type="button" className="btn-close" onClick={handleClose}></button>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={handleSubmitForm}>
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Customer ID</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={formData.customer_id}
-                        onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-                        required
-                      />
-                    </div>
-
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Status</label>
-                      <select
-                        className="form-select"
-                        value={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                        required
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                        <option value="refunded">Refunded</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Payment Status</label>
-                      <select
-                        className="form-select"
-                        value={formData.payment_status}
-                        onChange={(e) => setFormData({ ...formData, payment_status: e.target.value })}
-                        required
-                      >
-                        <option value="unpaid">Unpaid</option>
-                        <option value="partially_paid">Partially Paid</option>
-                        <option value="paid">Paid</option>
-                      </select>
-                    </div>
-
-                    <div className="col-md-6 mb-3">
-                      <label className="form-label">Refund Amount</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        className="form-control"
-                        value={formData.refund_amount}
-                        onChange={(e) => setFormData({ ...formData, refund_amount: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <h6 className="mb-3">Order Items</h6>
-                    <div className="card bg-dark text-white p-3 mb-3">
-                      <div className="row g-2">
-                        <div className="col-md-3">
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Product ID"
-                            value={orderItemForm.product_id}
-                            onChange={(e) => setOrderItemForm({
-                              ...orderItemForm,
-                              product_id: e.target.value
-                            })}
-                          />
-                        </div>
-                        <div className="col-md-3">
-                          <input
-                            type="number"
-                            className="form-control"
-                            placeholder="Quantity"
-                            value={orderItemForm.quantity}
-                            onChange={(e) => setOrderItemForm({
-                              ...orderItemForm,
-                              quantity: e.target.value
-                            })}
-                          />
-                        </div>
-                        <div className="col-md-3">
-                          <input
-                            type="number"
-                            step="0.01"
-                            className="form-control"
-                            placeholder="Unit Price"
-                            value={orderItemForm.unit_price}
-                            onChange={(e) => setOrderItemForm({
-                              ...orderItemForm,
-                              unit_price: e.target.value
-                            })}
-                          />
-                        </div>
-                        <div className="col-md-3">
-                          <button
-                            type="button"
-                            className="btn btn-primary w-100"
-                            onClick={handleAddItem}
-                            disabled={!orderItemForm.product_id || !orderItemForm.quantity || !orderItemForm.unit_price}
-                          >
-                            <i className="fas fa-plus me-2"></i>Add Item
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="table-responsive">
-                      <table className="table table-dark table-hover">
-                        <thead>
-                          <tr>
-                            <th>Product ID</th>
-                            <th>Quantity</th>
-                            <th>Unit Price</th>
-                            <th>Subtotal</th>
-                            <th>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {formData.items.map((item, index) => (
-                            <tr key={index}>
-                              <td>{item.product_id}</td>
-                              <td>{item.quantity}</td>
-                              <td>${parseFloat(item.unit_price).toFixed(2)}</td>
-                              <td>${(item.quantity * item.unit_price).toFixed(2)}</td>
-                              <td>
-                                <button
-                                  type="button"
-                                  className="btn btn-danger btn-sm"
-                                  onClick={() => handleRemoveItem(index)}
-                                >
-                                  <i className="fas fa-trash-alt"></i>
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                        <tfoot>
-                          <tr>
-                            <td colSpan="3" className="text-end"><strong>Total:</strong></td>
-                            <td colSpan="2">
-                              <strong>${formData.total_amount ? parseFloat(formData.total_amount).toFixed(2) : '0.00'}</strong>
-                            </td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-                  </div>
-
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" onClick={handleClose}>
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      disabled={formData.items.length === 0}
-                    >
-                      {isEdit ? 'Save Changes' : 'Create Order'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="modal-backdrop fade show"></div>
-      </>
-    ) : null;
-  };
 
   return (
     <div className="orders-page">
@@ -424,9 +290,7 @@ const Orders = () => {
                 <th>Order ID</th>
                 <th>Customer</th>
                 <th>Total Amount</th>
-                <th>Refund Amount</th>
-                <th>Status</th>
-                <th>Payment Status</th>
+                <th>Items</th>
                 <th>Created Date</th>
                 <th>Actions</th>
               </tr>
@@ -437,18 +301,10 @@ const Orders = () => {
                   <tr key={order.id}>
                     <td>{order.id}</td>
                     <td>{order.customer_id}</td>
-                    <td>${parseFloat(order.total_amount).toFixed(2)}</td>
-                    <td>${parseFloat(order.refund_amount).toFixed(2)}</td>
                     <td>
-                      <span className={`status-badge ${order.status.toLowerCase()}`}>
-                        {order.status}
-                      </span>
+                      ${(order.items || []).reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}
                     </td>
-                    <td>
-                      <span className={`status-badge ${order.payment_status.toLowerCase()}`}>
-                        {order.payment_status}
-                      </span>
-                    </td>
+                    <td>{(order.items || []).length} items</td>
                     <td>{new Date(order.created_at).toLocaleDateString()}</td>
                     <td>
                       <div className="d-flex gap-2">
@@ -470,7 +326,7 @@ const Orders = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="text-center">
+                  <td colSpan="6" className="text-center">
                     <p className="text-light mb-0">No orders found</p>
                   </td>
                 </tr>
@@ -480,8 +336,8 @@ const Orders = () => {
         </div>
       </div>
 
-      {renderModal(false)} {/* Add Modal */}
-      {renderModal(true)} {/* Edit Modal */}
+      {renderModal(false)}
+      {renderModal(true)}
     </div>
   );
 };

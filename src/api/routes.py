@@ -437,28 +437,138 @@ def get_order(id):
     order = Order.query.get_or_404(id)
     return jsonify(order.serialize()), 200
 
+# @api.route('/orders', methods=['POST'])
+# @jwt_required()
+# @handle_errors
+# def create_order():
+#     schema = OrderSchema()
+#     data = schema.load(request.json)
+#     order = Order(customer_id=data['customer_id'], total_amount=0)
+#     db.session.add(order)
+#     db.session.flush()
+
+#     total_amount = 0
+#     for item in data['items']:
+#         product = Product.query.get_or_404(item['product_id'])
+#         total_price = product.unit_price * item['quantity']
+#         order_item = OrderItem(order_id=order.id, product_id=product.id, quantity=item['quantity'], unit_price=total_price)
+#         db.session.add(order_item)
+#         total_amount += total_price
+
+#     order.total_amount = total_amount
+#     db.session.commit()
+#     return jsonify(order.serialize()), 201
+
+class OrderItemSchema(Schema):
+    product_id = fields.Integer(required=True)
+    quantity = fields.Integer(required=True, validate=validate.Range(min=1))
+    unit_price = fields.Float(required=True, validate=validate.Range(min=0))
+
+class OrderSchema(Schema):
+    customer_id = fields.Integer(required=True)
+    items = fields.List(fields.Nested(OrderItemSchema), required=True, validate=validate.Length(min=1))
+
+# @api.route('/orders', methods=['POST'])
+# @jwt_required()
+# @handle_errors
+# def create_order():
+#     data = request.json
+#     try:
+#         # Create the order first
+#         order = Order(
+#             customer_id=data['customer_id'],
+#             total_amount=0,  # Will be calculated after adding items
+#             status='pending'
+#         )
+#         db.session.add(order)
+#         db.session.flush()  # Get the order ID
+
+#         total_amount = 0
+#         # Add order items
+#         for item in data['items']:
+#             order_item = OrderItem(
+#                 order_id=order.id,
+#                 product_id=item['product_id'],
+#                 quantity=item['quantity'],
+#                 unit_price=item['unit_price']
+#             )
+#             total_amount += item['quantity'] * item['unit_price']
+#             db.session.add(order_item)
+
+#         # Update the total amount
+#         order.total_amount = total_amount
+#         order.status = 'completed'
+        
+#         db.session.commit()
+#         return jsonify(order.serialize()), 201
+
+#     except KeyError as e:
+#         db.session.rollback()
+#         return jsonify({"error": f"Missing required field: {str(e)}"}), 400
+#     except SQLAlchemyError as e:
+#         db.session.rollback()
+#         return jsonify({"error": str(e)}), 500
+
 @api.route('/orders', methods=['POST'])
 @jwt_required()
 @handle_errors
 def create_order():
-    schema = OrderSchema()
-    data = schema.load(request.json)
-    order = Order(customer_id=data['customer_id'], total_amount=0)
-    db.session.add(order)
-    db.session.flush()
+    data = request.json
+    try:
+        # Validate customer exists
+        customer = Customer.query.get(data['customer_id'])
+        if not customer:
+            return jsonify({"error": f"Customer with ID {data['customer_id']} not found"}), 404
 
-    total_amount = 0
-    for item in data['items']:
-        product = Product.query.get_or_404(item['product_id'])
-        total_price = product.unit_price * item['quantity']
-        order_item = OrderItem(order_id=order.id, product_id=product.id, quantity=item['quantity'], unit_price=total_price)
-        db.session.add(order_item)
-        total_amount += total_price
+        # Validate all products exist and have sufficient stock
+        for item in data['items']:
+            product = Product.query.get(item['product_id'])
+            if not product:
+                return jsonify({"error": f"Product with ID {item['product_id']} not found"}), 404
+            if product.stock < item['quantity']:
+                return jsonify({"error": f"Insufficient stock for product {product.name}"}), 400
 
-    order.total_amount = total_amount
-    db.session.commit()
-    return jsonify(order.serialize()), 201
+        # Create the order
+        order = Order(
+            customer_id=data['customer_id'],
+            total_amount=0,
+            status='pending'
+        )
+        db.session.add(order)
+        db.session.flush()
 
+        total_amount = 0
+        # Add order items and update stock
+        for item in data['items']:
+            product = Product.query.get(item['product_id'])
+            order_item = OrderItem(
+                order_id=order.id,
+                product_id=item['product_id'],
+                quantity=item['quantity'],
+                unit_price=product.price  # Use product's actual price
+            )
+            total_amount += item['quantity'] * product.price
+            
+            # Update product stock
+            product.stock -= item['quantity']
+            
+            db.session.add(order_item)
+
+        # Update the total amount
+        order.total_amount = total_amount
+        order.status = 'completed'
+        
+        db.session.commit()
+        return jsonify(order.serialize()), 201
+
+    except KeyError as e:
+        db.session.rollback()
+        return jsonify({"error": f"Missing required field: {str(e)}"}), 400
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+        
 # recommendation routes
 
 
