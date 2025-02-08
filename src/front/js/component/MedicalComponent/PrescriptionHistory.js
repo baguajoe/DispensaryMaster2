@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 // import '../../styles/medical/PrescriptionHistory.css';
 
 const PrescriptionHistory = ({ patientId }) => {
@@ -6,7 +6,7 @@ const PrescriptionHistory = ({ patientId }) => {
 
     useEffect(() => {
         // Fetch prescription history for the patient
-        fetch(`/api/prescriptions/${patientId}`)
+        fetch(`${process.env.BACKEND_URL}/api/prescriptions/${patientId}`)
             .then((response) => response.json())
             .then((data) => setPrescriptions(data))
             .catch((error) => console.error('Error fetching prescription history:', error));

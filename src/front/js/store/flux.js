@@ -6,10 +6,33 @@ const getState = ({ getStore, getActions, setStore }) => {
             message: null,
             products: [],
             stores: [],
-
+            customers: [],
+            orders: []
         },
         actions: {
-            // Use getActions to call a function within a fuction
+            fetchCustomers: async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) throw new Error('Authentication required');
+
+                    const response = await fetch(process.env.BACKEND_URL + '/api/customers', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch customers');
+                    }
+
+                    const data = await response.json();
+                    setStore({ customers: data });
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            },
             // ****************** PRODUCTS ******************
             // ****************** PRODUCTS ******************
             // ****************** PRODUCTS ******************
@@ -347,6 +370,8 @@ const getState = ({ getStore, getActions, setStore }) => {
                     if (!response.ok) {
                         throw new Error(data.error || 'Failed to add order');
                     }
+
+                    await getActions().fetchProducts();
 
                     return { success: true, data };
                 } catch (error) {

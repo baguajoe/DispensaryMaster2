@@ -27,7 +27,7 @@ const PatientDashboard = () => {
             {/* Prescription Overview Section */}
             <section className="dashboard-section">
                 <h2>Prescription Overview</h2>
-                <PrescriptionOverview />
+                {/* <PrescriptionOverview /> */}
             </section>
 
             {/* Loyalty Status Section (optional) */}

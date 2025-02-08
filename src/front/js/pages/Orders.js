@@ -31,6 +31,13 @@ const Orders = () => {
     loadOrders();
   }, []);
 
+  useEffect(() => {
+    if (showAddModal || showEditModal) {
+      actions.fetchProducts();
+      actions.fetchCustomers();
+    }
+  }, [showAddModal, showEditModal]);
+
   const loadOrders = async () => {
     setIsLoading(true);
     const result = await actions.fetchOrders();
@@ -97,11 +104,11 @@ const Orders = () => {
     setSelectedOrder(null);
   };
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     const newItem = {
       product_id: parseInt(orderItemForm.product_id),
       quantity: parseInt(orderItemForm.quantity),
-      unit_price: parseInt(orderItemForm.unit_price)
+      unit_price: parseFloat(orderItemForm.unit_price)
     };
 
     setFormData(prev => ({
@@ -114,6 +121,8 @@ const Orders = () => {
       quantity: '',
       unit_price: ''
     });
+
+    await actions.fetchProducts();
   };
 
   const handleRemoveItem = (index) => {
@@ -186,7 +195,7 @@ const Orders = () => {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmitForm}>
-                  <div className="mb-3">
+                  {/* <div className="mb-3">
                     <label className="form-label">Customer ID</label>
                     <input
                       type="number"
@@ -195,6 +204,22 @@ const Orders = () => {
                       onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
                       required
                     />
+                  </div> */}
+                  <div className="mb-3">
+                    <label className="form-label">Customer</label>
+                    <select
+                      className="form-select"
+                      value={formData.customer_id}
+                      onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
+                      required
+                    >
+                      <option value="">Select Customer</option>
+                      {store.customers?.map((customer) => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.first_name} {customer.last_name} ({customer.email})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <OrderItemsComponent
@@ -297,33 +322,36 @@ const Orders = () => {
             </thead>
             <tbody>
               {store.orders?.length > 0 ? (
-                store.orders.map((order) => (
-                  <tr key={order.id}>
-                    <td>{order.id}</td>
-                    <td>{order.customer_id}</td>
-                    <td>
-                      ${(order.items || []).reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}
-                    </td>
-                    <td>{(order.items || []).length} items</td>
-                    <td>{new Date(order.created_at).toLocaleDateString()}</td>
-                    <td>
-                      <div className="d-flex gap-2">
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => handleEdit(order)}
-                        >
-                          <i className="fas fa-edit"></i>
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDelete(order.id)}
-                        >
-                          <i className="fas fa-trash-alt"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                store.orders.map((order) => {
+                  const customer = store.customers?.find(c => c.id === parseInt(order.customer_id));
+                  return (
+                    <tr key={order.id}>
+                      <td>{order.id}</td>
+                      <td>{customer ? `${customer.first_name} ${customer.last_name}` : order.customer_id}</td>
+                      <td>
+                        ${(order.items || []).reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}
+                      </td>
+                      <td>{(order.items || []).length} items</td>
+                      <td>{new Date(order.created_at).toLocaleDateString()}</td>
+                      <td>
+                        <div className="d-flex gap-2">
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleEdit(order)}
+                          >
+                            <i className="fas fa-edit"></i>
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleDelete(order.id)}
+                          >
+                            <i className="fas fa-trash-alt"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
               ) : (
                 <tr>
                   <td colSpan="6" className="text-center">

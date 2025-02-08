@@ -79,7 +79,8 @@
 	"dependencies": {
 		"@twilio/conversations": "^2.6.0",
 		"axios": "^1.7.7",
-		"chart.js": "^4.4.6",
+		"chart.js": "^4.4.7",
+		"chartjs": "^0.3.24",
 		"jspdf": "^2.5.2",
 		"jspdf-autotable": "^3.8.4",
 		"lucide-react": "^0.460.0",
@@ -89,7 +90,7 @@
 		"react-barcode-reader": "^0.0.2",
 		"react-beautiful-dnd": "^13.1.1",
 		"react-big-calendar": "^1.17.1",
-		"react-chartjs-2": "^5.2.0",
+		"react-chartjs-2": "^5.3.0",
 		"react-csv": "^2.2.2",
 		"react-datepicker": "^7.6.0",
 		"react-dom": "^16.8.4",

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PatientProfileComponent from '../../component/MedicalComponent/PatientProfileComponent';
 import PatientDetails from '../../component/MedicalComponent/PatientDetails';
 import PrescriptionHistory from '../../component/MedicalComponent/PrescriptionHistory';

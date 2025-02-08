@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { Chart, registerables } from "chart.js";
 import { Line, Bar, Pie, Doughnut } from "react-chartjs-2";
 import axios from "axios";
+
+// Register all necessary Chart.js components
+Chart.register(...registerables);
 
 const DynamicChart = ({ type = "line", apiEndpoint, params = {}, title = "Chart" }) => {
     const [data, setData] = useState([]);
@@ -37,7 +41,7 @@ const DynamicChart = ({ type = "line", apiEndpoint, params = {}, title = "Chart"
             ],
         });
     };
-
+console.log(chartData)
     return (
         <div className="chart-container bg-white shadow rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">{title}</h2>
