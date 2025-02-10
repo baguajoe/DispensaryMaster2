@@ -30,7 +30,7 @@ export const Sidebar = () => {
             { name: "Barcode Scanner", path: "/barcode-scanner" },
             { name: "Campaign", path: "/campaign" },
             { name: "Task", path: "/task" },
-            { name: "Sales Pipeline", path: "/sales-pipeline" },
+            { name: "Sales Reports", path: "/sales-reports" },
         ],
         medical: [
             { name: "Compliance Dashboard", path: "/medical/compliance-dashboard" },
@@ -75,7 +75,7 @@ export const Sidebar = () => {
             { name: "Barcode Scanner", path: "/barcode-scanner" },
             { name: "Campaign", path: "/campaign" },
             { name: "Task", path: "/task" },
-            { name: "Sales Pipeline", path: "/sales-pipeline" },
+            { name: "Sales Reports", path: "/sales-reports" },
         ],
         medical: [
             { name: "Compliance Dashboard", path: "/medical/compliance-dashboard" },

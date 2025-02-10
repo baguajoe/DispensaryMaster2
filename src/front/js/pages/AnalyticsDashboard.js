@@ -53,7 +53,7 @@ const AnalyticsDashboard = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
-
+console.log(salesData)
   return (
     <div className="p-6 bg-gray-100">
       {/* Dashboard Title */}
@@ -65,13 +65,13 @@ const AnalyticsDashboard = () => {
           <h3 className="text-lg font-semibold">Total Sales</h3>
           <p className="text-2xl font-bold">
             {formatCurrency(
-              salesData.reduce((acc, item) => acc + item.sales, 0)
+              salesData.daily_sales.reduce((acc, item) => acc + item.sales, 0)
             )}
           </p>
         </div>
         <div className="bg-white p-4 shadow rounded-lg">
           <h3 className="text-lg font-semibold">Total Orders</h3>
-          <p className="text-2xl font-bold">{salesData.length}</p>
+          <p className="text-2xl font-bold">{salesData.daily_sales.length}</p>
         </div>
         <div className="bg-white p-4 shadow rounded-lg">
           <h3 className="text-lg font-semibold">Top Inventory Category</h3>
@@ -83,8 +83,8 @@ const AnalyticsDashboard = () => {
           <h3 className="text-lg font-semibold">Average Order Value</h3>
           <p className="text-2xl font-bold">
             {formatCurrency(
-              salesData.reduce((acc, item) => acc + item.sales, 0) /
-                salesData.length || 0
+              salesData.daily_sales.reduce((acc, item) => acc + item.sales, 0) /
+                salesData.daily_sales.length || 0
             )}
           </p>
         </div>
@@ -141,7 +141,7 @@ const AnalyticsDashboard = () => {
       {/* Export to CSV */}
       <div className="mb-4">
         <CSVLink
-          data={salesData}
+          data={salesData.daily_sales}
           headers={[
             { label: "Date", key: "date" },
             { label: "Sales", key: "sales" },

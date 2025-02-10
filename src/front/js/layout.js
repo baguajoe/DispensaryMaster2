@@ -174,7 +174,7 @@ const Layout = () => {
                             <Route path="/barcode-scanner" element={<BarcodeScanner />} />
                             <Route path="/campaign" element={<Campaign />} />
                             <Route path="/task" element={<Task />} />
-                            <Route path="/sales-report" element={<SalesReport />} />
+                            <Route path="/sales-reports" element={<SalesReport />} />
                             <Route path="/chat" element={<ChatPage />} />
 
                             {/* POS Routes */}
