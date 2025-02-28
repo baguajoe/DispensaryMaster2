@@ -47,7 +47,15 @@ from api.models import (
     Shift, Employee, Schedule, Payroll, TimeLog, ShiftSchedule, StaffTrainingResource, Resource,
 
     # Reporting and Analytics 
-    Report, EnvironmentData
+    Report, EnvironmentData,
+
+    ComplianceStatus, 
+    ProductCompliance,
+    InventoryCompliance,
+    ComplianceAlert,
+    AuditHistory,
+    License,
+    EmployeeTraining
 )
 
     
@@ -134,9 +142,16 @@ def login():
 @api.route("/signup", methods=["POST"])
 def create_signup():
     try:
-        email = request.json.get("email")
-        password = request.json.get("password")
-        role_name = request.json.get("role", "customer")
+        data = request.get_json()
+        name = data.get("name")
+        email = data.get("email")
+        password = data.get("password")
+        city = data.get("city")
+        state = data.get("state")
+        role = data.get("role")  # Role must match UserRole Enum values
+        company_name = data.get("company_name")  # Optional for business owners
+        company_industry = data.get("company_industry")  # Optional for business owners
+        bio = data.get("bio", "")  # Optional bio field
 
         if not email or not password:
             return jsonify({"error": "Email and password are required"}), 400
@@ -1004,6 +1019,33 @@ def get_sales_performance():
 
 # store routes
 
+@api.route('/stock', methods=['GET'])
+@jwt_required()
+def get_stock_for_store():
+    user_id = get_jwt_identity()  # Get the ID of the authenticated user
+    store_id = request.args.get('store_id')
+
+    # Fetch the store
+    store = Store.query.filter_by(id=store_id).first()
+    if not store:
+        return jsonify({"message": "Store not found"}), 404
+
+    # Verify if the user is the store manager or owner
+    if user_id == store.store_manager or user_id == store.store_owner:
+        # Fetch and return the inventory associated with the store
+        stock_items = Inventory.query.filter_by(store_id=store_id).all()
+        return jsonify([item.serialize() for item in stock_items]), 200
+
+    # Optionally, check the user's role from the `User` model if necessary
+    user = User.query.filter_by(id=user_id).first()
+    if user and user.role in ['admin']:
+        # Allow admin users to access any store’s inventory
+        stock_items = Inventory.query.filter_by(store_id=store_id).all()
+        return jsonify([item.serialize() for item in stock_items]), 200
+
+    # If the user is neither the store manager, owner, nor admin
+    return jsonify({"message": "Access denied. Only store managers, owners, or admins can view stock."}), 403
+
 @api.route('/store', methods=['GET'])
 @api.route('/store/<int:store_id>', methods=['GET'])
 @jwt_required()
@@ -1665,6 +1707,36 @@ def get_compliance_audit_status():
     }
 
     return jsonify(response), 200
+
+@api.route('/compliance/dashboard', methods=['GET'])
+def get_compliance_dashboard():
+    try:
+        # Fetch overall compliance status
+        compliance_status = ComplianceStatus.query.first()  # Assuming there is only one compliance status record
+        
+        # Fetch product compliance data
+        product_compliance = ProductCompliance.query.all()
+        inventory_compliance = InventoryCompliance.query.all()
+        alerts = ComplianceAlert.query.order_by(ComplianceAlert.severity.desc()).all()  # Order by severity
+        audit_history = AuditHistory.query.order_by(AuditHistory.date.desc()).all()
+        license = License.query.first()
+        employee_training = EmployeeTraining.query.order_by(EmployeeTraining.completed_date.desc()).all()
+
+        # Construct response JSON
+        response = {
+            "overallComplianceStatus": compliance_status.status if compliance_status else "Unknown",
+            "productCompliance": [product.serialize() for product in product_compliance],
+            "inventoryCompliance": [item.serialize() for item in inventory_compliance],
+            "alerts": [alert.serialize() for alert in alerts],
+            "auditHistory": [audit.serialize() for audit in audit_history],
+            "licenseStatus": license.status if license else "Unknown",
+            "employeeTraining": [training.serialize() for training in employee_training]
+        }
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @api.route('/reports', methods=['GET'])
 @jwt_required()
@@ -3113,33 +3185,33 @@ def get_notifications():
 
     return jsonify(notifications), 200
 
-@api.route('/resources', methods=['GET', 'POST'])
-def manage_resources():
-    if request.method == 'GET':
-        resources = Resource.query.all()
-        return jsonify([resource.serialize() for resource in resources]), 200
-    elif request.method == 'POST':
-        data = request.json
-        resource = Resource(name=data['name'], quantity=data['quantity'])
-        db.session.add(resource)
-        db.session.commit()
-        return jsonify(resource.serialize()), 201
+# @api.route('/resources', methods=['GET', 'POST'])
+# def manage_resources():
+#     if request.method == 'GET':
+#         resources = Resource.query.all()
+#         return jsonify([resource.serialize() for resource in resources]), 200
+#     elif request.method == 'POST':
+#         data = request.json
+#         resource = Resource(name=data['name'], quantity=data['quantity'])
+#         db.session.add(resource)
+#         db.session.commit()
+#         return jsonify(resource.serialize()), 201
 
-@api.route('/resources/<int:resource_id>', methods=['PUT', 'DELETE'])
-def manage_single_resource(resource_id):
-    resource = Resource.query.get_or_404(resource_id)
+# @api.route('/resources/<int:resource_id>', methods=['PUT', 'DELETE'])
+# def manage_single_resource(resource_id):
+#     resource = Resource.query.get_or_404(resource_id)
 
-    if request.method == 'PUT':
-        data = request.json
-        resource.name = data.get('name', resource.name)
-        resource.quantity = data.get('quantity', resource.quantity)
-        db.session.commit()
-        return jsonify(resource.serialize()), 200
+#     if request.method == 'PUT':
+#         data = request.json
+#         resource.name = data.get('name', resource.name)
+#         resource.quantity = data.get('quantity', resource.quantity)
+#         db.session.commit()
+#         return jsonify(resource.serialize()), 200
 
-    elif request.method == 'DELETE':
-        db.session.delete(resource)
-        db.session.commit()
-        return jsonify({"message": "Resource deleted successfully"}), 200
+#     elif request.method == 'DELETE':
+#         db.session.delete(resource)
+#         db.session.commit()
+#         return jsonify({"message": "Resource deleted successfully"}), 200
 
 @api.route('/grow-tasks/schedule', methods=['GET'])
 def get_task_schedule():

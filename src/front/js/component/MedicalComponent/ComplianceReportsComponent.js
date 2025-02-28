@@ -10,7 +10,7 @@ const ComplianceReportsComponent = () => {
 
     useEffect(() => {
         // Fetch reports from the API
-        axios.get('/api/compliance-reports')
+        axios.get(process.env.BACKEND_URL + '/api/compliance/reports')
             .then(response => setReports(response.data))
             .catch(error => console.error('Error fetching reports:', error));
     }, []);
@@ -29,7 +29,7 @@ const ComplianceReportsComponent = () => {
 
     // Filter reports based on search and status
     const filterReports = (searchTerm, status) => {
-        axios.get('/api/compliance-reports')
+        axios.get(process.env.BACKEND_URL + '/api/compliance-reports')
             .then(response => {
                 const filtered = response.data.filter(report => {
                     const matchesSearch = report.name.toLowerCase().includes(searchTerm) ||

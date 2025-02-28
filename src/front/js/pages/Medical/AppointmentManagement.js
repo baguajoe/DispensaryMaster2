@@ -12,7 +12,7 @@ const AppointmentManagement = () => {
     const [sortOrder, setSortOrder] = useState('asc');
 
     useEffect(() => {
-        axios.get('/api/appointments')
+        axios.get(process.env.BACKEND_URL + '/api/appointments')
             .then(response => {
                 setAppointments(response.data);
                 setFilteredAppointments(response.data);

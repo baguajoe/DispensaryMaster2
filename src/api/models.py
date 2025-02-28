@@ -22,8 +22,16 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"), nullable=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    is_verified = db.Column(db.Boolean, nullable=True, default=True)
     role = db.Column(db.String(20), nullable=False, default="customer")
+    bio = db.Column(db.String(250))
+    city = db.Column(db.String(50))
+    state = db.Column(db.String(50))
+    profile_image = db.Column(db.String(250))
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     plan = db.relationship("Plan", back_populates="users")
+    age = db.Column(db.Integer)
+    
 
     __table_args__ = (
         db.CheckConstraint(
@@ -44,8 +52,56 @@ class User(db.Model):
             "email": self.email,
             "is_active": self.is_active,
             "plan_id": self.plan_id,
-            "role": self.role
+            "role": self.role,
+            "city": self.city,
+            "state": self.state,
+            "profile_image": self.profile_image,
+            "company": self.company.serialize() if self.company else None,
+            "is_verified": self.is_verified,
+            "bio": self.bio,
         }
+    
+class Company(db.Model):
+    __tablename__ = 'company'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    industry = db.Column(db.String(100))  # Grower, Dispensary, etc.
+    company_size = db.Column(db.String(50))  # Small, Medium, Large
+    city = db.Column(db.String(50))
+    state = db.Column(db.String(50))
+    website = db.Column(db.String(255))
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(120))
+    social_links = db.Column(db.String(255))  # {"linkedin": "...", "instagram": "..."}
+    founded_year = db.Column(db.Integer)
+    verified = db.Column(db.Boolean, default=False)  # Company verification status
+    logo = db.Column(db.String(255))  # Company logo URL or file path
+    description = db.Column(db.Text)
+
+    # Relationships
+    employees = db.relationship('User', backref='company', lazy=True, cascade="all, delete")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "industry": self.industry,
+            "company_size": self.company_size,
+            "city": self.city,
+            "state": self.state,
+            "website": self.website,
+            "phone": self.phone,
+            "email": self.email,
+            "social_links": self.social_links,
+            "founded_year": self.founded_year,
+            "verified": self.verified,
+            "logo": self.logo,
+            "description": self.description,
+            "employees": [employee.id for employee in self.employees],
+    
+        }
+
 
 # Plan Model
 class Plan(db.Model):
@@ -512,6 +568,93 @@ class Report(db.Model):
             "generated_by": self.generated_by,
             "file_path": self.file_path,
         }
+    
+class ComplianceStatus(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(50), nullable=False)  # e.g., "Compliant", "Non-Compliant", "Pending"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "status": self.status
+        }
+
+class ProductCompliance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)  # Product name
+    status = db.Column(db.String(50), nullable=False)  # e.g., "Compliant", "Non-Compliant", "Pending"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "status": self.status
+        }
+
+class InventoryCompliance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product = db.Column(db.String(255), nullable=False)  # Inventory item name
+    status = db.Column(db.String(50), nullable=False)  # e.g., "Compliant", "Expired", "Pending"
+    expiry_date = db.Column(db.Date, nullable=True)  # Expiry date (nullable for non-expiring items)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "product": self.product,
+            "status": self.status,
+            "expiryDate": self.expiry_date.strftime("%Y-%m-%d") if self.expiry_date else None
+        }
+    
+class ComplianceAlert(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.Text, nullable=False)  # Alert message
+    severity = db.Column(db.String(20), nullable=False)  # e.g., "High", "Medium", "Low"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "message": self.message,
+            "severity": self.severity
+        }
+
+class AuditHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, nullable=False)  # Audit date
+    notes = db.Column(db.Text, nullable=True)  # Additional notes from the audit
+    status = db.Column(db.String(50), nullable=False)  # e.g., "Approved", "Failed", "Pending"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "date": self.date.strftime("%Y-%m-%d"),
+            "notes": self.notes,
+            "status": self.status
+        }
+
+class License(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(50), nullable=False)  # e.g., "Valid", "Expired", "Pending"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "status": self.status
+        }
+
+class EmployeeTraining(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee = db.Column(db.String(255), nullable=False)  # Employee name
+    status = db.Column(db.String(50), nullable=False)  # e.g., "Completed", "Pending"
+    completed_date = db.Column(db.Date, nullable=True)  # Date training was completed
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "employee": self.employee,
+            "status": self.status,
+            "completedDate": self.completed_date.strftime("%Y-%m-%d") if self.completed_date else None
+        }
+
 
 # Transaction Model
 class Transaction(db.Model):
@@ -567,7 +710,8 @@ class Store(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     name = db.Column(db.String(200), nullable=False)
     location = db.Column(db.String, nullable=False)
-    store_manager = db.Column(db.String(50), nullable=False)
+    store_manager = db.Column(db.ForeignKey("user.id"), nullable=False)
+    store_owner = db.Column(db.ForeignKey("user.id"), nullable=False)
     phone = db.Column(db.String, nullable=False)
     status = db.Column(db.String(50), nullable=False)
     employee_count = db.Column(db.Integer, nullable=False)
@@ -578,6 +722,7 @@ class Store(db.Model):
             "name": self.name,
             "location": self.location,
             "store_manager": self.store_manager,
+            "store_owner": self.store_owner,
             "phone": self.phone,
             "status": self.status,
             "employee_count": self.employee_count,
@@ -727,6 +872,7 @@ class InventoryLog(db.Model):
 class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    store_id = db.Column(db.Integer, db.ForeignKey('store.id'), nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
     warehouse_id = db.Column(db.Integer, db.ForeignKey('warehouse.id'), nullable=False)
     stock_quantity = db.Column(db.Integer, nullable=False)

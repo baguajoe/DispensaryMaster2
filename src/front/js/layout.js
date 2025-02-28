@@ -5,6 +5,7 @@ import Navbar from "./component/Navbar";
 import Sidebar from "./component/Sidebar";
 import { Footer } from "./component/footer";
 import ScrollToTop from "./component/scrollToTop";
+import AgeVerification from "./pages/AgeVerification";
 
 // Non-Medical Pages
 import Home from "./pages/Home";
@@ -65,7 +66,6 @@ import PatientRegistration from "./pages/Medical/PatientRegistration";
 import PrescriptionCreation from "./pages/Medical/PrescriptionCreation";
 import PrescriptionManagement from "./pages/Medical/PrescriptionManagement";
 import MedicalRecommendations from "./pages/Medical/Recommendations";
-import ResourceDetailPage from "./pages/Medical/ResourceDetailPage";
 import SymptomTracker from "./pages/Medical/SymptomTracker";
 import PatientManagement from "./pages/Medical/PatientManagement";
 import AppointmentManagement from "./pages/Medical/AppointmentManagement";
@@ -129,7 +129,11 @@ import CustomerSettings from "./pages/CustomerDashboard/Settings";
 import SalesReport from "./pages/SalesReport";
 // import { Settings, Accounts, Profile, Messaging, Help } from "./pages/NewPages";
 
-
+// Middleware to enforce age verification before accessing the site
+const RequireAgeVerification = ({ children }) => {
+    const ageVerified = localStorage.getItem("ageVerified") === "true";
+    return ageVerified ? children : <Navigate to="/" />;
+};
 
 const Layout = () => {
     const basename = process.env.BASENAME || "";
@@ -143,7 +147,11 @@ const Layout = () => {
                     <div className="flex-grow-1 p-3">
                         <Routes>
                             {/* Non-Medical Routes */}
-                            <Route path="/" element={<Home />} />
+                            {/* Age Verification Page */}
+                            <Route path="/" element={<AgeVerification />} />
+
+                            {/* Protected Routes (Require Age Verification) */}
+                            <Route path="/home" element={<RequireAgeVerification><Home /></RequireAgeVerification>} />
                             <Route path="/about-us" element={<AboutUs />} />
                             <Route path="/shop" element={<Shop />} />
                             <Route path="/deals" element={<Deals />} />
@@ -219,7 +227,6 @@ const Layout = () => {
                             <Route path="/medical/prescription-creation" element={<PrescriptionCreation />} />
                             <Route path="/medical/prescription-management" element={<PrescriptionManagement />} />
                             <Route path="/medical/recommendations" element={<MedicalRecommendations />} />
-                            <Route path="/medical/resource-detail" element={<ResourceDetailPage />} />
                             <Route path="/medical/symptom-tracker" element={<SymptomTracker />} />
                             {/* New Medical Routes */}
                             <Route path="/medical/patient-management" element={<PatientManagement />} />

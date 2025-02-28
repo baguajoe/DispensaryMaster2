@@ -89,7 +89,6 @@ export const Sidebar = () => {
             { name: "Prescription Creation", path: "/medical/prescription-creation" },
             { name: "Prescription Management", path: "/medical/prescription-management" },
             { name: "Recommendations", path: "/medical/recommendations" },
-            { name: "Resource Detail", path: "/medical/resource-detail" },
             { name: "Symptom Tracker", path: "/medical/symptom-tracker" },
         ],
         posSystem: [

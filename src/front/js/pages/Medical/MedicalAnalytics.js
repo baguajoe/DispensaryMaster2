@@ -12,7 +12,7 @@ const MedicalAnalytics = () => {
 
     useEffect(() => {
         // Fetch analytics based on the selected time period
-        axios.get(`/api/medical-analytics?period=${timePeriod}`)
+        axios.get(process.env.BACKEND_URL + `/api/medical-analytics?period=${timePeriod}`)
             .then(response => setAnalytics(response.data))
             .catch(error => {
                 console.error('Error fetching medical analytics:', error);

@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 
-const ResourceDetailPage = ({ match }) => {
+const ResourceDetailPage = ({ }) => {
   const [resource, setResource] = useState(null);
 
   useEffect(() => {
     const fetchResource = async () => {
-      const response = await fetch(`/api/resources/${match.params.id}`);
+      const response = await fetch(`/api/resources/${}`);
       const data = await response.json();
       setResource(data);
     };
     fetchResource();
-  }, [match.params.id]);
+  }, []);
 
   return (
     <div>

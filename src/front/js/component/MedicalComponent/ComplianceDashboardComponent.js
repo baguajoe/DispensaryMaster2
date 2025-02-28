@@ -13,7 +13,7 @@ const ComplianceDashboardComponent = () => {
 
     useEffect(() => {
         // Fetch dashboard data
-        axios.get('/api/compliance/dashboard')
+        axios.get(process.env.BACKEND_URL + '/api/compliance/dashboard')
             .then(response => {
                 const data = response.data;
                 setComplianceStatus(data.overallComplianceStatus);
