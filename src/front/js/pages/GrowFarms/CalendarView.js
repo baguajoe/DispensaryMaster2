@@ -10,7 +10,7 @@ const CalendarView = () => {
     const [events, setEvents] = useState([]);
 
     useEffect(() => {
-        axios.get("/api/grow-tasks/schedule")
+        axios.get(process.env.BACKEND_URL + "/api/grow-tasks/schedule")
             .then(response => {
                 const formattedEvents = response.data.map(task => ({
                     title: task.name,

@@ -1,0 +1,119 @@
+.batch-form {
+    margin-left: 16rem;
+    padding: 24px;
+    min-height: calc(100vh - 90px);
+    background: linear-gradient(to right, #2a4365, #285e61);
+    color: white;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar-collapsed + .batch-form {
+    margin-left: 4rem;
+}
+
+.batch-form h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.batch-form .form-group {
+    margin-bottom: 16px;
+}
+
+.batch-form label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #cbd5e0;
+}
+
+.batch-form input[type="text"],
+.batch-form input[type="number"],
+.batch-form input[type="date"],
+.batch-form select {
+    width: 100%;
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid white;
+    color: white;
+    border-radius: 5px;
+    margin-top: 4px;
+}
+
+.batch-form input[type="text"]:focus,
+.batch-form input[type="number"]:focus,
+.batch-form input[type="date"]:focus,
+.batch-form select:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+}
+
+.batch-form .btn-primary,
+.batch-form button[type="submit"] {
+    background-color: #fc8d32;
+    border: 1px solid #fc8d32;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 12px;
+}
+
+.batch-form .btn-primary:hover,
+.batch-form button[type="submit"]:hover {
+    background-color: #e07b28;
+}
+
+.batch-form .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.batch-form .form-select option {
+    background-color: #2a4365;
+    color: white;
+}
+
+.batch-form .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .batch-form {
+        margin-left: 0;
+        padding: 16px;
+    }
+
+    .batch-form h2 {
+        font-size: 1.5rem;
+    }
+
+    .batch-form .btn-primary,
+    .batch-form button[type="submit"] {
+        width: 100%;
+    }
+}
+
+/* Form Validations */
+.batch-form input:valid,
+.batch-form select:valid {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-color: white;
+}
+
+.batch-form input:invalid,
+.batch-form select:invalid {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.4);
+}
+
+/* Spinner for loading state */
+.batch-form .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}

@@ -5,7 +5,7 @@ from api.utils import calculate_lead_time, calculate_sales_velocity, predict_res
 from sqlalchemy.exc import SQLAlchemyError
 
 from datetime import datetime, timedelta
-# from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Patient, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource, Cart, CartItem, Wishlist, PaymentLog, Subscription, SupportTicket, LoyaltyHistory, Discount, Address, Supplier, BillingHistory, Claim, Compliance, ComplianceAudit, Shift, Employee, Schedule  
+# from api.models import db, User, Product, Customer, Order, OrderItem, Invoice, Business, Store, CashDrawer, CashLog, Pricing, Dispensary, GrowFarm, PlantBatch, EnvironmentData, GrowTask, YieldPrediction, Seedbank, SeedBatch, StorageConditions, SeedReport, CustomerInteraction, Lead, Campaign, Task, Deal,  PromotionalDeal, Recommendation, Inventory, InventoryLog, Prescription, Transaction, Symptom, MedicalResource, Review, Settings, Message, Reward, LoyaltyProgram, TimeLog, Feedback, Plan, Deal, InventoryLog, Payroll, TimeLog, CampaignMetrics, Report,  Appointment, Insurance, PatientEducationResource, StaffTrainingResource, Cart, CartItem, Wishlist, PaymentLog, Subscription, SupportTicket, LoyaltyHistory, Discount, Address, Supplier, BillingHistory, Claim, Compliance, ComplianceAudit, Shift, Employee, Schedule  
 from api.models import (
     # Core database connection
     db,
@@ -1662,13 +1662,6 @@ def get_patient(id):
     patient = Patient.query.get_or_404(id)
     return jsonify(patient.serialize()), 200
 
-@api.route('/prescriptions', methods=['POST'])
-def create_prescription():
-    data = request.json
-    new_prescription = Prescription(**data)
-    db.session.add(new_prescription)
-    db.session.commit()
-    return jsonify(new_prescription.serialize()), 201
 
 @api.route('/process_purchase', methods=['POST'])
 def process_purchase():
@@ -1798,7 +1791,7 @@ def generate_compliance_report():
     report = [{"id": t.id, "amount": t.amount, "date": t.date.isoformat()} for t in transactions]
     return jsonify(report), 200
 
-@api.route('/analytics/medical', methods=['GET'])
+@api.route('/medical/analytics', methods=['GET'])
 def get_medical_analytics():
     total_patients = Patient.query.count()
     total_prescriptions = Prescription.query.count()
@@ -4756,3 +4749,40 @@ def validate_shift():
 #             }
 #         }
 #     }), 200
+
+@api.route('/api/prescriptions', methods=['GET'])
+def get_prescriptions():
+    prescriptions = Prescription.query.all()
+    return jsonify([{
+        'id': p.id,
+        'patientId': p.patient_id,
+        'medication': p.medication,
+        'dosage': p.dosage,
+        'frequency': p.frequency
+    } for p in prescriptions]), 200
+
+# POST new prescription
+@api.route('/api/prescriptions', methods=['POST'])
+def create_prescription():
+    data = request.get_json()
+
+    required_fields = ['patientId', 'medication', 'dosage', 'frequency']
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    new_prescription = Prescription(
+        patient_id=data['patientId'],
+        medication=data['medication'],
+        dosage=data['dosage'],
+        frequency=data['frequency']
+    )
+
+    db.session.add(new_prescription)
+    db.session.commit()
+
+    return jsonify({"message": "Prescription created successfully", "id": new_prescription.id}), 201
+
+@api.route("/api/deals/public", methods=["GET"])
+def get_public_deals():
+    deals = Deal.query.filter_by(stage="published").all()
+    return jsonify([deal.to_dict() for deal in deals])

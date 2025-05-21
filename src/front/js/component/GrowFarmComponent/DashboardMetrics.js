@@ -1,13 +1,17 @@
 import React from "react";
+import "../../../styles/DashboardMetrics.css"; // Make sure this CSS file exists
 
-const DashboardMetrics = ({ title, value, icon }) => {
+const DashboardMetrics = ({ title, value, icon, description, onClick }) => {
   return (
-    <div className="bg-white shadow rounded-lg p-4 flex items-center">
-      <div className="text-3xl text-gray-800 font-bold mr-4">{value}</div>
-      <div>
-        <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
+    <div className="dashboard-metrics" onClick={onClick}>
+      <div className="metric-value">
+        {value !== undefined ? value : <div className="placeholder" />}
       </div>
-      <div className="ml-auto">{icon && React.createElement(icon, { size: 24, className: "text-green-500" })}</div>
+      <div className="metric-content">
+        <h3 className="metric-title">{title}</h3>
+        {description && <p className="metric-description">{description}</p>}
+      </div>
+      {icon && <div className="metric-icon">{React.createElement(icon)}</div>}
     </div>
   );
 };

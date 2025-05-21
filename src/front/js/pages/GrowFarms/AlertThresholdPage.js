@@ -12,7 +12,7 @@ const AlertThresholdPage = () => {
 
   const fetchThresholds = async () => {
     try {
-      const response = await axios.get('/api/alert-thresholds');
+      const response = await axios.get(process.env.BACKEND_URL + '/api/alert-thresholds');
       setThresholds(response.data);
       setLoading(false);
     } catch (error) {
@@ -23,7 +23,7 @@ const AlertThresholdPage = () => {
 
   const handleFormSubmit = async (formData) => {
     try {
-      await axios.post('/api/alert-thresholds', formData);
+      await axios.post(process.env.BACKEND_URL + '/api/alert-thresholds', formData);
       alert('Threshold saved successfully!');
       fetchThresholds();
     } catch (error) {

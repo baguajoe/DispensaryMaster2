@@ -1,83 +1,115 @@
 .batch-page-container {
-  width: 80%;
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-left: 16rem;
+  padding: 24px;
+  min-height: calc(100vh - 90px);
+  background: linear-gradient(to right, #2a4365, #285e61);
+  color: white;
+  overflow-x: auto;
+  transition: margin-left 0.3s ease;
 }
 
-.batch-page-container {
+.sidebar-collapsed + .batch-page-container {
+  margin-left: 4rem;
+}
 
-  h1 {
-    text-align: center;
-    font-size: 2.5rem;
-    color: #333;
+.batch-page-container h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 24px;
+}
+
+.batch-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.batch-controls input[type="text"],
+.batch-controls select {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid white;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.batch-controls input[type="text"]::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.batch-controls input:focus,
+.batch-controls select:focus {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+}
+
+.batch-controls button {
+  background-color: #38a169;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.batch-controls button:hover {
+  background-color: #2f855a;
+}
+
+.batch-table-container {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 24px;
+}
+
+.batch-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+}
+
+.batch-table th {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #cbd5e0;
+  padding: 12px;
+  text-align: left;
+}
+
+.batch-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+}
+
+.batch-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.batch-table tr:hover td {
+  color: #fc8d32;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .batch-page-container {
+    margin-left: 0;
+    padding: 16px;
   }
 
   .batch-controls {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
+    flex-direction: column;
   }
 
-  input[type="text"] {
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 60%;
-  }
-
-  select {
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-
-  button {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    background-color: #0073e6;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background-color: #005bb5;
-  }
-
-  .batch-table {
+  .batch-controls button {
     width: 100%;
-    border-collapse: collapse;
   }
-
-  th,
-  td {
-    padding: 1rem;
-    border: 1px solid #ddd;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f4f4f9;
-  }
-
-  td {
-    background-color: #ffffff;
-  }
-
-  td a {
-    color: #0073e6;
-    text-decoration: none;
-  }
-
-  td a:hover {
-    text-decoration: underline;
-  }
-
 }

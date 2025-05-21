@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BatchForm from '../../component/GrowFarmComponent/BatchForm';
+import "../../../styles/GrowFarm/AddPlantBatch.css";
 
 const AddPlantBatch = () => {
   const [formData, setFormData] = useState({
     strain: '',
-    quantity: '',
-    startDate: '',
-    endDate: '',
+    yield_amount: '',
+    start_date: '',
+    end_date: '',
     status: 'Growing',
   });
 
@@ -22,7 +23,7 @@ const AddPlantBatch = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/plant_batches', formData);
+      await axios.post(process.env.BACKEND_URL + '/api/plant_batches', formData);
       alert('Plant batch added successfully!');
       navigate('/batches');
     } catch (error) {

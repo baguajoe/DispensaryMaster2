@@ -9,7 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from .extensions import db
 
 
-# db = SQLAlchemy()
+
 
 # ---------------------
 # Non-Medical Models
@@ -180,6 +180,7 @@ class Product(db.Model):
     # Relationships
     supplier = db.relationship('Supplier', backref=(db.backref('products', lazy=True)))
     dispensary = db.relationship('Dispensary', backref=(db.backref('products', lazy=True)))
+    # recommendation = db.relationship('Recommendation', backref='product', lazy=True)
 
     def __repr__(self):
         return f'<Product {self.name}>'
@@ -360,6 +361,8 @@ class Customer(db.Model):
     preferred_products = db.Column(db.JSON, nullable=True)
     last_purchase_date = db.Column(db.DateTime, nullable=True)
     lifecycle_stage = db.Column(db.String(20), nullable=False, default='lead')
+
+    # recommendation = db.relationship('Recommendation', backref='customer', lazy=True)
 
     def serialize(self):
         return {
@@ -1001,33 +1004,7 @@ class MedicalResource(db.Model):
         }
 
 
-# Recommendation Model
-class Recommendation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    notes = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
-    # Relationships
-    patient = db.relationship('Patient', backref='recommendations')
-    product = db.relationship('Product', backref='recommendations')
-
-    def __repr__(self):
-        return f'<Recommendation {self.id} for Patient {self.patient_id}>'
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "patient_id": self.patient_id,
-            "product_id": self.product_id,
-            "notes": self.notes,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "patient": self.patient.serialize() if self.patient else None,
-            "product": self.product.serialize() if self.product else None
-        }
 
 
 class CashDrawer(db.Model):
@@ -1234,6 +1211,7 @@ class PlantBatch(db.Model):
     end_date = db.Column(db.Date, nullable=True)
     status = db.Column(db.String(50), nullable=False, default="Growing")
     yield_amount = db.Column(db.Float, nullable=True)  # Actual or predicted yield in grams
+    yield_amount_unit = db.Column(db.String(100), nullable=True)
     environment_id = db.Column(db.Integer, db.ForeignKey('environment_data.id'), nullable=True)
 
     def serialize(self):
@@ -1243,7 +1221,8 @@ class PlantBatch(db.Model):
             "start_date": self.start_date.isoformat() if self.start_date else None,
             "end_date": self.end_date.isoformat() if self.end_date else None,
             "status": self.status,
-            "yield_amount": self.yield_amount
+            "yield_amount": self.yield_amount,
+            "yield_amount_unit": self.yield_amount_unit
         }
 
 class EnvironmentData(db.Model):
@@ -1846,6 +1825,27 @@ class PaymentMethod(db.Model):
             "updated_at": self.updated_at.isoformat(),
         }
 
+class Recommendation(db.Model):
+    __tablename__ = 'recommendations'
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    notes = db.Column(db.Text)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    customer = db.relationship('Customer', backref='recommendations')
+    product = db.relationship('Product', backref='recommendations')
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'patient_id': self.patient_id,
+            'product_id': self.product_id,
+            'notes': self.notes,
+            'date_created': self.date_created.isoformat(),
+            'customer': self.customer.serialize(),
+            'product': self.product.serialize()
+        }
 
 class PaymentLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1983,4 +1983,5 @@ class Schedule(db.Model):
             "end_time": self.end_time.strftime("%H:%M:%S"),
             "shift_type": self.shift_type,
         }    
+
 

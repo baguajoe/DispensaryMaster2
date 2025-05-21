@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import "../../../styles/GrowFarm/AddPlantBatch.css";
 
 const BatchForm = ({ formData, onChange, onSubmit, isEditMode = false }) => {
   return (
-    <form onSubmit={onSubmit}>
+    <form className="batch-form" onSubmit={onSubmit}>
       <h2>{isEditMode ? 'Edit Batch' : 'Add New Batch'}</h2>
-      <div>
+      <div className="form-group">
         <label htmlFor="strain">Strain</label>
         <input
           type="text"
@@ -16,52 +17,55 @@ const BatchForm = ({ formData, onChange, onSubmit, isEditMode = false }) => {
           required
         />
       </div>
-      <div>
-        <label htmlFor="quantity">Quantity</label>
+      <div className="form-group">
+        <label htmlFor="yield_amount">Quantity</label>
         <input
           type="number"
-          id="quantity"
-          name="quantity"
-          value={formData.quantity}
+          id="yield_amount"
+          name="yield_amount"
+          value={formData.yield_amount}
           onChange={onChange}
           required
         />
       </div>
-      <div>
-        <label htmlFor="startDate">Start Date</label>
+      <div className="form-group">
+        <label htmlFor="start_date">Start Date</label>
         <input
           type="date"
-          id="startDate"
-          name="startDate"
-          value={formData.startDate}
+          id="start_date"
+          name="start_date"
+          value={formData.start_date}
           onChange={onChange}
           required
         />
       </div>
-      <div>
-        <label htmlFor="endDate">End Date</label>
+      <div className="form-group">
+        <label htmlFor="end_date">End Date</label>
         <input
           type="date"
-          id="endDate"
-          name="endDate"
-          value={formData.endDate}
+          id="end_date"
+          name="end_date"
+          value={formData.end_date}
           onChange={onChange}
         />
       </div>
-      <div>
+      <div className="form-group">
         <label htmlFor="status">Status</label>
         <select
           id="status"
           name="status"
           value={formData.status}
           onChange={onChange}
+          className="form-select"
         >
           <option value="Growing">Growing</option>
           <option value="Harvested">Harvested</option>
           <option value="Completed">Completed</option>
         </select>
       </div>
-      <button type="submit">{isEditMode ? 'Save Changes' : 'Add Batch'}</button>
+      <button type="submit" className="btn-primary">
+        {isEditMode ? 'Save Changes' : 'Add Batch'}
+      </button>
     </form>
   );
 };

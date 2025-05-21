@@ -16,7 +16,7 @@ const BatchPage = () => {
 
   const fetchBatches = async () => {
     try {
-      const response = await axios.get("/api/plant_batches");
+      const response = await axios.get(process.env.BACKEND_URL + "/api/plant_batches");
       setBatches(response.data);
       setLoading(false);
     } catch (error) {

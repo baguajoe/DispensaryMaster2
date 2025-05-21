@@ -3,7 +3,7 @@ import axios from 'axios';
 import MedicalAnalyticsComponent from '../../component/MedicalComponent/MedicalAnalyticsComponent';
 import '../../../styles/medical/MedicalAnalytics.css';
 
-  // Custom styles
+// Custom styles
 
 const MedicalAnalytics = () => {
     const [analytics, setAnalytics] = useState([]);

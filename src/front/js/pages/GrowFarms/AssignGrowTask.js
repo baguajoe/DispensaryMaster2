@@ -8,11 +8,11 @@ const AssignGrowTask = () => {
     const [selectedWorker, setSelectedWorker] = useState("");
 
     useEffect(() => {
-        axios.get("/api/grow-tasks")
+        axios.get(process.env.BACKEND_URL + "/api/grow-tasks")
             .then(response => setTasks(response.data))
             .catch(error => console.error(error));
         
-        axios.get("/api/workers")
+        axios.get(process.env.BACKEND_URL + "/api/workers")
             .then(response => setWorkers(response.data))
             .catch(error => console.error(error));
     }, []);

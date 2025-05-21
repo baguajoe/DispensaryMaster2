@@ -7,7 +7,7 @@ const PlantBatchList = () => {
 
   useEffect(() => {
     // Fetch all batches
-    fetch('/api/plant_batches')
+    fetch(process.env.BACKEND_URL + '/api/plant_batches')
       .then((res) => res.json())
       .then((data) => setBatches(data))
       .catch((err) => console.error(err));

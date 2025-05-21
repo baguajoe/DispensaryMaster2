@@ -5,7 +5,7 @@ const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
-        axios.get("/api/notifications")
+        axios.get(process.env.BACKEND_URL + "/api/notifications")
             .then(response => setNotifications(response.data))
             .catch(error => console.error(error));
     }, []);

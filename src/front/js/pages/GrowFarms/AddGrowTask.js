@@ -1,6 +1,7 @@
 // pages/AddGrowTask.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import "../../../styles/GrowFarm/addGrowTask.css"
 
 const AddGrowTask = () => {
   const [taskName, setTaskName] = useState('');
@@ -15,7 +16,7 @@ const AddGrowTask = () => {
 
   useEffect(() => {
     // Fetch all plant batches to populate the dropdown
-    fetch('/api/plant_batches')
+    fetch(process.env.BACKEND_URL + '/api/plant_batches')
       .then((res) => res.json())
       .then((data) => setPlantBatches(data))
       .catch((err) => console.error('Error fetching plant batches:', err));
@@ -35,7 +36,7 @@ const AddGrowTask = () => {
     };
 
     // Submit the task to the backend
-    fetch('/api/grow_tasks', {
+    fetch(process.env.BACKEND_URL + '/api/grow_tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newTask),

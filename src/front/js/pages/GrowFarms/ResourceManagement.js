@@ -5,7 +5,7 @@ const ResourceManagement = () => {
     const [resources, setResources] = useState([]);
 
     useEffect(() => {
-        axios.get("/api/resources")
+        axios.get(process.env.BACKEND_URL + "/api/resources")
             .then(response => setResources(response.data))
             .catch(error => console.error(error));
     }, []);
@@ -14,7 +14,7 @@ const ResourceManagement = () => {
         const name = prompt("Enter resource name:");
         const quantity = parseInt(prompt("Enter quantity:"), 10);
 
-        axios.post("/api/resources", { name, quantity })
+        axios.post(process.env.BACKEND_URL + "/api/resources", { name, quantity })
             .then(() => {
                 alert("Resource added successfully!");
                 setResources([...resources, { name, quantity }]);

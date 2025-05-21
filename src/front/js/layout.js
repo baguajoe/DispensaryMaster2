@@ -29,6 +29,8 @@ import CartManagement from "./pages/CartManagement";
 import Users from "./pages/Users";
 import ManagerShifts from "./pages/ManagerShifts";
 import EmployeeShifts from "./pages/EmployeeShifts";
+import PublicDeals from "./pages/PublicDeals"; // Adjust path if needed
+
 
 import AnalyticsDashboard from "./pages/AnalyticsDashboard"; // Assuming the file is in the 'pages' folder
 import Reports from "./pages/ReportsPage";
@@ -59,20 +61,15 @@ import POSReports from "./pages/POS/Reports";
 import ComplianceDashboard from "./pages/Medical/ComplianceDashboard";
 import ComplianceReports from "./pages/Medical/ComplianceReports";
 import MedicalAnalytics from "./pages/Medical/MedicalAnalytics";
-import PatientDashboard from "./pages/Medical/PatientDashboard";
 import PatientList from "./pages/Medical/PatientList";
 import PatientProfile from "./pages/Medical/PatientProfile";
 import PatientRegistration from "./pages/Medical/PatientRegistration";
 import PrescriptionCreation from "./pages/Medical/PrescriptionCreation";
 import PrescriptionManagement from "./pages/Medical/PrescriptionManagement";
-import MedicalRecommendations from "./pages/Medical/Recommendations";
-import SymptomTracker from "./pages/Medical/SymptomTracker";
 import PatientManagement from "./pages/Medical/PatientManagement";
 import AppointmentManagement from "./pages/Medical/AppointmentManagement";
-import Telemedicine from "./pages/Medical/Telemedicine";
 import BillingInsurance from "./pages/Medical/BillingInsurance";
 import HealthAnalytics from "./pages/Medical/HealthAnalytics";
-import PatientEducation from "./pages/Medical/PatientEducation";
 import StaffTraining from "./pages/Medical/StaffTraining";
 
 
@@ -93,6 +90,10 @@ import AssignGrowTask from "./pages/GrowFarms/AssignGrowTask";
 import Notifications from "./pages/GrowFarms/Notifications";
 import ResourceManagement from "./pages/GrowFarms/ResourceManagement";
 import CalendarView from "./pages/GrowFarms/CalendarView";
+import HarvestLog from "./pages/GrowFarms/HarvestLog";
+import PestDiseaseTracker from "./pages/GrowFarms/PestDiseaseTracker";
+import StrainCatalog from "./pages/GrowFarms/StrainCatalog";
+
 
 
 // SeedBanks Pages
@@ -176,6 +177,8 @@ const Layout = () => {
                             <Route path="/users" element={<Users />} />
                             <Route path="/manager-shifts" element={<ManagerShifts />} />
                             <Route path="/employee-shifts" element={<EmployeeShifts />} />
+                            <Route path="/deals" element={<PublicDeals />} />
+
 
                             <Route path="/analytics-dashboard" element={<AnalyticsDashboard />} />
                             <Route path="/reports" element={<Reports />} />
@@ -220,22 +223,21 @@ const Layout = () => {
                             <Route path="/medical/compliance-dashboard" element={<ComplianceDashboard />} />
                             <Route path="/medical/compliance-reports" element={<ComplianceReports />} />
                             <Route path="/medical/medical-analytics" element={<MedicalAnalytics />} />
-                            <Route path="/medical/patient-dashboard" element={<PatientDashboard />} />
                             <Route path="/medical/patient-list" element={<PatientList />} />
                             <Route path="/medical/patient-profile" element={<PatientProfile />} />
                             <Route path="/medical/patient-registration" element={<PatientRegistration />} />
                             <Route path="/medical/prescription-creation" element={<PrescriptionCreation />} />
                             <Route path="/medical/prescription-management" element={<PrescriptionManagement />} />
-                            <Route path="/medical/recommendations" element={<MedicalRecommendations />} />
-                            <Route path="/medical/symptom-tracker" element={<SymptomTracker />} />
                             {/* New Medical Routes */}
                             <Route path="/medical/patient-management" element={<PatientManagement />} />
                             <Route path="/medical/appointment-management" element={<AppointmentManagement />} />
-                            <Route path="/medical/telemedicine" element={<Telemedicine />} />
                             <Route path="/medical/billing-insurance" element={<BillingInsurance />} />
                             <Route path="/medical/health-analytics" element={<HealthAnalytics />} />
-                            <Route path="/medical/patient-education" element={<PatientEducation />} />
                             <Route path="/medical/staff-training" element={<StaffTraining />} />
+                            <Route path="/grow-farms/harvest-log" element={<HarvestLog />} />
+                            <Route path="/grow-farms/pest-disease-tracker" element={<PestDiseaseTracker />} />
+                            <Route path="/grow-farms/strain-catalog" element={<StrainCatalog />} />
+
 
 
                             {/* GrowFarms Routes */}

@@ -11,13 +11,13 @@ const PlantBatchDetails = () => {
 
   useEffect(() => {
     // Fetch batch details
-    fetch(`/api/plant_batches/${id}`)
+    fetch(process.env.BACKEND_URL + `/api/plant_batches/${id}`)
       .then((res) => res.json())
       .then((data) => setBatch(data))
       .catch((err) => console.error(err));
 
     // Fetch batch timeline
-    fetch(`/api/batch_timeline/${id}`)
+    fetch(process.env.BACKEND_URL + `/api/batch_timeline/${id}`)
       .then((res) => res.json())
       .then((data) => setTimeline(data))
       .catch((err) => console.error(err));

@@ -10,9 +10,9 @@ const Invoices = () => {
   // Fetch invoices on component mount
   useEffect(() => {
     axios
-      .get(`${process.env.BACKEND_URL}/api/invoices`)
+      .get(`${process.env.BACKEND_URL}/api/invoices`,{headers:{Authorization:"Bearer "+localStorage.getItem("token")}})
       .then((response) => {
-        setInvoices(response.data);
+        setInvoices(response.data.invoices);
         setLoading(false);
       })
       .catch((error) => {

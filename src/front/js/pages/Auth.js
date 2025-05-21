@@ -1,11 +1,12 @@
-import { Login } from "./Login.js";
-import { Signup } from "./Signup.js";
 
-const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+
+const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 // Reusable API request function
 const apiRequest = async (endpoint, method, body) => {
     try {
+        console.log(API_BASE_URL)
+        console.log(endpoint)
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method,
             headers: { 'Content-Type': 'application/json' },
