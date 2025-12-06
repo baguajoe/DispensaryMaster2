@@ -1,6 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext } from "react";
 import { Context } from "../store/appContext";
-import PropTypes from 'prop-types';
 
 const OrderItemsComponent = ({
   orderItemForm,
@@ -12,95 +11,87 @@ const OrderItemsComponent = ({
 }) => {
   const { store } = useContext(Context);
 
-  // Find selected product to show max quantity available
-  const selectedProduct = store.products.find(p => p.id === parseInt(orderItemForm.product_id));
-
   const handleProductChange = (e) => {
-    const productId = parseInt(e.target.value);
-    const product = store.products.find(p => p.id === productId);
-
+    const productId = e.target.value;
+    const product = store.products?.find(p => p.id === parseInt(productId));
+    
     setOrderItemForm({
       ...orderItemForm,
       product_id: productId,
-      unit_price: product ? product.price : ''
+      unit_price: product ? (product.price || product.unit_price || '') : ''
     });
   };
 
-  const handleQuantityChange = (e) => {
-    const quantity = parseInt(e.target.value) || '';
-
-    // Prevent setting quantity higher than available stock
-    if (selectedProduct && quantity > selectedProduct.stock) {
-      setOrderItemForm({
-        ...orderItemForm,
-        quantity: selectedProduct.stock
-      });
-    } else {
-      setOrderItemForm({
-        ...orderItemForm,
-        quantity
-      });
-    }
+  const getProductName = (productId) => {
+    const product = store.products?.find(p => p.id === parseInt(productId));
+    return product ? product.name : `Product #${productId}`;
   };
 
   return (
-    <div className="mb-4">
+    <div className="order-items-section">
       <h6 className="mb-3">Order Items</h6>
-      <div className="card bg-dark text-white p-3 mb-3">
-        <div className="row g-2">
-          <div className="col-md-4">
-            <select
-              className="form-select"
-              value={orderItemForm.product_id}
-              onChange={handleProductChange}
-            >
-              <option value="">Select Product</option>
-              {store.products.map((product) => (
-                <option
-                  key={product.id}
-                  value={product.id}
-                  disabled={product.stock === 0}
-                >
-                  {product.name} - ${product.price} (Stock: {product.stock})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="col-md-4">
-            <div className="input-group">
+      
+      {/* Add Item Form */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <div className="row g-2 align-items-end">
+            <div className="col-md-4">
+              <label className="form-label">Product</label>
+              <select
+                className="form-select"
+                value={orderItemForm.product_id}
+                onChange={handleProductChange}
+              >
+                <option value="">Select Product</option>
+                {store.products?.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name} - ${product.price || product.unit_price} 
+                    (Stock: {product.stock || product.current_stock})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label">Quantity</label>
               <input
                 type="number"
                 className="form-control"
-                placeholder="Quantity"
-                value={orderItemForm.quantity}
-                onChange={handleQuantityChange}
                 min="1"
-                max={selectedProduct ? selectedProduct.stock : ""}
+                value={orderItemForm.quantity}
+                onChange={(e) => setOrderItemForm({ ...orderItemForm, quantity: e.target.value })}
+                placeholder="Qty"
               />
-              {selectedProduct && (
-                <span className="input-group-text">
-                  Max: {selectedProduct.stock}
-                </span>
-              )}
             </div>
-          </div>
-          <div className="col-md-4">
-            <button
-              type="button"
-              className="btn btn-primary w-100"
-              onClick={handleAddItem}
-              disabled={!orderItemForm.product_id || !orderItemForm.quantity}
-            >
-              <i className="fas fa-plus me-2"></i>Add Item
-            </button>
+            <div className="col-md-3">
+              <label className="form-label">Unit Price ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                className="form-control"
+                value={orderItemForm.unit_price}
+                onChange={(e) => setOrderItemForm({ ...orderItemForm, unit_price: e.target.value })}
+                placeholder="Price"
+              />
+            </div>
+            <div className="col-md-2">
+              <button
+                type="button"
+                className="btn btn-success w-100"
+                onClick={handleAddItem}
+                disabled={!orderItemForm.product_id || !orderItemForm.quantity || !orderItemForm.unit_price}
+              >
+                <i className="fas fa-plus"></i> Add
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Items List */}
       {items.length > 0 ? (
         <div className="table-responsive">
-          <table className="table table-dark table-hover">
-            <thead>
+          <table className="table table-sm table-bordered">
+            <thead className="table-light">
               <tr>
                 <th>Product</th>
                 <th>Quantity</th>
@@ -110,57 +101,40 @@ const OrderItemsComponent = ({
               </tr>
             </thead>
             <tbody>
-              {items.map((item, index) => {
-                const product = store.products.find(p => p.id === item.product_id);
-                return (
-                  <tr key={index}>
-                    <td>{product ? product.name : 'Unknown Product'}</td>
-                    <td>{item.quantity}</td>
-                    <td>${parseFloat(item.unit_price).toFixed(2)}</td>
-                    <td>${(item.quantity * item.unit_price).toFixed(2)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleRemoveItem(index)}
-                      >
-                        <i className="fas fa-trash-alt"></i>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {items.map((item, index) => (
+                <tr key={index}>
+                  <td>{getProductName(item.product_id)}</td>
+                  <td>{item.quantity}</td>
+                  <td>${parseFloat(item.unit_price).toFixed(2)}</td>
+                  <td>${(item.quantity * item.unit_price).toFixed(2)}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleRemoveItem(index)}
+                    >
+                      <i className="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
             <tfoot>
-              <tr>
+              <tr className="table-dark">
                 <td colSpan="3" className="text-end"><strong>Total:</strong></td>
-                <td colSpan="2">
-                  <strong>${items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}</strong>
-                </td>
+                <td colSpan="2"><strong>${totalAmount.toFixed(2)}</strong></td>
               </tr>
             </tfoot>
           </table>
         </div>
       ) : (
         <div className="alert alert-info">
-          No items added to the order yet
+          <i className="fas fa-info-circle me-2"></i>
+          No items added yet. Select a product and add it to the order.
         </div>
       )}
     </div>
   );
-};
-
-OrderItemsComponent.propTypes = {
-  orderItemForm: PropTypes.shape({
-    product_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    quantity: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    unit_price: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-  }).isRequired,
-  setOrderItemForm: PropTypes.func.isRequired,
-  handleAddItem: PropTypes.func.isRequired,
-  items: PropTypes.array.isRequired,
-  handleRemoveItem: PropTypes.func.isRequired,
-  totalAmount: PropTypes.number
 };
 
 export default OrderItemsComponent;

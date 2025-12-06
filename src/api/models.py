@@ -4,6 +4,8 @@ from datetime import datetime
 from enum import Enum
 from sqlalchemy import Enum as qenum
 from sqlalchemy.ext.hybrid import hybrid_property
+from utils_custom.auth import decode_token
+
 
 
 from .extensions import db
@@ -60,7 +62,12 @@ class User(db.Model):
             "is_verified": self.is_verified,
             "bio": self.bio,
         }
-    
+
+class UserInterest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    interest = db.Column(db.String(100))
+
 class Company(db.Model):
     __tablename__ = 'company'
 
@@ -338,12 +345,15 @@ class OrderDetail(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
-            "order_id": self.order_id,
-            "product_id": self.product_id,
-            "quantity": self.quantity,
-            "price_per_unit": self.price_per_unit
-        }
+        "id": self.id,
+        "customer_id": self.customer_id,
+        "total_amount": float(self.total_amount),
+        "status": self.status,
+        "created_at": self.created_at.isoformat() if self.created_at else None,
+        "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        "order_items": [item.serialize() for item in self.order_items] if self.order_items else [],
+        "items": [item.serialize() for item in self.order_items] if self.order_items else []
+    }
 
 # Customer Model
 class Customer(db.Model):
@@ -555,9 +565,23 @@ class Report(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     generated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Optional: Reference the user who generated the report
     file_path = db.Column(db.String(255), nullable=True)  # Path to the exported file (PDF, CSV, etc.)
-    
+    reported_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    reported_user_id = db.Column(db.Integer)
+    reason = db.Column(db.Text)
     # Relationships
-    user = db.relationship('User', backref='reports', lazy=True)
+    
+    generated_by_user = db.relationship(
+        'User',
+        foreign_keys=[generated_by],
+        backref='generated_reports'
+    )
+
+    reported_by_user = db.relationship(
+        'User',
+        foreign_keys=[reported_by_id],
+        backref='reported_reports'
+    )
+
 
     def __repr__(self):
         return f"<Report {self.type} generated on {self.created_at}>"
@@ -570,6 +594,9 @@ class Report(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "generated_by": self.generated_by,
             "file_path": self.file_path,
+            "generated_by_user": self.generated_by_user.serialize() if self.generated_by_user else None,
+            "reported_by_user": self.reported_by_user.serialize() if self.reported_by_user else None,
+
         }
     
 class ComplianceStatus(db.Model):
@@ -1314,6 +1341,7 @@ class Message(db.Model):
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     content = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def serialize(self):
         return {
@@ -1321,7 +1349,8 @@ class Message(db.Model):
             "sender_id": self.sender_id,
             "receiver_id": self.receiver_id,
             "content": self.content,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
+            "sent_at": self.sent_at.isoformat(),
         }
 
 class CustomerAnalytics(db.Model):
@@ -1761,23 +1790,20 @@ class Notification(db.Model):
     __tablename__ = 'notifications'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    seedbank_id = db.Column(db.Integer, db.ForeignKey('seedbanks.id'), nullable=False)
-    message = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    email = db.Column(db.Boolean, nullable=False, default=True)
 
-    seedbank = db.relationship('Seedbank', backref=db.backref('notifications', lazy=True))
-
+    sms = db.Column(db.Boolean, nullable=False, default=False)
+  
     def serialize(self):
         return {
             "id": self.id,
-            "seedbank_id": self.seedbank_id,
-            "message": self.message,
-            "created_at": self.created_at.isoformat()
+            "email": self.email,
+            
+            "sms": self.sms,
+        
         }
     
 # customer dashboard
-
-
 
 class Wishlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1984,4 +2010,75 @@ class Schedule(db.Model):
             "shift_type": self.shift_type,
         }    
 
+class Connect(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    connected_user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+class FavoriteConnect(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    favorite_user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Job(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
+    title = db.Column(db.String(120))
+    description = db.Column(db.Text)
+    requirements = db.Column(db.Text)
+    salary = db.Column(db.String(80))
+    location = db.Column(db.String(120))
+    posted_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "company_id": self.company_id,
+            "title": self.title,
+            "description": self.description,
+            "requirements": self.requirements,
+            "salary": self.salary,
+            "location": self.location,
+            "posted_at": self.posted_at.isoformat()
+        }
+
+class JobApplication(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey("job.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
+    applied_at = db.Column(db.DateTime, default=datetime.utcnow)  
+
+class Advertisement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(140))
+    content = db.Column(db.Text)
+    image_url = db.Column(db.String(300))
+    active = db.Column(db.Boolean, default=True)
+    posted_by = db.Column(db.Integer, db.ForeignKey("user.id"))
+    posted_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "image_url": self.image_url,
+            "active": self.active,
+            "posted_by": self.posted_by,
+            "posted_at": self.posted_at.isoformat(),
+        }
+
+class TokenBlocklist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(120), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @classmethod
+    def is_token_revoked(cls, encoded_token):
+        jti = decode_token(encoded_token)["jti"]
+        token = cls.query.filter_by(jti=jti).first()
+        return token is not None

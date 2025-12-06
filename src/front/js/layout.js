@@ -1,13 +1,13 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import injectContext from "./store/appContext"; // Context for global state
+import injectContext from "./store/appContext";
 import Navbar from "./component/Navbar";
 import Sidebar from "./component/Sidebar";
 import { Footer } from "./component/footer";
 import ScrollToTop from "./component/scrollToTop";
 import AgeVerification from "./pages/AgeVerification";
 
-// Non-Medical Pages
+// Pages
 import Home from "./pages/Home";
 import AboutUs from "./pages/AboutUs";
 import Shop from "./pages/Shop";
@@ -17,120 +17,54 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
-import EmployeeDashboard from "./pages/EmployeeDashboard";
 import Products from "./pages/Products";
-import Inventory from "./pages/Inventory";
-import InventoryPage from "./pages/InventoryPage";
-import Invoices from "./pages/Invoices";
-import Stores from "./pages/Stores";
-import Suppliers from "./pages/Suppliers";
-import Orders from "./pages/Orders";
-import CartManagement from "./pages/CartManagement";
-import Users from "./pages/Users";
-import ManagerShifts from "./pages/ManagerShifts";
-import EmployeeShifts from "./pages/EmployeeShifts";
-import PublicDeals from "./pages/PublicDeals"; // Adjust path if needed
-
-
-import AnalyticsDashboard from "./pages/AnalyticsDashboard"; // Assuming the file is in the 'pages' folder
-import Reports from "./pages/ReportsPage";
-import Leads from "./pages/Leads";
-import CheckoutPage from "./pages/CheckoutPage";
-import BarcodeScanner from "./pages/BarcodeScanner";
-import Campaign from "./pages/Campaign";
-import Task from "./pages/Task";
-import SalesPipeline from "./pages/SalesPipeline";
 import PriceComparison from "./pages/PriceComparison";
-import PersonalizedRecommendations from "./pages/PersonalizedRecommendations";
-import ChatPage from './pages/ChatPage';
-// import SalesPipeline from './pages/SalesReport';
+import Inventory from "./pages/Inventory";
+import Invoices from "./pages/Invoices";
+import Orders from "./pages/Orders";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import Reports from "./pages/ReportsPage";
+import SalesReport from "./pages/SalesReport";
 
-// import MainPOS from "./pages/POS/MainPOS";
+// POS
 import POS from "./pages/POS/POS";
 import TransactionHistory from "./pages/POS/TransactionHistory";
 import Returns from "./pages/POS/Returns";
-import Reconciliation from "./pages/POS/Reconciliation";
-import CustomerManagement from "./pages/POS/CustomerManagement";
 import ReceiptManagement from "./pages/POS/ReceiptManagement";
-import POSSettings from "./pages/POS/POSSettings";
-import OfflineTransactions from "./pages/POS/OfflineTransactions";
 import POSReports from "./pages/POS/Reports";
 
-
-// Medical Pages
+// Medical
 import ComplianceDashboard from "./pages/Medical/ComplianceDashboard";
 import ComplianceReports from "./pages/Medical/ComplianceReports";
+import AppointmentManagement from "./pages/Medical/AppointmentManagement";
 import MedicalAnalytics from "./pages/Medical/MedicalAnalytics";
 import PatientList from "./pages/Medical/PatientList";
-import PatientProfile from "./pages/Medical/PatientProfile";
 import PatientRegistration from "./pages/Medical/PatientRegistration";
-import PrescriptionCreation from "./pages/Medical/PrescriptionCreation";
 import PrescriptionManagement from "./pages/Medical/PrescriptionManagement";
-import PatientManagement from "./pages/Medical/PatientManagement";
-import AppointmentManagement from "./pages/Medical/AppointmentManagement";
-import BillingInsurance from "./pages/Medical/BillingInsurance";
-import HealthAnalytics from "./pages/Medical/HealthAnalytics";
-import StaffTraining from "./pages/Medical/StaffTraining";
 
-
-// GrowFarms Pages
-import AddGrowTask from "./pages/GrowFarms/AddGrowTask";
+// GrowFarms
 import AddPlantBatch from "./pages/GrowFarms/AddPlantBatch";
-import AlertThresholdPage from "./pages/GrowFarms/AlertThresholdPage";
-import BatchPage from "./pages/GrowFarms/BatchPage";
-import GrowFarmDashboard from "./pages/GrowFarms/GrowFarmDashboard";
+import AddGrowTask from "./pages/GrowFarms/AddGrowTask";
 import GrowTaskList from "./pages/GrowFarms/GrowTaskList";
-import PlantBatchDetails from "./pages/GrowFarms/PlantBatchDetails";
 import PlantBatchList from "./pages/GrowFarms/PlantBatchList";
-import GrowReports from "./pages/GrowFarms/GrowReports";
-import GrowFarmSettings from "./pages/GrowFarms/Settings";
 import YieldPrediction from "./pages/GrowFarms/YieldPrediction";
-import GrowFarmOverview from "./pages/GrowFarms/GrowFarmOverview";
-import AssignGrowTask from "./pages/GrowFarms/AssignGrowTask";
-import Notifications from "./pages/GrowFarms/Notifications";
-import ResourceManagement from "./pages/GrowFarms/ResourceManagement";
-import CalendarView from "./pages/GrowFarms/CalendarView";
-import HarvestLog from "./pages/GrowFarms/HarvestLog";
-import PestDiseaseTracker from "./pages/GrowFarms/PestDiseaseTracker";
-import StrainCatalog from "./pages/GrowFarms/StrainCatalog";
+import GrowFarmDashboard from "./pages/GrowFarms/GrowFarmDashboard";
 
-
-
-// SeedBanks Pages
+// SeedBanks
 import AddSeedBatch from "./pages/SeedBanks/AddSeedBatch";
-import SeedBankDashboard from "./pages/SeedBanks/SeedBankDashboard";
-import SeedBankSettings from "./pages/SeedBanks/SeedBankSettings";
-import SeedBatchDetails from "./pages/SeedBanks/SeedBatchDetails";
 import SeedBatchList from "./pages/SeedBanks/SeedBatchList";
 import SeedInventory from "./pages/SeedBanks/SeedInventory";
 import SeedReports from "./pages/SeedBanks/SeedReports";
-import StorageConditions from "./pages/SeedBanks/StorageConditions";
-import SeedNotifications from "./pages/SeedBanks/SeedNotifications";
-import SeedResourceManagement from "./pages/SeedBanks/SeedResourceManagement";
-import SeedCalendarView from "./pages/SeedBanks/SeedCalendarView";
-import SeedAnalytics from "./pages/SeedBanks/SeedAnalytics";
+import SeedBankDashboard from "./pages/SeedBanks/SeedBankDashboard";
 
-
-// Import your customer dashboard components
+// Customer Dashboard
 import DashboardOverview from "./pages/CustomerDashboard/DashboardOverview";
 import CustomerProfile from "./pages/CustomerDashboard/CustomerProfile";
 import OrderHistory from "./pages/CustomerDashboard/OrderHistory";
-import OrderDetails from "./pages/CustomerDashboard/OrderDetails";
 import Wishlist from "./pages/CustomerDashboard/Wishlist";
-import Cart from "./pages/CustomerDashboard/Cart";
-import PaymentMethods from "./pages/CustomerDashboard/PaymentMethods";
-import Support from "./pages/CustomerDashboard/Support";
 import LoyaltyProgram from "./pages/CustomerDashboard/LoyaltyProgram";
-import CustomerRecommendations from "./pages/CustomerDashboard/Recommendations";
-import CustomerNotifications from "./pages/CustomerDashboard/Notifications";
-import Subscriptions from "./pages/CustomerDashboard/Subscriptions";
 import CustomerAnalytics from "./pages/CustomerDashboard/CustomerAnalytics";
-import Address from "./pages/CustomerDashboard/Address";
-import CustomerSettings from "./pages/CustomerDashboard/Settings";
-import SalesReport from "./pages/SalesReport";
-// import { Settings, Accounts, Profile, Messaging, Help } from "./pages/NewPages";
 
-// Middleware to enforce age verification before accessing the site
 const RequireAgeVerification = ({ children }) => {
     const ageVerified = localStorage.getItem("ageVerified") === "true";
     return ageVerified ? children : <Navigate to="/" />;
@@ -147,11 +81,7 @@ const Layout = () => {
                     <Sidebar />
                     <div className="flex-grow-1 p-3">
                         <Routes>
-                            {/* Non-Medical Routes */}
-                            {/* Age Verification Page */}
                             <Route path="/" element={<AgeVerification />} />
-
-                            {/* Protected Routes (Require Age Verification) */}
                             <Route path="/home" element={<RequireAgeVerification><Home /></RequireAgeVerification>} />
                             <Route path="/about-us" element={<AboutUs />} />
                             <Route path="/shop" element={<Shop />} />
@@ -161,127 +91,54 @@ const Layout = () => {
                             <Route path="/signup" element={<Signup />} />
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/dashboard" element={<Dashboard />} />
-                            <Route path="/employee-dashboard" element={<EmployeeDashboard employeeId={1} />} />
                             <Route path="/products" element={<Products />} />
                             <Route path="/price-comparison" element={<PriceComparison />} />
-                            <Route path="/personalized-recommendations" element={<PersonalizedRecommendations customerId={1} />} />
                             <Route path="/inventory" element={<Inventory />} />
-                            <Route path="/inventory-page" element={<InventoryPage />} />;
                             <Route path="/invoices" element={<Invoices />} />
-                            <Route path="/stores" element={<Stores />} />
-                            <Route path="/suppliers" element={<Suppliers />} />
                             <Route path="/orders" element={<Orders />} />
-                            <Route path="/pos" element={<POS />} />
-                            <Route path="/cart-management" element={<CartManagement />} />
-                            <Route path="/checkout" element={<CheckoutPage />} />
-                            <Route path="/users" element={<Users />} />
-                            <Route path="/manager-shifts" element={<ManagerShifts />} />
-                            <Route path="/employee-shifts" element={<EmployeeShifts />} />
-                            <Route path="/deals" element={<PublicDeals />} />
-
-
                             <Route path="/analytics-dashboard" element={<AnalyticsDashboard />} />
                             <Route path="/reports" element={<Reports />} />
-                            <Route path="/barcode-scanner" element={<BarcodeScanner />} />
-                            <Route path="/campaign" element={<Campaign />} />
-                            <Route path="/task" element={<Task />} />
                             <Route path="/sales-reports" element={<SalesReport />} />
-                            <Route path="/chat" element={<ChatPage />} />
 
-                            {/* POS Routes */}
-                            <Route path="/pos" element={<POS />} /> Main POS Page
+                            {/* POS */}
+                            <Route path="/pos" element={<POS />} />
                             <Route path="/pos/transactions" element={<TransactionHistory />} />
                             <Route path="/pos/returns" element={<Returns />} />
-                            <Route path="/pos/reconciliation" element={<Reconciliation />} />
-                            <Route path="/pos/customers" element={<CustomerManagement />} />
                             <Route path="/pos/receipt-management" element={<ReceiptManagement />} />
-                            <Route path="/pos/settings" element={<POSSettings />} />
-                            <Route path="/pos/offline-transactions" element={<OfflineTransactions />} />
                             <Route path="/pos/reports" element={<POSReports />} />
 
-                            {/* customer dashboard */}
-
-                            <Route path="/dashboard-overview" element={<DashboardOverview />} />
-                            <Route path="/profile" element={<CustomerProfile />} />
-                            <Route path="/order-history" element={<OrderHistory />} />
-                            <Route path="/order-details/:orderId" element={<OrderDetails />} />
-                            <Route path="/wishlist" element={<Wishlist />} />
-                            <Route path="/cart" element={<Cart />} />
-                            <Route path="/payment-methods" element={<PaymentMethods />} />
-                            <Route path="/support" element={<Support />} />
-                            <Route path="/loyalty-program" element={<LoyaltyProgram />} />
-                            <Route path="/recommendations" element={<CustomerRecommendations />} />
-                            <Route path="/notifications" element={<CustomerNotifications />} />
-                            <Route path="/subscriptions" element={<Subscriptions />} />
-                            <Route path="/customer-analytics" element={<CustomerAnalytics />} />
-                            <Route path="/address" element={<Address />} />
-                            <Route path="/settings" element={<CustomerSettings />} />
-
-
-
-                            {/* Medical Routes */}
+                            {/* Medical */}
                             <Route path="/medical/compliance-dashboard" element={<ComplianceDashboard />} />
                             <Route path="/medical/compliance-reports" element={<ComplianceReports />} />
+                            <Route path="/medical/appointment-management" element={<AppointmentManagement />} />
                             <Route path="/medical/medical-analytics" element={<MedicalAnalytics />} />
                             <Route path="/medical/patient-list" element={<PatientList />} />
-                            <Route path="/medical/patient-profile" element={<PatientProfile />} />
                             <Route path="/medical/patient-registration" element={<PatientRegistration />} />
-                            <Route path="/medical/prescription-creation" element={<PrescriptionCreation />} />
                             <Route path="/medical/prescription-management" element={<PrescriptionManagement />} />
-                            {/* New Medical Routes */}
-                            <Route path="/medical/patient-management" element={<PatientManagement />} />
-                            <Route path="/medical/appointment-management" element={<AppointmentManagement />} />
-                            <Route path="/medical/billing-insurance" element={<BillingInsurance />} />
-                            <Route path="/medical/health-analytics" element={<HealthAnalytics />} />
-                            <Route path="/medical/staff-training" element={<StaffTraining />} />
-                            <Route path="/grow-farms/harvest-log" element={<HarvestLog />} />
-                            <Route path="/grow-farms/pest-disease-tracker" element={<PestDiseaseTracker />} />
-                            <Route path="/grow-farms/strain-catalog" element={<StrainCatalog />} />
 
-
-
-                            {/* GrowFarms Routes */}
-                            <Route path="/growfarms/add-grow-task" element={<AddGrowTask />} />
-                            <Route path="/growfarms/add-plant-batch" element={<AddPlantBatch />} />
-                            <Route path="/growfarms/alert-threshold" element={<AlertThresholdPage />} />
-                            <Route path="/growfarms/batch" element={<BatchPage />} />
+                            {/* GrowFarms */}
                             <Route path="/growfarms/dashboard" element={<GrowFarmDashboard />} />
+                            <Route path="/growfarms/add-plant-batch" element={<AddPlantBatch />} />
+                            <Route path="/growfarms/add-grow-task" element={<AddGrowTask />} />
                             <Route path="/growfarms/task-list" element={<GrowTaskList />} />
-                            <Route path="/growfarms/plant-batch-details" element={<PlantBatchDetails />} />
                             <Route path="/growfarms/plant-batch-list" element={<PlantBatchList />} />
-                            <Route path="/growfarms/grow-reports" element={<GrowReports />} />
-                            <Route path="/growfarms/settings" element={<GrowFarmSettings />} />
                             <Route path="/growfarms/yield-prediction" element={<YieldPrediction />} />
-                            <Route path="/growfarms/overview" element={<GrowFarmOverview />} />
-                            <Route path="/growfarms/assign-task" element={<AssignGrowTask />} />
-                            <Route path="/growfarms/notifications" element={<Notifications />} />
-                            <Route path="/growfarms/resource-management" element={<ResourceManagement />} />
-                            <Route path="/growfarms/calendar-view" element={<CalendarView />} />
 
-
-                            {/* SeedBanks Routes */}
-                            <Route path="/seedbanks/add-seed-batch" element={<AddSeedBatch />} />
+                            {/* SeedBanks */}
                             <Route path="/seedbanks/dashboard" element={<SeedBankDashboard />} />
-                            <Route path="/seedbanks/settings" element={<SeedBankSettings />} />
-                            <Route path="/seedbanks/batch-details" element={<SeedBatchDetails />} />
+                            <Route path="/seedbanks/add-seed-batch" element={<AddSeedBatch />} />
                             <Route path="/seedbanks/batch-list" element={<SeedBatchList />} />
                             <Route path="/seedbanks/inventory" element={<SeedInventory />} />
                             <Route path="/seedbanks/reports" element={<SeedReports />} />
-                            <Route path="/seedbanks/storage-conditions" element={<StorageConditions />} />
-                            <Route path="/seedbanks/notifications" element={<SeedNotifications />} />
-                            <Route path="/seedbanks/resource-management" element={<SeedResourceManagement />} />
-                            <Route path="/seedbanks/calendar-view" element={<SeedCalendarView />} />
-                            <Route path="/seedbanks/analytics" element={<SeedAnalytics />} />
 
+                            {/* Customer */}
+                            <Route path="/dashboard-overview" element={<DashboardOverview />} />
+                            <Route path="/profile" element={<CustomerProfile />} />
+                            <Route path="/order-history" element={<OrderHistory />} />
+                            <Route path="/wishlist" element={<Wishlist />} />
+                            <Route path="/loyalty-program" element={<LoyaltyProgram />} />
+                            <Route path="/customer-analytics" element={<CustomerAnalytics />} />
 
-                            {/* // Add these routes
-                            <Route path="/settings" element={<Settings />} />
-                            <Route path="/accounts" element={<Accounts />} />
-                            <Route path="/profile" element={<Profile />} />
-                            <Route path="/messaging" element={<Messaging />} />
-                            <Route path="/help" element={<Help />} /> */}
-
-                            {/* Fallback Route */}
                             <Route path="*" element={<h1>Page Not Found</h1>} />
                         </Routes>
                     </div>

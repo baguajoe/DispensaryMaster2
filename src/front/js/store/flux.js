@@ -57,7 +57,14 @@ const getState = ({ getStore, getActions, setStore }) => {
                     }
 
                     const data = await response.json();
-                    setStore({ products: data.products || [] });
+                    // Map backend fields to frontend fields
+                    const mappedProducts = (Array.isArray(data) ? data : (data.products || [])).map(p => ({
+                        ...p,
+                        price: p.unit_price,
+                        stock: p.current_stock,
+                        medical_benefits: p.test_results
+                    }));
+                    setStore({ products: mappedProducts });
                     return { success: true };
                 } catch (error) {
                     return { success: false, error: error.message };

@@ -33,14 +33,14 @@ const Settings = () => {
     return (
         <div>
             <h1>Settings</h1>
-            {loading ? (
+            {/* {loading ? (
                 <p>Loading...</p>
             ) : (
                 <NotificationPreferences
                     settings={settings}
                     onUpdateSettings={handleUpdateSettings}
                 />
-            )}
+            )} */}
         </div>
     );
 };

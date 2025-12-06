@@ -15,7 +15,6 @@ const Orders = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Simplified form data to match backend expectations
   const [formData, setFormData] = useState({
     customer_id: '',
     items: []
@@ -28,7 +27,7 @@ const Orders = () => {
   });
 
   useEffect(() => {
-    loadOrders();
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -38,17 +37,48 @@ const Orders = () => {
     }
   }, [showAddModal, showEditModal]);
 
-  const loadOrders = async () => {
+  const loadInitialData = async () => {
     setIsLoading(true);
-    const result = await actions.fetchOrders();
-    if (!result.success) {
-      setError(result.error);
+    try {
+      // Load orders, customers, and products in parallel
+      await Promise.all([
+        actions.fetchOrders(),
+        actions.fetchCustomers(),
+        actions.fetchProducts()
+      ]);
+    } catch (err) {
+      setError(err.message);
     }
     setIsLoading(false);
   };
 
+  const loadOrders = async () => {
+    const result = await actions.fetchOrders();
+    if (!result.success) {
+      setError(result.error);
+    }
+  };
+
+  // Helper to get items from order (handles both 'items' and 'order_items')
+  const getOrderItems = (order) => {
+    return order.items || order.order_items || [];
+  };
+
+  // Helper to calculate order total
+  const calculateOrderTotal = (order) => {
+    const items = getOrderItems(order);
+    return items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    
+    if (formData.items.length === 0) {
+      setError("Please add at least one item to the order");
+      return;
+    }
+
     const result = await actions.addOrder(formData);
     if (result.success) {
       setShowAddModal(false);
@@ -61,15 +91,22 @@ const Orders = () => {
 
   const handleEdit = (order) => {
     setSelectedOrder(order);
+    const items = getOrderItems(order);
     setFormData({
       customer_id: order.customer_id.toString(),
-      items: order.order_items || []
+      items: items.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: parseFloat(item.unit_price)
+      }))
     });
     setShowEditModal(true);
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    
     const result = await actions.editOrder(selectedOrder.id, formData);
     if (result.success) {
       setShowEditModal(false);
@@ -105,6 +142,11 @@ const Orders = () => {
   };
 
   const handleAddItem = async () => {
+    if (!orderItemForm.product_id || !orderItemForm.quantity || !orderItemForm.unit_price) {
+      setError("Please fill in all item fields");
+      return;
+    }
+
     const newItem = {
       product_id: parseInt(orderItemForm.product_id),
       quantity: parseInt(orderItemForm.quantity),
@@ -121,8 +163,6 @@ const Orders = () => {
       quantity: '',
       unit_price: ''
     });
-
-    await actions.fetchProducts();
   };
 
   const handleRemoveItem = (index) => {
@@ -133,16 +173,28 @@ const Orders = () => {
   };
 
   const handleGeneratePDF = () => {
+    if (!store.orders || store.orders.length === 0) {
+      setError("No orders to export");
+      return;
+    }
+
     const doc = new jsPDF();
     doc.text("Orders List", 14, 10);
 
-    const tableColumn = ["Order ID", "Customer", "Total Amount", "Items"];
-    const tableRows = store.orders.map((order) => [
-      order.id,
-      order.customer_id,
-      `$${(order.items || []).reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}`,
-      (order.items || []).length
-    ]);
+    const tableColumn = ["Order ID", "Customer", "Total Amount", "Items", "Date"];
+    const tableRows = store.orders.map((order) => {
+      const customer = store.customers?.find(c => c.id === parseInt(order.customer_id));
+      const customerName = customer ? `${customer.first_name} ${customer.last_name}` : `ID: ${order.customer_id}`;
+      const items = getOrderItems(order);
+      
+      return [
+        order.id,
+        customerName,
+        `$${calculateOrderTotal(order).toFixed(2)}`,
+        items.length,
+        new Date(order.created_at).toLocaleDateString()
+      ];
+    });
 
     doc.autoTable({
       head: [tableColumn],
@@ -154,13 +206,25 @@ const Orders = () => {
   };
 
   const handleGenerateCSV = () => {
-    const headers = ["Order ID,Customer,Total Amount,Items"];
-    const rows = store.orders.map((order) => [
-      order.id,
-      order.customer_id,
-      (order.items || []).reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2),
-      (order.items || []).length
-    ]);
+    if (!store.orders || store.orders.length === 0) {
+      setError("No orders to export");
+      return;
+    }
+
+    const headers = ["Order ID", "Customer", "Total Amount", "Items", "Date"];
+    const rows = store.orders.map((order) => {
+      const customer = store.customers?.find(c => c.id === parseInt(order.customer_id));
+      const customerName = customer ? `${customer.first_name} ${customer.last_name}` : order.customer_id;
+      const items = getOrderItems(order);
+      
+      return [
+        order.id,
+        `"${customerName}"`,
+        calculateOrderTotal(order).toFixed(2),
+        items.length,
+        new Date(order.created_at).toLocaleDateString()
+      ];
+    });
 
     const csvContent = [
       headers.join(","),
@@ -176,11 +240,31 @@ const Orders = () => {
     document.body.removeChild(link);
   };
 
+  const getCustomerName = (customerId) => {
+    const customer = store.customers?.find(c => c.id === parseInt(customerId));
+    return customer ? `${customer.first_name} ${customer.last_name}` : `Customer #${customerId}`;
+  };
+
+  const getStatusBadge = (status) => {
+    const statusClasses = {
+      pending: 'bg-warning text-dark',
+      completed: 'bg-success',
+      cancelled: 'bg-danger',
+      processing: 'bg-info'
+    };
+    return (
+      <span className={`badge ${statusClasses[status] || 'bg-secondary'}`}>
+        {status || 'pending'}
+      </span>
+    );
+  };
+
   const renderModal = (isEdit = false) => {
     const modalShow = isEdit ? showEditModal : showAddModal;
     const handleClose = () => {
       isEdit ? setShowEditModal(false) : setShowAddModal(false);
       resetForm();
+      setError(null);
     };
     const handleSubmitForm = isEdit ? handleEditSubmit : handleSubmit;
 
@@ -194,17 +278,13 @@ const Orders = () => {
                 <button type="button" className="btn-close" onClick={handleClose}></button>
               </div>
               <div className="modal-body">
+                {error && (
+                  <div className="alert alert-danger alert-dismissible fade show" role="alert">
+                    {error}
+                    <button type="button" className="btn-close" onClick={() => setError(null)}></button>
+                  </div>
+                )}
                 <form onSubmit={handleSubmitForm}>
-                  {/* <div className="mb-3">
-                    <label className="form-label">Customer ID</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={formData.customer_id}
-                      onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-                      required
-                    />
-                  </div> */}
                   <div className="mb-3">
                     <label className="form-label">Customer</label>
                     <select
@@ -238,7 +318,7 @@ const Orders = () => {
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      disabled={formData.items.length === 0}
+                      disabled={formData.items.length === 0 || !formData.customer_id}
                     >
                       {isEdit ? 'Save Changes' : 'Create Order'}
                     </button>
@@ -265,19 +345,15 @@ const Orders = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="orders-page">
+  return (
+    <div className="orders-page">
+      {error && !showAddModal && !showEditModal && (
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
           {error}
           <button type="button" className="btn-close" onClick={() => setError(null)}></button>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className="orders-page">
       <header className="orders-header flex-column align-items-start">
         <h1>Orders</h1>
         <div className="button-group d-flex gap-2 mt-3 w-100 justify-content-end">
@@ -316,6 +392,7 @@ const Orders = () => {
                 <th>Customer</th>
                 <th>Total Amount</th>
                 <th>Items</th>
+                <th>Status</th>
                 <th>Created Date</th>
                 <th>Actions</th>
               </tr>
@@ -323,39 +400,40 @@ const Orders = () => {
             <tbody>
               {store.orders?.length > 0 ? (
                 store.orders.map((order) => {
-                  const customer = store.customers?.find(c => c.id === parseInt(order.customer_id));
+                  const items = getOrderItems(order);
                   return (
                     <tr key={order.id}>
-                      <td>{order.id}</td>
-                      <td>{customer ? `${customer.first_name} ${customer.last_name}` : order.customer_id}</td>
-                      <td>
-                        ${(order.items || []).reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}
-                      </td>
-                      <td>{(order.items || []).length} items</td>
+                      <td>#{order.id}</td>
+                      <td>{getCustomerName(order.customer_id)}</td>
+                      <td>${calculateOrderTotal(order).toFixed(2)}</td>
+                      <td>{items.length} item{items.length !== 1 ? 's' : ''}</td>
+                      <td>{getStatusBadge(order.status)}</td>
                       <td>{new Date(order.created_at).toLocaleDateString()}</td>
                       <td>
                         <div className="d-flex gap-2">
                           <button
                             className="btn btn-secondary btn-sm"
                             onClick={() => handleEdit(order)}
+                            title="Edit Order"
                           >
                             <i className="fas fa-edit"></i>
                           </button>
                           <button
                             className="btn btn-danger btn-sm"
                             onClick={() => handleDelete(order.id)}
+                            title="Delete Order"
                           >
                             <i className="fas fa-trash-alt"></i>
                           </button>
                         </div>
                       </td>
                     </tr>
-                  )
+                  );
                 })
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center">
-                    <p className="text-light mb-0">No orders found</p>
+                  <td colSpan="7" className="text-center py-4">
+                    <p className="text-muted mb-0">No orders found. Create your first order!</p>
                   </td>
                 </tr>
               )}
