@@ -1,167 +1,172 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "../../styles/cart.css";
+import React, { useState, useEffect, useContext } from "react";
+import { Context } from "../store/appContext";
+import { useNavigate } from "react-router-dom";
 
 const CartManagement = () => {
-  const [cart, setCart] = useState([]);
-  const [discountCode, setDiscountCode] = useState("");
-  const [discountApplied, setDiscountApplied] = useState(false);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+    const { store, actions } = useContext(Context);
+    const [discountCode, setDiscountCode] = useState("");
+    const [discountApplied, setDiscountApplied] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
-  // Fetch cart items on component mount
-  useEffect(() => {
-    fetchCart();
-  }, []);
+    useEffect(() => {
+        actions.fetchCart().then(() => setLoading(false));
+    }, []);
 
-  const fetchCart = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get("/cart");
-      setCart(response.data);
-      calculateTotal(response.data);
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const cart = Array.isArray(store.cartItems) ? store.cartItems : [];
 
-  // Calculate total amount
-  const calculateTotal = (cartItems) => {
-    const totalAmount = cartItems.reduce(
-      (sum, item) => sum + item.unit_price * item.quantity,
-      0
+    const subtotal = cart.length > 0 ? cart.reduce((sum, item) => sum + ((item.price || item.unit_price || 0) * (item.quantity || 1)), 0) : 0;
+    const discountAmount = discountApplied ? subtotal * (discountApplied / 100) : 0;
+    const total = subtotal - discountAmount;
+
+    const handleRemove = async (itemId) => {
+        await actions.removeFromCart(itemId);
+    };
+
+    const handleClear = async () => {
+        if (window.confirm("Clear your entire cart?")) {
+            await actions.clearCart();
+        }
+    };
+
+    const handleApplyDiscount = async () => {
+        const token = localStorage.getItem("token");
+        try {
+            const r = await fetch(`${process.env.BACKEND_URL}/api/cart/apply_discount`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ code: discountCode })
+            });
+            const data = await r.json();
+            if (data.success) {
+                setDiscountApplied(data.discount);
+            } else {
+                alert("Invalid discount code");
+            }
+        } catch (e) {
+            alert("Failed to apply discount");
+        }
+    };
+
+    const handleUpdateQty = async (item, qty) => {
+        if (qty < 1) return handleRemove(item.id);
+        const token = localStorage.getItem("token");
+        try {
+            await fetch(`${process.env.BACKEND_URL}/api/cart/${item.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ quantity: qty })
+            });
+            await actions.fetchCart();
+        } catch (e) { console.error(e); }
+    };
+
+    if (loading) return (
+        <div className="main-content d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
+            <div className="spinner-border text-success" />
+        </div>
     );
-    setTotal(totalAmount);
-  };
 
-  // Remove an item from the cart
-  const removeFromCart = async (itemId) => {
-    try {
-      await axios.delete(`/cart/${itemId}`);
-      const updatedCart = cart.filter((item) => item.id !== itemId);
-      setCart(updatedCart);
-      calculateTotal(updatedCart);
-    } catch (error) {
-      console.error("Error removing item:", error);
-    }
-  };
+    return (
+        <div className="main-content p-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1 className="h3 mb-0">🛒 Shopping Cart</h1>
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate("/shop")}>
+                    ← Continue Shopping
+                </button>
+            </div>
 
-  // Clear the entire cart
-  const clearCart = async () => {
-    try {
-      await axios.delete("/cart");
-      setCart([]);
-      setTotal(0);
-    } catch (error) {
-      console.error("Error clearing cart:", error);
-    }
-  };
-
-  // Save an item for later
-  const saveForLater = async (itemId) => {
-    try {
-      await axios.post("/cart/save_for_later", { item_id: itemId });
-      const updatedCart = cart.filter((item) => item.id !== itemId);
-      setCart(updatedCart);
-      calculateTotal(updatedCart);
-    } catch (error) {
-      console.error("Error saving item for later:", error);
-    }
-  };
-
-  // Apply a discount code
-  const applyDiscount = async () => {
-    try {
-      const response = await axios.post("/cart/apply_discount", {
-        code: discountCode,
-      });
-      if (response.data.success) {
-        const discountRate = response.data.discount / 100;
-        setTotal(total * (1 - discountRate));
-        setDiscountApplied(true);
-      } else {
-        alert("Invalid discount code");
-      }
-    } catch (error) {
-      console.error("Error applying discount:", error);
-    }
-  };
-
-  return (
-    <div className="cart-management p-6 bg-gray-100 min-h-screen main-content">
-      <h1 className="text-3xl font-bold mb-4">Shopping Cart</h1>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          <div className="flex justify-between mb-6">
-            <button
-              onClick={clearCart}
-              className="bg-red-500 text-white px-4 py-2 rounded"
-            >
-              Clear Cart
-            </button>
-            <input
-              type="text"
-              placeholder="Discount Code"
-              value={discountCode}
-              onChange={(e) => setDiscountCode(e.target.value)}
-              className="border rounded px-3 py-2"
-            />
-            <button
-              onClick={applyDiscount}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Apply Discount
-            </button>
-          </div>
-
-          <ul className="space-y-4">
-            {cart.map((item) => (
-              <li
-                key={item.id}
-                className="flex justify-between items-center bg-white p-4 rounded shadow"
-              >
-                <div>
-                  <h3 className="text-lg font-bold">{item.name}</h3>
-                  <p>${item.unit_price} x {item.quantity}</p>
+            {cart.length === 0 ? (
+                <div className="text-center py-5">
+                    <div style={{ fontSize: "4rem" }}>🛒</div>
+                    <h4 className="mt-3">Your cart is empty</h4>
+                    <p className="text-muted">Add some products from the shop</p>
+                    <button className="btn btn-success" onClick={() => navigate("/shop")}>
+                        Browse Products
+                    </button>
                 </div>
-                <div>
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="text-red-500 hover:text-red-700 mr-4"
-                  >
-                    Remove
-                  </button>
-                  <button
-                    onClick={() => saveForLater(item.id)}
-                    className="text-blue-500 hover:text-blue-700"
-                  >
-                    Save for Later
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+            ) : (
+                <div className="row g-4">
+                    {/* Cart Items */}
+                    <div className="col-md-8">
+                        <div className="card">
+                            <div className="card-header d-flex justify-content-between">
+                                <span>{cart.length} item{cart.length !== 1 ? "s" : ""}</span>
+                                <button className="btn btn-sm btn-outline-danger" onClick={handleClear}>Clear Cart</button>
+                            </div>
+                            <div className="list-group list-group-flush">
+                                {cart.map(item => (
+                                    <div key={item.id} className="list-group-item">
+                                        <div className="row align-items-center">
+                                            <div className="col-md-5">
+                                                <h6 className="mb-0">{item.name}</h6>
+                                                <small className="text-muted">{item.category} {item.strain && `· ${item.strain}`}</small>
+                                                {item.thc_content > 0 && (
+                                                    <small className="d-block text-muted">THC: {item.thc_content}%</small>
+                                                )}
+                                            </div>
+                                            <div className="col-md-2">
+                                                <span className="text-success fw-bold">${parseFloat(item.price).toFixed(2)}</span>
+                                            </div>
+                                            <div className="col-md-3">
+                                                <div className="input-group input-group-sm">
+                                                    <button className="btn btn-outline-secondary" onClick={() => handleUpdateQty(item, item.quantity - 1)}>-</button>
+                                                    <span className="input-group-text">{item.quantity}</span>
+                                                    <button className="btn btn-outline-secondary" onClick={() => handleUpdateQty(item, item.quantity + 1)}>+</button>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-2 text-end">
+                                                <div className="fw-bold">${(item.price * item.quantity).toFixed(2)}</div>
+                                                <button className="btn btn-link btn-sm text-danger p-0" onClick={() => handleRemove(item.id)}>Remove</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
 
-          <div className="mt-6">
-            <h2 className="text-2xl font-bold">Total: ${total.toFixed(2)}</h2>
-            {discountApplied && (
-              <p className="text-green-500 mt-2">Discount applied!</p>
+                    {/* Order Summary */}
+                    <div className="col-md-4">
+                        <div className="card">
+                            <div className="card-header"><h5 className="mb-0">Order Summary</h5></div>
+                            <div className="card-body">
+                                <div className="d-flex justify-content-between mb-2">
+                                    <span>Subtotal</span>
+                                    <span>${subtotal.toFixed(2)}</span>
+                                </div>
+                                {discountApplied && (
+                                    <div className="d-flex justify-content-between mb-2 text-success">
+                                        <span>Discount ({discountApplied}%)</span>
+                                        <span>-${discountAmount.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <hr />
+                                <div className="d-flex justify-content-between mb-3 fw-bold fs-5">
+                                    <span>Total</span>
+                                    <span>${total.toFixed(2)}</span>
+                                </div>
+
+                                {/* Discount Code */}
+                                <div className="input-group mb-3">
+                                    <input className="form-control" placeholder="Discount code"
+                                        value={discountCode} onChange={e => setDiscountCode(e.target.value)} />
+                                    <button className="btn btn-outline-secondary" onClick={handleApplyDiscount}>Apply</button>
+                                </div>
+
+                                <button className="btn btn-success w-100 mb-2" onClick={() => navigate("/pos")}>
+                                    Proceed to Checkout
+                                </button>
+                                <button className="btn btn-outline-secondary w-100" onClick={() => navigate("/shop")}>
+                                    Continue Shopping
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
-            <button
-              onClick={() => (window.location.href = "/checkout")}
-              className="bg-black text-white px-6 py-3 rounded mt-4"
-            >
-              Proceed to Checkout
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
+        </div>
+    );
 };
 
 export default CartManagement;

@@ -1,155 +1,75 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import InvoiceForm from "../component/InvoiceForm"; // Import the InvoiceForm component
 
 const Invoices = () => {
-  const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false); // Manage visibility of the InvoiceForm
+    const [invoices, setInvoices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState("all");
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
 
-  // Fetch invoices on component mount
-  useEffect(() => {
-    axios
-      .get(`${process.env.BACKEND_URL}/api/invoices`,{headers:{Authorization:"Bearer "+localStorage.getItem("token")}})
-      .then((response) => {
-        setInvoices(response.data.invoices);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching invoices:", error);
-        setLoading(false);
-      });
-  }, []);
+    useEffect(() => { fetchInvoices(); }, []);
 
-  // Download invoice
-  const downloadInvoice = (id) => {
-    axios
-      .get(`${process.env.BACKEND_URL}/api/invoices/${id}/pdf`, { responseType: "blob" })
-      .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `Invoice_${id}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-      })
-      .catch((error) => console.error("Error downloading invoice:", error));
-  };
+    const fetchInvoices = async () => {
+        try {
+            const r = await fetch(`${process.env.BACKEND_URL}/api/invoices`, { headers });
+            if (r.ok) {
+                const data = await r.json();
+                setInvoices(Array.isArray(data) ? data : data.invoices || []);
+            }
+        } catch(e) { console.error(e); }
+        finally { setLoading(false); }
+    };
 
-  // Delete invoice
-  const deleteInvoice = (id) => {
-    axios
-      .delete(`${process.env.BACKEND_URL}/api/invoices/${id}`)
-      .then(() => {
-        setInvoices((prev) => prev.filter((invoice) => invoice.id !== id));
-        console.log(`Invoice ${id} deleted successfully`);
-      })
-      .catch((error) => {
-        console.error(`Error deleting invoice ${id}:`, error);
-      });
-  };
+    const filtered = invoices.filter(i => filter === "all" || i.status === filter);
+    const total = invoices.reduce((s, i) => s + parseFloat(i.total_amount||0), 0);
+    const unpaid = invoices.filter(i => i.status === "unpaid").reduce((s, i) => s + parseFloat(i.total_amount||0), 0);
 
-  // Import invoices
-  const importInvoices = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      console.log(`File selected for import: ${file.name}`);
-      // Add functionality to parse and import invoices from the file
-    }
-  };
+    const STATUS_COLORS = { paid:"success", unpaid:"warning", overdue:"danger" };
 
-  // Export invoices
-  const exportInvoices = () => {
-    axios
-      .get(`${process.env.BACKEND_URL}/api/invoices/export`, { responseType: "blob" })
-      .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "Invoices_Export.csv");
-        document.body.appendChild(link);
-        link.click();
-      })
-      .catch((error) => {
-        console.error("Error exporting invoices:", error);
-      });
-  };
-
-  // Toggle form visibility
-  const handleCreateInvoice = () => {
-    setShowForm(true);
-  };
-
-  const handleCloseForm = () => {
-    setShowForm(false);
-  };
-
-  // Loading state
-  if (loading) return <p className="text-white">Loading invoices...</p>;
-
-  return (
-    <div className="main-content">
-      <div className="invoice-header flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-white">Invoices</h2>
-        <div className="invoice-actions flex gap-4">
-          <button onClick={handleCreateInvoice} className="create-invoice bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
-            Create Invoice
-          </button>
-          <button onClick={exportInvoices} className="export-invoice bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Export
-          </button>
-          <label className="import-invoice bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700 cursor-pointer">
-            Import
-            <input type="file" onChange={importInvoices} className="hidden" />
-          </label>
+    return (
+        <div className="main-content p-4">
+            <div className="page-header mb-4"><h2>Invoices</h2><p>Manage customer invoices</p></div>
+            <div className="row g-3 mb-4">
+                {[
+                    { label:"Total Invoiced", value:`$${total.toFixed(2)}`, color:"#11cdef" },
+                    { label:"Outstanding", value:`$${unpaid.toFixed(2)}`, color:"#ffd600" },
+                    { label:"Total Invoices", value:invoices.length, color:"#2dce89" },
+                ].map((s,i) => (
+                    <div key={i} className="col-md-4">
+                        <div className="glass-panel text-center">
+                            <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.55)",textTransform:"uppercase"}}>{s.label}</div>
+                            <div style={{fontSize:"1.8rem",fontWeight:700,color:s.color}}>{s.value}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div className="d-flex gap-2 mb-3">
+                {["all","paid","unpaid","overdue"].map(f => (
+                    <button key={f} className={`btn btn-sm ${filter===f?"btn-success":"btn-outline-light"} text-capitalize`} onClick={() => setFilter(f)}>{f}</button>
+                ))}
+            </div>
+            <div className="glass-panel">
+                {loading ? <div className="text-center py-4"><div className="spinner-border text-light" /></div>
+                : filtered.length === 0 ? <div className="text-center py-4" style={{color:"rgba(255,255,255,0.5)"}}>No invoices found</div>
+                : (
+                    <table className="table mb-0">
+                        <thead><tr><th>Invoice #</th><th>Customer</th><th>Order</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                        <tbody>
+                            {filtered.map(inv => (
+                                <tr key={inv.id}>
+                                    <td><strong>INV-{inv.id}</strong></td>
+                                    <td>Customer {inv.customer_id}</td>
+                                    <td>#{inv.order_id}</td>
+                                    <td className="text-success">${parseFloat(inv.total_amount||0).toFixed(2)}</td>
+                                    <td><span className={`badge bg-${STATUS_COLORS[inv.status]||"secondary"} ${inv.status==="unpaid"?"text-dark":""}`}>{inv.status}</span></td>
+                                    <td style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.55)"}}>{inv.issue_date ? new Date(inv.issue_date).toLocaleDateString() : "—"}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
         </div>
-      </div>
-
-      {showForm && <InvoiceForm onClose={handleCloseForm} />} {/* Render InvoiceForm */}
-
-      <div className="table-container overflow-x-auto bg-white p-4 rounded shadow">
-        <table className="w-full border-collapse text-black">
-          <thead>
-            <tr>
-              <th className="border-b py-2 px-4 text-left">Number</th>
-              <th className="border-b py-2 px-4 text-left">Customer</th>
-              <th className="border-b py-2 px-4 text-left">Invoice Type</th>
-              <th className="border-b py-2 px-4 text-left">Invoice Date</th>
-              <th className="border-b py-2 px-4 text-left">Due Date</th>
-              <th className="border-b py-2 px-4 text-left">Sent Status</th>
-              <th className="border-b py-2 px-4 text-left">Payment Status</th>
-              <th className="border-b py-2 px-4 text-left">Total</th>
-              <th className="border-b py-2 px-4 text-left">Amount Due</th>
-              <th className="border-b py-2 px-4 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoices.map((invoice) => (
-              <tr key={invoice.id}>
-                <td className="py-2 px-4">{invoice.id}</td>
-                <td className="py-2 px-4">{invoice.customer_name}</td>
-                <td className="py-2 px-4">{invoice.invoice_type}</td>
-                <td className="py-2 px-4">{invoice.invoice_date}</td>
-                <td className="py-2 px-4">{invoice.due_date}</td>
-                <td className="py-2 px-4">{invoice.sent_status ? "Sent" : "Not Sent"}</td>
-                <td className="py-2 px-4">{invoice.payment_status}</td>
-                <td className="py-2 px-4">${invoice.total.toFixed(2)}</td>
-                <td className="py-2 px-4">${invoice.amount_due.toFixed(2)}</td>
-                <td className="py-2 px-4 flex gap-2">
-                  <button onClick={() => downloadInvoice(invoice.id)} className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-700">
-                    Download
-                  </button>
-                  <button onClick={() => deleteInvoice(invoice.id)} className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700">
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+    );
 };
-
 export default Invoices;

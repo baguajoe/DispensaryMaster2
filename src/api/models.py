@@ -1176,19 +1176,28 @@ class PatientEducationResource(db.Model):
 
 class StaffTrainingResource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    dispensary_id = db.Column(db.Integer, db.ForeignKey('dispensary.id'), nullable=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    resource_type = db.Column(db.String(50), nullable=False)  # e.g., article, video, module
-    link = db.Column(db.String(255), nullable=True)
+    resource_type = db.Column(db.String(50), nullable=False)
+    category = db.Column(db.String(100), nullable=True)
+    link = db.Column(db.String(500), nullable=True)
+    is_required = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
     def serialize(self):
         return {
             "id": self.id,
+            "dispensary_id": self.dispensary_id,
+            "company_id": self.company_id,
             "title": self.title,
             "content": self.content,
             "resource_type": self.resource_type,
+            "category": self.category,
             "link": self.link,
+            "is_required": self.is_required,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -1380,7 +1389,7 @@ class Delivery(db.Model):
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     status = db.Column(db.String(50), default='Pending')  # Pending, Dispatched, Delivered
     estimated_time = db.Column(db.DateTime, nullable=True)
-    order = db.relationship('Order', backref='delivery')
+    order = db.relationship('Order', backref='delivery_ref', foreign_keys='Delivery.order_id')
 
 # Employee Time Log
 
@@ -1660,7 +1669,7 @@ class SavedForLater(db.Model):
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    items = db.relationship('CartItem', backref='cart', lazy=True)
+    items = db.relationship('CartItem', foreign_keys='CartItem.cart_id', backref='cart', lazy=True)
 
     def serialize(self):
         return {
@@ -1671,24 +1680,51 @@ class Cart(db.Model):
 
 
 class CartItem(db.Model):
-    __tablename__ = 'cart_item'
-
     id = db.Column(db.Integer, primary_key=True)
-    cart_id = db.Column(db.Integer, db.ForeignKey('cart.id'), nullable=False)
+    cart_id = db.Column(db.Integer, db.ForeignKey('cart.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    saved_for_later = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    user = db.relationship('User', backref='cart_items')
+    product = db.relationship('Product', backref='cart_items')
 
     def serialize(self):
         return {
             "id": self.id,
-            "cart_id": self.cart_id,
+            "user_id": self.user_id,
             "product_id": self.product_id,
             "quantity": self.quantity,
-            "last_updated": self.last_updated.isoformat(),
+            "saved_for_later": self.saved_for_later,
+            "name": self.product.name,
+            "category": self.product.category,
+            "strain": self.product.strain,
+            "unit_price": float(self.product.unit_price),
+            "available_stock": self.product.current_stock,
+            "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
+class DiscountCode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    discount_percent = db.Column(db.Integer, nullable=False)  # e.g., 10 for 10%
+    is_active = db.Column(db.Boolean, default=True)
+    usage_limit = db.Column(db.Integer, nullable=True)  # null = unlimited
+    times_used = db.Column(db.Integer, default=0)
+    expires_at = db.Column(db.DateTime, nullable=True)
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "code": self.code,
+            "discount_percent": self.discount_percent,
+            "is_active": self.is_active,
+            "usage_limit": self.usage_limit,
+            "times_used": self.times_used,
+            "expires_at": self.expires_at.isoformat() if self.expires_at else None
+        }
 
 # seedbank
 
@@ -2050,7 +2086,26 @@ class JobApplication(db.Model):
     job_id = db.Column(db.Integer, db.ForeignKey("job.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     company_id = db.Column(db.Integer, db.ForeignKey("company.id"))
-    applied_at = db.Column(db.DateTime, default=datetime.utcnow)  
+    applicant_name = db.Column(db.String(100), nullable=True)
+    applicant_email = db.Column(db.String(120), nullable=True)
+    applicant_phone = db.Column(db.String(20), nullable=True)
+    cover_letter = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), default="pending")
+    applied_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "job_id": self.job_id,
+            "user_id": self.user_id,
+            "company_id": self.company_id,
+            "applicant_name": self.applicant_name,
+            "applicant_email": self.applicant_email,
+            "applicant_phone": self.applicant_phone,
+            "cover_letter": self.cover_letter,
+            "status": self.status,
+            "applied_at": self.applied_at.isoformat() if self.applied_at else None
+        }  
 
 class Advertisement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -2082,3 +2137,345 @@ class TokenBlocklist(db.Model):
         jti = decode_token(encoded_token)["jti"]
         token = cls.query.filter_by(jti=jti).first()
         return token is not None
+class Interest(db.Model):
+    __tablename__ = 'interest'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    category = db.Column(db.String(50), nullable=True)
+
+    def serialize(self):
+        return {"id": self.id, "name": self.name, "category": self.category}
+
+
+class HarvestLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    batch_id = db.Column(db.Integer, db.ForeignKey('plant_batch.id'), nullable=False)
+    harvest_date = db.Column(db.Date, nullable=False)
+    wet_weight = db.Column(db.Float, default=0)
+    dry_weight = db.Column(db.Float, default=0)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "batch_id": self.batch_id,
+            "harvest_date": self.harvest_date.isoformat() if self.harvest_date else None,
+            "wet_weight": self.wet_weight,
+            "dry_weight": self.dry_weight,
+            "notes": self.notes,
+        }
+
+class PestDiseaseIssue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    batch_id = db.Column(db.Integer, db.ForeignKey('plant_batch.id'), nullable=True)
+    issue_type = db.Column(db.String(100), nullable=False)
+    reported_date = db.Column(db.Date, nullable=False)
+    treatment = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), default='active')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "batch_id": self.batch_id,
+            "issue_type": self.issue_type,
+            "reported_date": self.reported_date.isoformat() if self.reported_date else None,
+            "treatment": self.treatment,
+            "status": self.status,
+        }
+
+# ==================== LEAFBRIDGE CONNECT MODELS ====================
+
+class Resume(db.Model):
+    __tablename__ = 'resume'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    full_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(20))
+    location = db.Column(db.String(100))
+    summary = db.Column(db.Text)
+    experience_years = db.Column(db.Integer, default=0)
+    cannabis_experience = db.Column(db.Boolean, default=False)
+    certifications = db.Column(db.JSON, default=[])
+    skills = db.Column(db.JSON, default=[])
+    resume_url = db.Column(db.String(500))  # R2 uploaded file
+    linkedin_url = db.Column(db.String(255))
+    desired_role = db.Column(db.String(100))
+    desired_salary = db.Column(db.String(50))
+    available_from = db.Column(db.Date)
+    is_visible = db.Column(db.Boolean, default=True)  # opt in/out of search
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    user = db.relationship('User', backref='resume')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "full_name": self.full_name,
+            "email": self.email,
+            "phone": self.phone,
+            "location": self.location,
+            "summary": self.summary,
+            "experience_years": self.experience_years,
+            "cannabis_experience": self.cannabis_experience,
+            "certifications": self.certifications or [],
+            "skills": self.skills or [],
+            "resume_url": self.resume_url,
+            "linkedin_url": self.linkedin_url,
+            "desired_role": self.desired_role,
+            "desired_salary": self.desired_salary,
+            "available_from": self.available_from.isoformat() if self.available_from else None,
+            "is_visible": self.is_visible,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+class OnboardingChecklist(db.Model):
+    __tablename__ = 'onboarding_checklist'
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(200), default="New Employee Onboarding")
+    state = db.Column(db.String(50))  # MA, CA, CO etc
+    status = db.Column(db.String(20), default="in_progress")  # in_progress, completed
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+
+    company = db.relationship('Company', backref='onboarding_checklists')
+    employee = db.relationship('User', backref='onboarding_checklists')
+    tasks = db.relationship('OnboardingTask', backref='checklist', cascade='all, delete')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "company_id": self.company_id,
+            "employee_id": self.employee_id,
+            "title": self.title,
+            "state": self.state,
+            "status": self.status,
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "tasks": [t.serialize() for t in self.tasks],
+            "progress": round(len([t for t in self.tasks if t.completed]) / len(self.tasks) * 100) if self.tasks else 0,
+        }
+
+class OnboardingTask(db.Model):
+    __tablename__ = 'onboarding_task'
+    id = db.Column(db.Integer, primary_key=True)
+    checklist_id = db.Column(db.Integer, db.ForeignKey('onboarding_checklist.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(50))  # paperwork, training, compliance, equipment
+    required = db.Column(db.Boolean, default=True)
+    completed = db.Column(db.Boolean, default=False)
+    completed_at = db.Column(db.DateTime)
+    due_days = db.Column(db.Integer, default=3)  # days from start to complete
+    document_url = db.Column(db.String(500))  # uploaded doc if needed
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "checklist_id": self.checklist_id,
+            "title": self.title,
+            "description": self.description,
+            "category": self.category,
+            "required": self.required,
+            "completed": self.completed,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "due_days": self.due_days,
+            "document_url": self.document_url,
+        }
+
+class PerformanceReview(db.Model):
+    __tablename__ = 'performance_review'
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    review_period = db.Column(db.String(50))  # Q1 2025, Annual 2024 etc
+    overall_rating = db.Column(db.Float)  # 1-5
+    attendance_rating = db.Column(db.Float)
+    performance_rating = db.Column(db.Float)
+    teamwork_rating = db.Column(db.Float)
+    knowledge_rating = db.Column(db.Float)
+    customer_service_rating = db.Column(db.Float)
+    strengths = db.Column(db.Text)
+    improvements = db.Column(db.Text)
+    goals = db.Column(db.Text)
+    manager_comments = db.Column(db.Text)
+    employee_comments = db.Column(db.Text)
+    training_completed = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(20), default="draft")  # draft, submitted, acknowledged
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    employee = db.relationship('User', foreign_keys=[employee_id], backref='reviews_received')
+    reviewer = db.relationship('User', foreign_keys=[reviewer_id], backref='reviews_given')
+    company = db.relationship('Company', backref='performance_reviews')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "employee_id": self.employee_id,
+            "reviewer_id": self.reviewer_id,
+            "company_id": self.company_id,
+            "review_period": self.review_period,
+            "overall_rating": self.overall_rating,
+            "attendance_rating": self.attendance_rating,
+            "performance_rating": self.performance_rating,
+            "teamwork_rating": self.teamwork_rating,
+            "knowledge_rating": self.knowledge_rating,
+            "customer_service_rating": self.customer_service_rating,
+            "strengths": self.strengths,
+            "improvements": self.improvements,
+            "goals": self.goals,
+            "manager_comments": self.manager_comments,
+            "employee_comments": self.employee_comments,
+            "training_completed": self.training_completed,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+class SavedJob(db.Model):
+    __tablename__ = 'saved_job'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False)
+    saved_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='saved_jobs')
+    job = db.relationship('Job', backref='saved_by')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "job_id": self.job_id,
+            "saved_at": self.saved_at.isoformat() if self.saved_at else None,
+            "job": self.job.serialize() if self.job else None,
+        }
+
+# ==================== DUTCHIE FEATURE MODELS ====================
+
+class DeliveryOrder(db.Model):
+    __tablename__ = 'delivery_order'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    driver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    delivery_address = db.Column(db.String(300), nullable=False)
+    status = db.Column(db.String(30), default='pending')  # pending, assigned, en_route, delivered
+    estimated_arrival = db.Column(db.DateTime)
+    delivered_at = db.Column(db.DateTime)
+    driver_lat = db.Column(db.Float)
+    driver_lng = db.Column(db.Float)
+    customer_lat = db.Column(db.Float)
+    customer_lng = db.Column(db.Float)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    order = db.relationship('Order', backref='delivery_order_ref', foreign_keys='DeliveryOrder.order_id')
+    customer = db.relationship('Customer', backref='deliveries')
+
+    def serialize(self):
+        return {
+            "id": self.id, "order_id": self.order_id, "driver_id": self.driver_id,
+            "customer_id": self.customer_id, "delivery_address": self.delivery_address,
+            "status": self.status, "estimated_arrival": self.estimated_arrival.isoformat() if self.estimated_arrival else None,
+            "delivered_at": self.delivered_at.isoformat() if self.delivered_at else None,
+            "driver_lat": self.driver_lat, "driver_lng": self.driver_lng,
+            "customer_lat": self.customer_lat, "customer_lng": self.customer_lng,
+            "notes": self.notes, "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+class SMSLog(db.Model):
+    __tablename__ = 'sms_log'
+    id = db.Column(db.Integer, primary_key=True)
+    to_number = db.Column(db.String(20), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='sent')
+    twilio_sid = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {"id": self.id, "to_number": self.to_number, "message": self.message,
+                "status": self.status, "created_at": self.created_at.isoformat() if self.created_at else None}
+
+class MetrcSync(db.Model):
+    __tablename__ = 'metrc_sync'
+    id = db.Column(db.Integer, primary_key=True)
+    sync_type = db.Column(db.String(50))  # inventory, transfer, sale
+    metrc_id = db.Column(db.String(100))
+    local_id = db.Column(db.Integer)
+    status = db.Column(db.String(20), default='pending')
+    response = db.Column(db.JSON)
+    synced_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {"id": self.id, "sync_type": self.sync_type, "metrc_id": self.metrc_id,
+                "local_id": self.local_id, "status": self.status,
+                "synced_at": self.synced_at.isoformat() if self.synced_at else None}
+
+class ProductReview(db.Model):
+    __tablename__ = 'product_review'
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1-5
+    review_text = db.Column(db.Text)
+    effects = db.Column(db.JSON, default=[])  # ["relaxed", "happy", "creative"]
+    would_recommend = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    product = db.relationship('Product', backref='product_reviews')
+    customer = db.relationship('Customer', backref='product_reviews')
+
+    def serialize(self):
+        return {"id": self.id, "product_id": self.product_id, "customer_id": self.customer_id,
+                "rating": self.rating, "review_text": self.review_text, "effects": self.effects or [],
+                "would_recommend": self.would_recommend,
+                "created_at": self.created_at.isoformat() if self.created_at else None}
+
+class WaitlistEntry(db.Model):
+    __tablename__ = 'waitlist_entry'
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    store_id = db.Column(db.Integer, db.ForeignKey('store.id'), nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), default='waiting')  # waiting, called, served, left
+    called_at = db.Column(db.DateTime)
+    served_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.String(200))
+
+    customer = db.relationship('Customer', backref='waitlist_entries')
+
+    def serialize(self):
+        return {"id": self.id, "customer_id": self.customer_id, "store_id": self.store_id,
+                "position": self.position, "status": self.status,
+                "called_at": self.called_at.isoformat() if self.called_at else None,
+                "served_at": self.served_at.isoformat() if self.served_at else None,
+                "created_at": self.created_at.isoformat() if self.created_at else None,
+                "notes": self.notes}
+
+class StripePayment(db.Model):
+    __tablename__ = 'stripe_payment'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    stripe_payment_intent_id = db.Column(db.String(200), unique=True)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default='usd')
+    status = db.Column(db.String(30), default='pending')
+    payment_method = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    order = db.relationship('Order', backref='stripe_payment')
+
+    def serialize(self):
+        return {"id": self.id, "order_id": self.order_id,
+                "stripe_payment_intent_id": self.stripe_payment_intent_id,
+                "amount": self.amount, "currency": self.currency,
+                "status": self.status, "payment_method": self.payment_method,
+                "created_at": self.created_at.isoformat() if self.created_at else None}

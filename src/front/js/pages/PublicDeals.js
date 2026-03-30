@@ -6,7 +6,7 @@ const PublicDeals = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_BACKEND_URL}/api/deals/public`)
+    fetch(`${process.env.BACKEND_URL}/api/deals/public`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch public deals.");
         return res.json();

@@ -1,0 +1,95 @@
+.training-form .card,
+.training-form .card-header {
+    background: rgba(255,255,255,0.08) !important;
+    border-color: rgba(255,255,255,0.15) !important;
+    color: white !important;
+}
+
+.training-form .form-control,
+.training-form .form-select {
+    background: rgba(255,255,255,0.1) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: white !important;
+}
+
+.training-form .form-control::placeholder {
+    color: rgba(255,255,255,0.4) !important;
+}
+
+.training-form .form-control:focus,
+.training-form .form-select:focus {
+    background: rgba(255,255,255,0.15) !important;
+    border-color: rgba(255,255,255,0.4) !important;
+    color: white !important;
+    box-shadow: none !important;
+}
+
+.training-form .form-select option {
+    background: #1a2a3a;
+    color: white;
+}
+
+.training-form .form-label {
+    color: rgba(255,255,255,0.85) !important;
+}
+
+.training-form .form-text {
+    color: rgba(255,255,255,0.5) !important;
+}
+
+.training-form .form-check-label {
+    color: white !important;
+}
+
+.training-form .text-muted {
+    color: rgba(255,255,255,0.5) !important;
+}
+
+.training-form .border {
+    border-color: rgba(255,255,255,0.15) !important;
+}
+
+.training-form .bg-light {
+    background: rgba(255,255,255,0.08) !important;
+}
+
+.training-form .btn-outline-secondary {
+    color: rgba(255,255,255,0.7) !important;
+    border-color: rgba(255,255,255,0.3) !important;
+}
+
+.training-form .btn-outline-secondary:hover {
+    background: rgba(255,255,255,0.1) !important;
+}
+
+.training-form .btn-outline-primary {
+    color: #74c0fc !important;
+    border-color: #74c0fc !important;
+}
+
+.training-form h4, 
+.training-form h5, 
+.training-form h6,
+.training-form p,
+.training-form small,
+.training-form label {
+    color: white !important;
+}
+
+.training-form .upload-zone {
+    background: rgba(255,255,255,0.05) !important;
+    border: 2px dashed rgba(255,255,255,0.2) !important;
+    color: white !important;
+    transition: all 0.2s;
+}
+
+.training-form .upload-zone:hover,
+.training-form .upload-zone.drag-over {
+    background: rgba(255,255,255,0.1) !important;
+    border-color: rgba(255,255,255,0.4) !important;
+}
+
+.training-top-bar {
+    background: rgba(255,255,255,0.06) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+}

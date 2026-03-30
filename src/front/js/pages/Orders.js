@@ -67,7 +67,7 @@ const Orders = () => {
   // Helper to calculate order total
   const calculateOrderTotal = (order) => {
     const items = getOrderItems(order);
-    return items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+    return items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
   };
 
   const handleSubmit = async (e) => {
@@ -97,7 +97,7 @@ const Orders = () => {
       items: items.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,
-        unit_price: parseFloat(item.unit_price)
+        unit_price: parseFloat(item.price)
       }))
     });
     setShowEditModal(true);
@@ -142,7 +142,7 @@ const Orders = () => {
   };
 
   const handleAddItem = async () => {
-    if (!orderItemForm.product_id || !orderItemForm.quantity || !orderItemForm.unit_price) {
+    if (!orderItemForm.product_id || !orderItemForm.quantity || !orderItemForm.price) {
       setError("Please fill in all item fields");
       return;
     }
@@ -150,7 +150,7 @@ const Orders = () => {
     const newItem = {
       product_id: parseInt(orderItemForm.product_id),
       quantity: parseInt(orderItemForm.quantity),
-      unit_price: parseFloat(orderItemForm.unit_price)
+      unit_price: parseFloat(orderItemForm.price)
     };
 
     setFormData(prev => ({
@@ -308,7 +308,7 @@ const Orders = () => {
                     handleAddItem={handleAddItem}
                     items={formData.items}
                     handleRemoveItem={handleRemoveItem}
-                    totalAmount={formData.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)}
+                    totalAmount={formData.items.reduce((sum, item) => sum + (item.quantity * item.price), 0)}
                   />
 
                   <div className="modal-footer">

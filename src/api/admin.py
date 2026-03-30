@@ -9,7 +9,7 @@ from .extensions import db
 def setup_admin(app):
     app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
-    admin = Admin(app, name='DispenseMaster Admin', template_mode='bootstrap3')
+    admin = Admin(app, name='DispenseMaster Admin')
 
 
     # Add models to the admin interface

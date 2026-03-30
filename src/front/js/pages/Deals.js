@@ -1,234 +1,111 @@
-import React, { useState, useEffect } from "react";
-import DealCard from "../component/DealCard";
+import React, { useState, useEffect, useContext } from "react";
+import { Context } from "../store/appContext";
 
-const DealsPage = () => {
-    const [deals, setDeals] = useState({});
-    const [newDeal, setNewDeal] = useState({ name: "", amount: "", owner: "" });
-    const [selectedDeal, setSelectedDeal] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const Deals = () => {
+    const { store, actions } = useContext(Context);
+    const [showModal, setShowModal] = useState(false);
+    const [editing, setEditing] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [form, setForm] = useState({ title:"", description:"", discount_percent:0, start_date:"", end_date:"", is_active:true });
+    const token = localStorage.getItem("token");
 
-    // Fetch deals from the API
-    useEffect(() => {
-        fetch(`${process.env.BACKEND_URL}/api/deals`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}`,
-            },
-        })
-            .then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch deals.");
-                return res.json();
-            })
-            .then((data) => {
-                setDeals(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                setError(err.message);
-                setLoading(false);
+    useEffect(() => { actions.fetchDeals(); }, []);
+
+    const deals = store.deals || [];
+
+    const openNew = () => { setEditing(null); setForm({ title:"", description:"", discount_percent:0, start_date:"", end_date:"", is_active:true }); setShowModal(true); };
+    const openEdit = (d) => { setEditing(d); setForm({ title:d.title||"", description:d.description||"", discount_percent:d.discount_percent||0, start_date:d.start_date?.split("T")[0]||"", end_date:d.end_date?.split("T")[0]||"", is_active:d.is_active!==false }); setShowModal(true); };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const url = editing ? `${process.env.BACKEND_URL}/api/deals/${editing.id}` : `${process.env.BACKEND_URL}/api/deals`;
+            const method = editing ? "PUT" : "POST";
+            const r = await fetch(url, {
+                method, headers: { "Content-Type":"application/json", Authorization:`Bearer ${token}` },
+                body: JSON.stringify(form)
             });
-    }, []);
-
-    // Create a new deal
-    const handleCreateDeal = (e) => {
-        e.preventDefault();
-        fetch("/api/deals", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify(newDeal),
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                const stage = data.stage || "prospecting";
-                setDeals((prev) => ({
-                    ...prev,
-                    [stage]: [...(prev[stage] || []), data],
-                }));
-                setNewDeal({ name: "", amount: "", owner: "" });
-            })
-            .catch((err) => console.error("Error creating deal:", err));
+            if (r.ok) { await actions.fetchDeals(); setShowModal(false); }
+        } catch(e) { console.error(e); }
+        finally { setSaving(false); }
     };
 
-    // Delete a deal
-    const handleDeleteDeal = (dealId, stage) => {
-        fetch(`${process.env.BACKEND_URL}/api/deals/${dealId}`, {
-            method: "DELETE",
-            headers: {
-                "Authorization": `Bearer ${localStorage.getItem("token")}`,
-            },
-        })
-            .then(() => {
-                setDeals((prev) => ({
-                    ...prev,
-                    [stage]: prev[stage].filter((deal) => deal.id !== dealId),
-                }));
-            })
-            .catch((err) => console.error("Error deleting deal:", err));
+    const handleDelete = async (id) => {
+        if (!window.confirm("Delete this deal?")) return;
+        await fetch(`${process.env.BACKEND_URL}/api/deals/${id}`, { method:"DELETE", headers:{ Authorization:`Bearer ${token}` } });
+        await actions.fetchDeals();
     };
-
-    // View deal details
-    const handleViewDetails = (dealId) => {
-        const deal = Object.values(deals)
-            .flat()
-            .find((d) => d.id === dealId);
-        setSelectedDeal(deal);
-    };
-
-    // Update deal details
-    const handleUpdateDeal = (e) => {
-        e.preventDefault();
-        fetch(`${process.env.BACKEND_URL}/api/deals/${selectedDeal.id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify(selectedDeal),
-        })
-            .then((res) => res.json())
-            .then((updatedDeal) => {
-                setDeals((prev) => {
-                    const updatedDeals = { ...prev };
-                    const stage = updatedDeal.stage;
-                    updatedDeals[stage] = updatedDeals[stage].map((d) =>
-                        d.id === updatedDeal.id ? updatedDeal : d
-                    );
-                    return updatedDeals;
-                });
-                setSelectedDeal(null);
-            })
-            .catch((err) => console.error("Error updating deal:", err));
-    };
-
-    if (loading) return <p>Loading deals...</p>;
-    if (error) return <p>Error: {error}</p>;
 
     return (
-        <div className="p-6 bg-gray-100">
-            <h1 className="text-2xl font-bold mb-4">Deals</h1>
-
-            {/* Create Deal Form */}
-            <form onSubmit={handleCreateDeal} className="mb-6 p-4 bg-white shadow rounded">
-                <h2 className="text-lg font-semibold mb-4">Create a New Deal</h2>
-                <div className="mb-3">
-                    <label className="block text-sm font-medium">Deal Name</label>
-                    <input
-                        type="text"
-                        value={newDeal.name}
-                        onChange={(e) => setNewDeal({ ...newDeal, name: e.target.value })}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="block text-sm font-medium">Amount</label>
-                    <input
-                        type="number"
-                        value={newDeal.amount}
-                        onChange={(e) => setNewDeal({ ...newDeal, amount: e.target.value })}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="block text-sm font-medium">Owner</label>
-                    <input
-                        type="text"
-                        value={newDeal.owner}
-                        onChange={(e) => setNewDeal({ ...newDeal, owner: e.target.value })}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
-                </div>
-                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-                    Create Deal
-                </button>
-            </form>
-
-            {/* Deals by Stage */}
-            <div className="grid grid-cols-4 gap-4">
-                {Object.keys(deals).map((stage) => (
-                    <div key={stage} className="p-4 bg-white shadow rounded">
-                        <h2 className="text-lg font-semibold mb-3">{stage}</h2>
-                        {deals[stage].map((deal) => (
-                            <DealCard
-                                key={deal.id}
-                                deal={deal}
-                                onViewDetails={handleViewDetails}
-                                onDelete={handleDeleteDeal}
-                            />
-                        ))}
-                    </div>
-                ))}
+        <div className="main-content p-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <div className="page-header"><h2>🏷️ Deals & Promotions</h2><p>Manage dispensary promotions and discounts</p></div>
+                <button className="btn btn-success" onClick={openNew}>+ Create Deal</button>
             </div>
-
-            {/* Deal Details Modal */}
-            {selectedDeal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-6 rounded shadow-lg">
-                        <h2 className="text-lg font-bold mb-4">Edit Deal</h2>
-                        <form onSubmit={handleUpdateDeal}>
-                            <div className="mb-3">
-                                <label className="block text-sm font-medium">Deal Name</label>
-                                <input
-                                    type="text"
-                                    value={selectedDeal.name}
-                                    onChange={(e) =>
-                                        setSelectedDeal({ ...selectedDeal, name: e.target.value })
-                                    }
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label className="block text-sm font-medium">Amount</label>
-                                <input
-                                    type="number"
-                                    value={selectedDeal.amount}
-                                    onChange={(e) =>
-                                        setSelectedDeal({ ...selectedDeal, amount: e.target.value })
-                                    }
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label className="block text-sm font-medium">Owner</label>
-                                <input
-                                    type="text"
-                                    value={selectedDeal.owner}
-                                    onChange={(e) =>
-                                        setSelectedDeal({ ...selectedDeal, owner: e.target.value })
-                                    }
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedDeal(null)}
-                                    className="px-4 py-2 bg-gray-300 rounded"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-blue-500 text-white rounded"
-                                >
-                                    Save
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+            {deals.length === 0 ? (
+                <div className="text-center py-5" style={{color:"rgba(255,255,255,0.5)"}}>
+                    <div style={{fontSize:"3rem"}}>🏷️</div>
+                    <h5>No deals yet</h5>
+                    <button className="btn btn-success mt-2" onClick={openNew}>Create First Deal</button>
                 </div>
+            ) : (
+                <div className="row g-3">
+                    {deals.map(d => (
+                        <div key={d.id} className="col-md-4">
+                            <div className="glass-panel h-100">
+                                <div className="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 className="mb-0">{d.title}</h5>
+                                    <span className={`badge ${d.is_active!==false?"bg-success":"bg-secondary"}`}>{d.is_active!==false?"Active":"Inactive"}</span>
+                                </div>
+                                <p style={{color:"rgba(255,255,255,0.6)",fontSize:"0.9rem"}}>{d.description}</p>
+                                <div className="d-flex justify-content-between align-items-center mt-2">
+                                    <span className="badge bg-warning text-dark fs-6">{d.discount_percent}% OFF</span>
+                                    <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.5)"}}>
+                                        {d.start_date && `${new Date(d.start_date).toLocaleDateString()} — ${new Date(d.end_date).toLocaleDateString()}`}
+                                    </div>
+                                </div>
+                                <div className="d-flex gap-2 mt-3">
+                                    <button className="btn btn-sm btn-outline-light flex-grow-1" onClick={() => openEdit(d)}>Edit</button>
+                                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(d.id)}>Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+            {showModal && (
+                <>
+                    <div className="modal fade show d-block" tabIndex="-1">
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">{editing ? "Edit Deal" : "Create Deal"}</h5>
+                                    <button className="btn-close" onClick={() => setShowModal(false)} />
+                                </div>
+                                <div className="modal-body">
+                                    <div className="mb-3"><label className="form-label">Title</label><input className="form-control" value={form.title} onChange={e => setForm({...form,title:e.target.value})} /></div>
+                                    <div className="mb-3"><label className="form-label">Description</label><textarea className="form-control" rows="3" value={form.description} onChange={e => setForm({...form,description:e.target.value})} /></div>
+                                    <div className="mb-3"><label className="form-label">Discount %</label><input className="form-control" type="number" min="0" max="100" value={form.discount_percent} onChange={e => setForm({...form,discount_percent:parseFloat(e.target.value)||0})} /></div>
+                                    <div className="row g-2 mb-3">
+                                        <div className="col-6"><label className="form-label">Start Date</label><input className="form-control" type="date" value={form.start_date} onChange={e => setForm({...form,start_date:e.target.value})} /></div>
+                                        <div className="col-6"><label className="form-label">End Date</label><input className="form-control" type="date" value={form.end_date} onChange={e => setForm({...form,end_date:e.target.value})} /></div>
+                                    </div>
+                                    <div className="form-check">
+                                        <input className="form-check-input" type="checkbox" checked={form.is_active} onChange={e => setForm({...form,is_active:e.target.checked})} />
+                                        <label className="form-check-label">Active</label>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+                                    <button className="btn btn-success" onClick={handleSave} disabled={saving}>{saving ? <span className="spinner-border spinner-border-sm" /> : "Save"}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="modal-backdrop fade show" onClick={() => setShowModal(false)} />
+                </>
             )}
         </div>
     );
 };
-
-export default DealsPage;
+export default Deals;

@@ -1,6 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
-from flask_login import login_required, current_user
+# flask_login available but using JWT instead
+try:
+    from flask_login import login_required, current_user
+except ImportError:
+    pass
 from api.utils import calculate_lead_time, calculate_sales_velocity, predict_restock
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -63,25 +67,46 @@ from reportlab.pdfgen import canvas
 from flask_cors import CORS
 from sqlalchemy import func
 # from .services.predictive import predict_restock
-from twilio.jwt.access_token import AccessToken
-from twilio.jwt.access_token.grants import ChatGrant
+try:
+    from twilio.jwt.access_token import AccessToken
+except ImportError:
+    AccessToken = None
+try:
+    from twilio.jwt.access_token.grants import ChatGrant
+except ImportError:
+    ChatGrant = None
 
 
 
 # from api.utils import role_required, APIException, generate_sitemap
-from sklearn.linear_model import LinearRegression
+try:
+    from sklearn.linear_model import LinearRegression
+except ImportError:
+    LinearRegression = None
 import numpy as np
 import os
 import jwt
 import json
-from flask_socketio import SocketIO, emit
-from api.extensions import socketio
+from flask_socketio import emit
+try:
+    from api.extensions import socketio
+except ImportError:
+    socketio = None
 from flask import jsonify, send_file
 from io import BytesIO
-from textblob import TextBlob
+try:
+    from textblob import TextBlob
+except ImportError:
+    TextBlob = None
 import pandas as pd
-from prophet import Prophet
-from celery import shared_task
+try:
+    from prophet import Prophet
+except ImportError:
+    Prophet = None
+try:
+    from celery import shared_task
+except ImportError:
+    def shared_task(f): return f
 # from your_project.tasks import generate_report
 # TODO: work on getting these project.tasks/generate_report working versus line 43-47
 
@@ -89,7 +114,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-socketio = SocketIO()
 
 
 # Create Blueprint
@@ -239,161 +263,6 @@ def get_products():
         "current_page": products.page
     }), 200
 
-@api.route('/products', methods=['POST'])
-@jwt_required()
-def create_product():
-    data = request.json.get("product")
-    if not data:
-        return jsonify({"error": "No product data provided"}), 400
-
-    # Generate SKU
-    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M')
-    category_prefix = data['category'][:3].upper()
-    sku = f"{category_prefix}{timestamp}"
-    
-    try:
-        new_product = Product(
-            name=data['name'],
-            sku=sku,
-            category=data['category'],
-            strain=data.get('strain'),
-            thc_content=data.get('thc_content'),
-            cbd_content=data.get('cbd_content'),
-            stock=int(data['stock']),
-            price=float(data['price']),
-            medical_benefits=data.get('medical_benefits'),
-            batch_number=data.get('batch_number'),
-            reorder_point=int(float(data['stock']) * 0.2)  # 20% of stock
-        )
-        
-        db.session.add(new_product)
-        db.session.commit()
-        return jsonify(new_product.serialize()), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
-
-# @api.route('/products/<int:id>', methods=['PUT'])
-# @jwt_required()
-# def update_product(id):
-#     product = Product.query.get_or_404(id)
-#     data = request.json.get("product")
-    
-#     if not data:
-#         return jsonify({"error": "No update data provided"}), 400
-        
-#     try:
-#         for key, value in data.items():
-#             if hasattr(product, key):
-#                 setattr(product, key, value)
-                
-#         db.session.commit()
-#         return jsonify(product.serialize()), 200
-        
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({"error": str(e)}), 400
-    
-@api.route('/products/<int:id>', methods=['PUT'])
-@jwt_required()
-def update_product(id):
-    product = Product.query.get_or_404(id)
-    data = request.json.get("product")
-    
-    if not data:
-        return jsonify({"error": "No update data provided"}), 400
-        
-    try:
-        # Update product fields
-        for key, value in data.items():
-            if hasattr(product, key):
-                setattr(product, key, value)
-                
-        # Update reorder point if stock has changed
-        if 'stock' in data:
-            product.reorder_point = int(float(data['stock']) * 0.2)  # 20% of stock
-                
-        db.session.commit()
-        return jsonify(product.serialize()), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
-    
-
-
-@api.route('/products/<int:id>', methods=['DELETE'])
-@jwt_required()
-def delete_product(id):
-    try:
-        product = Product.query.get_or_404(id)
-        
-        # Optional: Add any checks before deletion
-        # For example, check if product is part of any active orders
-        has_active_orders = OrderItem.query.filter_by(
-            product_id=id
-        ).join(Order).filter(
-            Order.status == 'pending'
-        ).first()
-        
-        if has_active_orders:
-            return jsonify({
-                "error": "Cannot delete product with pending orders"
-            }), 400
-
-        # Perform the deletion
-        db.session.delete(product)
-        db.session.commit()
-        
-        return jsonify({
-            "message": "Product deleted successfully",
-            "id": id
-        }), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
-
-@api.route('/products/bulk', methods=['POST'])
-@jwt_required()
-def upload_products():
-    data = request.json.get("products")
-    if not data:
-        return jsonify({"error": "No product data provided"}), 400
-
-    try:
-        for product_data in data:
-            new_product = Product(
-                name=product_data['name'],
-                category=product_data['category'],
-                strain=product_data.get('strain'),
-                price=float(product_data['price']),
-                stock=int(product_data['stock']),
-                thc_content=float(product_data['thc_content']),
-                cbd_content=float(product_data['cbd_content']),
-                medical_benefits=product_data.get('medical_benefits'),
-            )
-            db.session.add(new_product)
-
-        db.session.commit()
-        return jsonify({"message": "Products uploaded successfully"}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
-
-
-
-
-# customer routes
-
-@api.route('/customers', methods=['GET'])
-@jwt_required()
-@handle_errors
-def get_customers():
-    customers = Customer.query.all()
-    return jsonify([customer.serialize() for customer in customers]), 200
 
 @api.route('/customers/<int:id>', methods=['GET'])
 @jwt_required()
@@ -402,21 +271,6 @@ def get_customer(id):
     customer = Customer.query.get_or_404(id)
     return jsonify(customer.serialize()), 200
 
-@api.route('/customers', methods=['POST'])
-@jwt_required()
-@handle_errors
-def create_customer():
-    schema = CustomerSchema()
-    data = schema.load(request.json)
-    if Customer.query.filter_by(email=data['email']).first():
-        return jsonify({"error": "Email already exists"}), 400
-    customer = Customer(**data)
-    db.session.add(customer)
-    db.session.commit()
-    return jsonify(customer.serialize()), 201
-
-@api.route('/customers/<int:id>/preferences', methods=['PUT'])
-@jwt_required()
 def update_preferences(id):
     customer = Customer.query.get_or_404(id)
     data = request.json.get('preferences', {})
@@ -451,157 +305,6 @@ def get_orders():
 
 @api.route('/orders/<int:id>', methods=['GET'])
 @jwt_required()
-@handle_errors
-def get_order(id):
-    order = Order.query.get_or_404(id)
-    return jsonify(order.serialize()), 200
-
-# @api.route('/orders', methods=['POST'])
-# @jwt_required()
-# @handle_errors
-# def create_order():
-#     schema = OrderSchema()
-#     data = schema.load(request.json)
-#     order = Order(customer_id=data['customer_id'], total_amount=0)
-#     db.session.add(order)
-#     db.session.flush()
-
-#     total_amount = 0
-#     for item in data['items']:
-#         product = Product.query.get_or_404(item['product_id'])
-#         total_price = product.unit_price * item['quantity']
-#         order_item = OrderItem(order_id=order.id, product_id=product.id, quantity=item['quantity'], unit_price=total_price)
-#         db.session.add(order_item)
-#         total_amount += total_price
-
-#     order.total_amount = total_amount
-#     db.session.commit()
-#     return jsonify(order.serialize()), 201
-
-class OrderItemSchema(Schema):
-    product_id = fields.Integer(required=True)
-    quantity = fields.Integer(required=True, validate=validate.Range(min=1))
-    unit_price = fields.Float(required=True, validate=validate.Range(min=0))
-
-class OrderSchema(Schema):
-    customer_id = fields.Integer(required=True)
-    items = fields.List(fields.Nested(OrderItemSchema), required=True, validate=validate.Length(min=1))
-
-# @api.route('/orders', methods=['POST'])
-# @jwt_required()
-# @handle_errors
-# def create_order():
-#     data = request.json
-#     try:
-#         # Create the order first
-#         order = Order(
-#             customer_id=data['customer_id'],
-#             total_amount=0,  # Will be calculated after adding items
-#             status='pending'
-#         )
-#         db.session.add(order)
-#         db.session.flush()  # Get the order ID
-
-#         total_amount = 0
-#         # Add order items
-#         for item in data['items']:
-#             order_item = OrderItem(
-#                 order_id=order.id,
-#                 product_id=item['product_id'],
-#                 quantity=item['quantity'],
-#                 unit_price=item['unit_price']
-#             )
-#             total_amount += item['quantity'] * item['unit_price']
-#             db.session.add(order_item)
-
-#         # Update the total amount
-#         order.total_amount = total_amount
-#         order.status = 'completed'
-        
-#         db.session.commit()
-#         return jsonify(order.serialize()), 201
-
-#     except KeyError as e:
-#         db.session.rollback()
-#         return jsonify({"error": f"Missing required field: {str(e)}"}), 400
-#     except SQLAlchemyError as e:
-#         db.session.rollback()
-#         return jsonify({"error": str(e)}), 500
-
-@api.route('/orders', methods=['POST'])
-@jwt_required()
-@handle_errors
-def create_order():
-    data = request.json
-    try:
-        # Validate customer exists
-        customer = Customer.query.get(data['customer_id'])
-        if not customer:
-            return jsonify({"error": f"Customer with ID {data['customer_id']} not found"}), 404
-
-        # Validate all products exist and have sufficient stock
-        for item in data['items']:
-            product = Product.query.get(item['product_id'])
-            if not product:
-                return jsonify({"error": f"Product with ID {item['product_id']} not found"}), 404
-            if product.stock < item['quantity']:
-                return jsonify({"error": f"Insufficient stock for product {product.name}"}), 400
-
-        # Create the order
-        order = Order(
-            customer_id=data['customer_id'],
-            total_amount=0,
-            status='pending'
-        )
-        db.session.add(order)
-        db.session.flush()
-
-        total_amount = 0
-        # Add order items and update stock
-        for item in data['items']:
-            product = Product.query.get(item['product_id'])
-            order_item = OrderItem(
-                order_id=order.id,
-                product_id=item['product_id'],
-                quantity=item['quantity'],
-                unit_price=product.price  # Use product's actual price
-            )
-            total_amount += item['quantity'] * product.price
-            
-            # Update product stock
-            product.stock -= item['quantity']
-            
-            db.session.add(order_item)
-
-        # Update the total amount
-        order.total_amount = total_amount
-        order.status = 'completed'
-        
-        db.session.commit()
-        return jsonify(order.serialize()), 201
-
-    except KeyError as e:
-        db.session.rollback()
-        return jsonify({"error": f"Missing required field: {str(e)}"}), 400
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-        
-# recommendation routes
-
-
-@api.route('/products/customer-recommendations/<int:customer_id>', methods=['GET'])
-@jwt_required()
-def recommend_products_by_customer(customer_id):
-    customer_orders = Order.query.filter_by(customer_id=customer_id).all()
-    # Example: Recommend products from the same category as previous orders
-    recommended_products = Product.query.filter(Product.category.in_(
-        [order_item.product.category for order in customer_orders for order_item in order.order_items])).all()
-    return jsonify([product.serialize() for product in recommended_products])
-
-
-@api.route('/recommendations', methods=['POST'])
 def recommend_products():
     symptoms = request.json.get('symptoms', [])
     query = Product.query.filter(
@@ -611,50 +314,6 @@ def recommend_products():
     return jsonify([p.serialize() for p in products]), 200
 
 
-@api.route('/recommendations', methods=['GET'])
-def get_recommendations():
-    recommendations = Recommendation.query.all()
-    return jsonify([recommendation.serialize() for recommendation in recommendations]), 200
-
-# @api.route('/recommendations/<int:id>', methods=['GET'])
-# def get_recommendation(id):
-#     recommendation = Recommendation.query.get_or_404(id)
-#     return jsonify(recommendation.serialize()), 200
-
-@api.route('/recommendations', methods=['POST'])
-def create_recommendation():
-    data = request.json
-    recommendation = Recommendation(
-        patient_id=data['patient_id'],
-        product_id=data['product_id'],
-        notes=data.get('notes')
-    )
-    db.session.add(recommendation)
-    db.session.commit()
-    return jsonify(recommendation.serialize()), 201
-
-@api.route('/recommendations/<int:id>', methods=['PUT'])
-def update_recommendation(id):
-    recommendation = Recommendation.query.get_or_404(id)
-    data = request.json
-    for key, value in data.items():
-        setattr(recommendation, key, value)
-    db.session.commit()
-    return jsonify(recommendation.serialize()), 200
-
-@api.route('/recommendations/<int:id>', methods=['DELETE'])
-def delete_recommendation(id):
-    recommendation = Recommendation.query.get_or_404(id)
-    db.session.delete(recommendation)
-    db.session.commit()
-    return jsonify({"message": "Recommendation deleted successfully"}), 200
-
-# Personalized Recommendations Route
-
-@api.route('/recommendations/personalized', methods=['POST'])
-def personalized_recommendations():
-    customer_id = request.json.get('customer_id')  # Get customer ID from request
-    customer = Customer.query.get(customer_id)
 
     if not customer:
         return jsonify({"error": "Customer not found"}), 404
@@ -792,126 +451,6 @@ def predict_sales():
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
     
-@api.route('/dashboard/metrics', methods=['GET'])
-@jwt_required()
-@handle_errors
-def get_dashboard_metrics():
-    # Query parameters to filter specific orders
-    customer_id = request.args.get('customer_id')
-    start_date = request.args.get('start_date')  # Expected format: 'YYYY-MM-DD'
-    end_date = request.args.get('end_date')  # Expected format: 'YYYY-MM-DD'
-    product_id = request.args.get('product_id')  # Optional filter for orders with a specific product
-    format_type = request.args.get('format', 'user_friendly')  # Default to 'user_friendly'
-
-    try:
-        # Build a base query for filtering
-        query = Order.query.filter(Order.status == 'completed')
-
-        # Apply filters dynamically based on query parameters
-        if customer_id:
-            query = query.filter(Order.customer_id == customer_id)
-        if start_date:
-            query = query.filter(Order.date >= start_date)
-        if end_date:
-            query = query.filter(Order.date <= end_date)
-        if product_id:
-            query = query.join(OrderDetail).filter(OrderDetail.product_id == product_id)
-
-        # Execute the filtered query
-        orders = query.all()
-
-        # Shared Data
-        total_sales = sum(float(order.total_amount) for order in orders)
-        order_count = len(orders)
-        average_order_value = total_sales / order_count if order_count > 0 else 0
-
-        low_stock_products = Product.query.filter(Product.stock <= Product.reorder_point).all()
-        top_products = Product.query.order_by(Product.sales.desc()).limit(5).all()
-
-        total_customers = Customer.query.count()
-        top_customer = db.session.query(Customer).join(Order).group_by(Customer.id).order_by(db.func.sum(Order.total_amount).desc()).first()
-
-        # User-Friendly Metrics
-        if format_type == 'user_friendly':
-            metrics = [
-                {"title": "Total Sales", "value": f"${total_sales:,.2f}"},
-                {"title": "Average Order Value", "value": f"${average_order_value:,.2f}"},
-                {"title": "Order Count", "value": order_count},
-                {"title": "Low Stock Products", "value": len(low_stock_products)},
-                {"title": "Total Customers", "value": total_customers},
-                {"title": "Top Customer", "value": f"{top_customer.first_name} {top_customer.last_name}" if top_customer else "N/A"},
-                { "title": "Users", "value": "1,345", "icon": "👤", "trend": 15, "bgColor": "bg-purple-100", "textColor": "text-purple-900" },
-                { "title": "Refunds", "value": "$320", "icon": "💸", "trend": -3, "bgColor": "bg-red-100", "textColor": "text-red-900" },
-                { "title": "Product Availability", "value": "93%", "icon": "📊", "trend": 1, "bgColor": "bg-teal-100", "textColor": "text-teal-900" },
-                { "title": "Supply Below Safety Stock", "value": "8", "icon": "📉", "trend": -2, "bgColor": "bg-gray-100", "textColor": "text-gray-900" },
-                { "title": "Invoices", "value": "295", "icon": "🧾", "trend": 7, "bgColor": "bg-indigo-100", "textColor": "text-indigo-900" },
-                { "title": "Today's Invoice", "value": "28", "icon": "📆", "trend": 3, "bgColor": "bg-orange-100", "textColor": "text-orange-900" },
-                { "title": "Current Monthly", "value": "$22,560", "icon": "📅", "trend": 10, "bgColor": "bg-green-100", "textColor": "text-green-900" },
-                { "title": "Inventory", "value": "965", "icon": "📦", "trend": 4, "bgColor": "bg-blue-100", "textColor": "text-blue-900" },
-                { "title": "Stores", "value": "4", "icon": "🏬", "trend": 0, "bgColor": "bg-yellow-100", "textColor": "text-yellow-900" },
-            
-            ]
-            return jsonify(metrics), 200
-
-        # Data-Centric Metrics
-        elif format_type == 'data_centric':
-            return jsonify({
-                "sales": {
-                    "total_sales": total_sales,
-                    "order_count": order_count,
-                    "average_order_value": round(average_order_value, 2),
-                },
-                "inventory": {
-                    "low_stock_count": len(low_stock_products),
-                    "top_products": [{"name": p.name, "sales": p.sales} for p in top_products],
-                },
-                "customers": {
-                    "total_customers": total_customers,
-                    "top_customer": {
-                        "id": top_customer.id if top_customer else None,
-                        "name": f"{top_customer.first_name} {top_customer.last_name}" if top_customer else None,
-                        "total_spent": round(top_customer.total_spent, 2) if top_customer else None,
-                    },
-                },
-            }), 200
-        else:
-            return jsonify({"error": "Invalid format type"}), 400
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    
-
-
-    
-@api.route('/dashboard/analytics', methods=['GET'])
-def get_dashboard_analytics():
-    try:
-        # Example data - Replace with your database queries
-        total_sales = db.session.query(func.sum(Order.total_amount)).scalar() or 0
-        total_orders = db.session.query(func.count(Order.id)).scalar() or 0
-        average_order_value = total_sales / total_orders if total_orders else 0
-        top_products = db.session.query(
-            Product.name, func.sum(OrderItem.quantity).label("total_quantity")
-        ).join(OrderItem, Product.id == OrderItem.product_id)\
-         .group_by(Product.name)\
-         .order_by(func.sum(OrderItem.quantity).desc())\
-         .limit(5).all()
-
-        # Real-time data format
-        response = {
-            "total_sales": f"${total_sales:,.2f}",
-            "total_orders": total_orders,
-            "average_order_value": f"${average_order_value:,.2f}",
-            "top_products": [{"name": p[0], "quantity": p[1]} for p in top_products],
-        }
-
-        return jsonify(response), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@api.route('/dashboard/layout', methods=['POST'])
-@login_required
 def save_layout():
     data = request.json
     user_id = current_user.id
@@ -924,18 +463,6 @@ def save_layout():
     db.session.commit()
     return jsonify({"message": "Layout saved successfully"}), 200
 
-@api.route('/dashboard/layout', methods=['GET'])
-@login_required
-def get_layout():
-    user_id = current_user.id
-    layout = db.session.execute(
-        "SELECT dashboard_layout FROM user_settings WHERE user_id = :user_id",
-        {"user_id": user_id},
-    ).fetchone()
-    return jsonify({"layout": layout}), 200
-
-@api.route('/dashboard/top-categories', methods=['GET'])
-@jwt_required()
 def get_top_categories():
     """
     Fetch the top-performing categories based on total sales.
@@ -1051,7 +578,6 @@ def get_stock_for_store():
     return jsonify({"message": "Access denied. Only store managers, owners, or admins can view stock."}), 403
 
 @api.route('/store', methods=['GET'])
-@api.route('/store/<int:store_id>', methods=['GET'])
 @jwt_required()
 def get_store(store_id=None):
     try:
@@ -1067,29 +593,6 @@ def get_store(store_id=None):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@api.route('/store', methods=['POST'])
-@jwt_required()
-def create_store():
-    try:
-        user_id = int(get_jwt_identity())
-        data = request.json
-        new_store = Store(
-            user_id=user_id,
-            name=data['name'],
-            location=data['location'],
-            store_manager=data['store_manager'],
-            phone=data['phone'],
-            status=data['status'],
-            employee_count=data['employee_count']
-        )
-        db.session.add(new_store)
-        db.session.commit()
-        return jsonify(new_store.serialize()), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@api.route('/store/<int:store_id>', methods=['PUT'])
-@jwt_required()
 def update_store(store_id):
     try:
         user_id = int(get_jwt_identity())
@@ -1105,43 +608,10 @@ def update_store(store_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@api.route('/store/<int:store_id>', methods=['DELETE'])
-@jwt_required()
-def delete_store(store_id):
-    try:
-        user_id = get_jwt_identity()
-        store = Store.query.filter_by(id=store_id, user_id=user_id).first()
-        if not store:
-            return jsonify({"error": "Store not found"}), 404
-        db.session.delete(store)
-        db.session.commit()
-        return jsonify({"message": "Store deleted successfully"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# lead routes
-
-@api.route('/leads', methods=['GET'])
-@jwt_required()
-@handle_errors
 def get_leads():
     leads = Lead.query.all()
     return jsonify([lead.serialize() for lead in leads]), 200
 
-@api.route('/leads', methods=['POST'])
-@jwt_required()
-@handle_errors
-def create_lead():
-    data = request.json
-    lead = Lead(**data)
-    db.session.add(lead)
-    db.session.commit()
-    return jsonify(lead.serialize()), 201
-
-@api.route('/leads/<int:id>', methods=['PUT'])
-@jwt_required()
-@handle_errors
 def update_lead(id):
     lead = Lead.query.get_or_404(id)
     data = request.json
@@ -1150,23 +620,6 @@ def update_lead(id):
     db.session.commit()
     return jsonify(lead.serialize()), 200
 
-@api.route('/leads/<int:id>', methods=['DELETE'])
-@jwt_required()
-@handle_errors
-def delete_lead(id):
-    lead = Lead.query.get_or_404(id)
-    db.session.delete(lead)
-    db.session.commit()
-    return jsonify({"message": "Lead deleted successfully"}), 200
-
-# campaign routes
-
-
-
-
-# Route to get all campaigns
-@api.route('/campaigns', methods=['GET'])
-@jwt_required()
 def get_campaigns():
     status = request.args.get('status')  # Optional filtering by status
     if status:
@@ -1176,28 +629,6 @@ def get_campaigns():
     return jsonify([campaign.serialize() for campaign in campaigns]), 200
 
 # Route to create a new campaign
-@api.route('/campaigns', methods=['POST'])
-@jwt_required()
-def create_campaign():
-    data = request.json
-    try:
-        new_campaign = Campaign(
-            name=data['name'],
-            description=data.get('description'),
-            target_audience=data.get('target_audience'),
-            start_date=data['start_date'],
-            end_date=data.get('end_date'),
-            status=data.get('status', 'draft')
-        )
-        db.session.add(new_campaign)
-        db.session.commit()
-        return jsonify(new_campaign.serialize()), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-# Route to update a specific campaign
-@api.route('/campaigns/<int:id>', methods=['PUT'])
-@jwt_required()
 def update_campaign(id):
     campaign = Campaign.query.get_or_404(id)
     data = request.json
@@ -1210,25 +641,6 @@ def update_campaign(id):
         return jsonify({"error": str(e)}), 400
 
 # Route to delete a specific campaign
-@api.route('/campaigns/<int:id>', methods=['DELETE'])
-@jwt_required()
-def delete_campaign(id):
-    campaign = Campaign.query.get_or_404(id)
-    try:
-        db.session.delete(campaign)
-        db.session.commit()
-        return jsonify({"message": "Campaign deleted successfully"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-
-# ---------------------------------
-# Metrics and Analytics
-# ---------------------------------
-
-# Route to fetch metrics for a specific campaign
-@api.route('/campaigns/<int:id>/metrics', methods=['GET'])
-@jwt_required()
 def get_campaign_metrics(id):
     metrics = CampaignMetrics.query.filter_by(campaign_id=id).all()
     if not metrics:
@@ -1323,19 +735,6 @@ def get_tasks():
     tasks = Task.query.all()
     return jsonify([task.serialize() for task in tasks]), 200
 
-@api.route('/tasks', methods=['POST'])
-@jwt_required()
-@handle_errors
-def create_task():
-    data = request.json
-    task = Task(**data)
-    db.session.add(task)
-    db.session.commit()
-    return jsonify(task.serialize()), 201
-
-@api.route('/tasks/<int:id>', methods=['PUT'])
-@jwt_required()
-@handle_errors
 def update_task(id):
     task = Task.query.get_or_404(id)
     data = request.json
@@ -1344,18 +743,6 @@ def update_task(id):
     db.session.commit()
     return jsonify(task.serialize()), 200
 
-@api.route('/tasks/<int:id>', methods=['DELETE'])
-@jwt_required()
-@handle_errors
-def delete_task(id):
-    task = Task.query.get_or_404(id)
-    db.session.delete(task)
-    db.session.commit()
-    return jsonify({"message": "Task deleted successfully"}), 200
-
-# deal routes
-
-@api.route('/deals', methods=['GET'])
 def get_deals():
     deals = Deal.query.all()
     grouped_deals = {}
@@ -1404,42 +791,10 @@ def create_promotion():
     db.session.commit()
     return jsonify(promotion.serialize()), 201
 
-@api.route('/promotions', methods=['GET'])
-def get_all_promotions():
-    promotions = PromotionalDeal.query.all()
-    return jsonify([promo.serialize() for promo in promotions]), 200
-
-@api.route('/promotions/<int:id>', methods=['GET'])
 def get_promotion(id):
     promotion = PromotionalDeal.query.get_or_404(id)
     return jsonify(promotion.serialize()), 200
 
-@api.route('/promotions/<int:id>', methods=['PUT'])
-def update_promotion(id):
-    data = request.json
-    promotion = PromotionalDeal.query.get_or_404(id)
-    promotion.title = data['title']
-    promotion.discount_percentage = data['discount_percentage']
-    promotion.tax_rate = data.get('tax_rate', promotion.tax_rate)
-    promotion.tier = data.get('tier', promotion.tier)
-    promotion.start_date = data.get('start_date', promotion.start_date)
-    promotion.end_date = data.get('end_date', promotion.end_date)
-    db.session.commit()
-    return jsonify(promotion.serialize()), 200
-
-@api.route('/promotions/<int:id>', methods=['DELETE'])
-def delete_promotion(id):
-    promotion = PromotionalDeal.query.get_or_404(id)
-    db.session.delete(promotion)
-    db.session.commit()
-    return jsonify({"message": "Promotion deleted successfully"}), 200
-
-
-# inventory logs
-
-@api.route('/inventory/logs', methods=['POST'])
-@jwt_required()
-def log_inventory():
     data = request.json
     log = InventoryLog(
         product_id=data['product_id'],
@@ -1763,28 +1118,6 @@ def get_reports():
     return jsonify([report.serialize() for report in reports]), 200
 
 @api.route('/reports/generate', methods=['POST'])
-@jwt_required()
-def generate_report():
-    data = request.json
-    report_type = data.get('type')
-    filters = data.get('filters', {})
-
-    # Example: Implement your logic to generate the report
-    if report_type == 'sales':
-        # Logic for generating a sales report
-        pass
-    elif report_type == 'inventory':
-        # Logic for generating an inventory report
-        pass
-    else:
-        return jsonify({"error": "Invalid report type"}), 400
-
-    # Save the report to the database
-    report = Report(type=report_type, filters=filters, created_at=datetime.utcnow())
-    db.session.add(report)
-    db.session.commit()
-    return jsonify(report.serialize()), 201
-
 @api.route('/reports/export/<int:id>', methods=['GET'])
 @jwt_required()
 def export_report(id):
@@ -1839,68 +1172,6 @@ def get_symptoms():
 def get_symptom(id):
     symptom = Symptom.query.get_or_404(id)
     return jsonify(symptom.serialize()), 200
-
-@api.route('/symptoms', methods=['POST'])
-def create_symptom():
-    data = request.json
-    symptom = Symptom(
-        patient_id=data['patient_id'],
-        name=data['name'],
-        severity=data['severity'],
-        description=data.get('description')
-    )
-    db.session.add(symptom)
-    db.session.commit()
-    return jsonify(symptom.serialize()), 201
-
-@api.route('/symptoms/<int:id>', methods=['PUT'])
-def update_symptom(id):
-    symptom = Symptom.query.get_or_404(id)
-    data = request.json
-    for key, value in data.items():
-        setattr(symptom, key, value)
-    db.session.commit()
-    return jsonify(symptom.serialize()), 200
-
-@api.route('/symptoms/<int:id>', methods=['DELETE'])
-def delete_symptom(id):
-    symptom = Symptom.query.get_or_404(id)
-    db.session.delete(symptom)
-    db.session.commit()
-    return jsonify({"message": "Symptom deleted successfully"}), 200
-
-@api.route('/api/medical/metrics', methods=['GET'])
-def get_metrics():
-    metrics = {
-        "active_patients": Patient.query.count(),
-        "dispensed_products": db.session.query(func.sum(Sale.quantity)).scalar() or 0,
-        "pending_compliance_audits": ComplianceAudit.query.filter_by(status="Pending").count(),
-        "monthly_revenue": db.session.query(func.sum(Sale.total_amount)).scalar() or 0,
-        "new_patients": Patient.query.filter(func.date(Patient.date_created) >= func.date('now', '-30 days')).count(),
-        "appointments_this_week": Appointment.query.filter(func.date(Appointment.date) >= func.date('now', 'weekday 0')).count(),
-        "no_show_rate": Appointment.query.filter_by(status="No-Show").count(),
-        "low_stock_products": Inventory.query.filter(Inventory.quantity < 5).count(),
-        "pending_refills": db.session.query(func.count()).filter_by(refill_status="Pending").scalar() or 0,
-        "average_fill_time": 15,  # Placeholder, adjust if tracked dynamically
-        "patient_satisfaction": 4.8,  # Placeholder, replace with real calculation if available
-    }
-
-    # Return the metrics in a format suitable for the frontend
-    response = [
-        {"title": "Active Patients", "value": f"{metrics['active_patients']}", "icon": "👨‍⚕️", "trend": 5},
-        {"title": "Dispensed Products", "value": f"{metrics['dispensed_products']}", "icon": "💊", "trend": 8},
-        {"title": "Pending Compliance Audits", "value": f"{metrics['pending_compliance_audits']}", "icon": "📋", "trend": -1},
-        {"title": "Revenue (Monthly)", "value": f"${metrics['monthly_revenue']:,}", "icon": "💰", "trend": 10},
-        {"title": "New Patients (Monthly)", "value": f"{metrics['new_patients']}", "icon": "👥", "trend": 12},
-        {"title": "Appointments (This Week)", "value": f"{metrics['appointments_this_week']}", "icon": "📅", "trend": 4},
-        {"title": "No-Show Rate", "value": f"{metrics['no_show_rate']}%", "icon": "🚫", "trend": -3},
-        {"title": "Products with Low Stock", "value": f"{metrics['low_stock_products']}", "icon": "⚠️", "trend": -1},
-        {"title": "Pending Refills", "value": f"{metrics['pending_refills']}", "icon": "🔄", "trend": 3},
-        {"title": "Average Prescription Fill Time", "value": "15 mins", "icon": "⏱️", "trend": -1},
-        {"title": "Patient Satisfaction Score", "value": "4.8/5", "icon": "⭐", "trend": 5},
-    ]
-
-    return jsonify(response), 200
 @api.route('/api/medical/revenue-chart', methods=['GET'])
 def get_revenue_chart():
     result = db.session.query(
@@ -1933,51 +1204,6 @@ def get_medical_resources():
 def get_medical_resource(id):
     resource = MedicalResource.query.get_or_404(id)
     return jsonify(resource.serialize()), 200
-
-@api.route('/medical-resources', methods=['POST'])
-def create_medical_resource():
-    data = request.json
-    resource = MedicalResource(
-        title=data['title'],
-        content=data['content'],
-        type=data['type'],
-        link=data.get('link')
-    )
-    db.session.add(resource)
-    db.session.commit()
-    return jsonify(resource.serialize()), 201
-
-@api.route('/medical-resources/<int:id>', methods=['PUT'])
-def update_medical_resource(id):
-    resource = MedicalResource.query.get_or_404(id)
-    data = request.json
-    for key, value in data.items():
-        setattr(resource, key, value)
-    db.session.commit()
-    return jsonify(resource.serialize()), 200
-
-@api.route('/medical-resources/<int:id>', methods=['DELETE'])
-def delete_medical_resource(id):
-    resource = MedicalResource.query.get_or_404(id)
-    db.session.delete(resource)
-    db.session.commit()
-    return jsonify({"message": "Medical resource deleted successfully"}), 200
-
-
-
-    return send_file(buffer, as_attachment=True, download_name=f"receipt_{order_id}.pdf", mimetype='application/pdf')
-
-@api.route('/appointments', methods=['GET'])
-def get_appointments():
-    try:
-        appointments = Appointment.query.all()
-        return jsonify([appointment.serialize() for appointment in appointments]), 200
-    except SQLAlchemyError as e:
-        return jsonify({"error": str(e)}), 500
-
-# ----------------------------
-# GET: Fetch a specific appointment by ID
-# ----------------------------
 @api.route('/appointments/<int:appointment_id>', methods=['GET'])
 def get_appointment(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
@@ -1986,66 +1212,6 @@ def get_appointment(appointment_id):
 # ----------------------------
 # POST: Create a new appointment
 # ----------------------------
-@api.route('/appointments', methods=['POST'])
-def create_appointment():
-    data = request.get_json()
-
-    # Basic validation
-    if not data.get('patient_id') or not data.get('physician_id') or not data.get('appointment_date'):
-        return jsonify({"error": "patient_id, physician_id, and appointment_date are required"}), 400
-
-    try:
-        appointment = Appointment(
-            patient_id=data['patient_id'],
-            physician_id=data['physician_id'],
-            appointment_date=data['appointment_date'],
-            status=data.get('status', 'Scheduled'),
-            notes=data.get('notes')
-        )
-        db.session.add(appointment)
-        db.session.commit()
-        return jsonify(appointment.serialize()), 201
-    except SQLAlchemyError as e:
-        return jsonify({"error": str(e)}), 500
-
-# ----------------------------
-# PUT: Update an existing appointment
-# ----------------------------
-@api.route('/appointments/<int:appointment_id>', methods=['PUT'])
-def update_appointment(appointment_id):
-    data = request.get_json()
-    appointment = Appointment.query.get_or_404(appointment_id)
-
-    try:
-        appointment.status = data.get('status', appointment.status)
-        appointment.notes = data.get('notes', appointment.notes)
-        appointment.appointment_date = data.get('appointment_date', appointment.appointment_date)
-        
-        db.session.commit()
-        return jsonify(appointment.serialize()), 200
-    except SQLAlchemyError as e:
-        return jsonify({"error": str(e)}), 500
-
-# ----------------------------
-# DELETE: Delete an appointment
-# ----------------------------
-@api.route('/appointments/<int:appointment_id>', methods=['DELETE'])
-def delete_appointment(appointment_id):
-    appointment = Appointment.query.get_or_404(appointment_id)
-
-    try:
-        db.session.delete(appointment)
-        db.session.commit()
-        return jsonify({"message": "Appointment deleted"}), 200
-    except SQLAlchemyError as e:
-        return jsonify({"error": str(e)}), 500
-
-# ----------------------------
-# GET: Fetch insurance by ID
-# ----------------------------
-@api.route('/insurances/<int:insurance_id>', methods=['GET'])
-def get_insurance(insurance_id):
-    insurance = Insurance.query.get_or_404(insurance_id)
     return jsonify(insurance.serialize()), 200
 
 # ----------------------------
@@ -2088,41 +1254,6 @@ def create_insurance():
 # ----------------------------
 # PUT: Update an existing insurance record
 # ----------------------------
-@api.route('/insurances/<int:insurance_id>', methods=['PUT'])
-def update_insurance(insurance_id):
-    insurance = Insurance.query.get_or_404(insurance_id)
-    data = request.get_json()
-
-    try:
-        # Update fields if provided
-        insurance.provider_name = data.get('provider_name', insurance.provider_name)
-        insurance.policy_number = data.get('policy_number', insurance.policy_number)
-        insurance.coverage_details = data.get('coverage_details', insurance.coverage_details)
-        
-        db.session.commit()
-        return jsonify(insurance.serialize()), 200
-    except SQLAlchemyError as e:
-        return jsonify({"error": str(e)}), 500
-
-# ----------------------------
-# DELETE: Delete an insurance record
-# ----------------------------
-@api.route('/insurances/<int:insurance_id>', methods=['DELETE'])
-def delete_insurance(insurance_id):
-    insurance = Insurance.query.get_or_404(insurance_id)
-
-    try:
-        db.session.delete(insurance)
-        db.session.commit()
-        return jsonify({"message": "Insurance deleted successfully"}), 200
-    except SQLAlchemyError as e:
-        return jsonify({"error": str(e)}), 500
-
-# ----------------------------
-# POST: Check coverage for a procedure or service
-# ----------------------------
-@api.route('/insurances/coverage-check', methods=['POST'])
-def coverage_check():
     data = request.get_json()
 
     # Example validation: Check if the insurance covers the procedure
@@ -2159,16 +1290,6 @@ def create_claim(insurance_id):
 # ----------------------------
 # GET: Fetch all claims related to a specific insurance policy
 # ----------------------------
-@api.route('/insurances/<int:insurance_id>/claims', methods=['GET'])
-def get_claims(insurance_id):
-    try:
-        claims = Claim.query.filter_by(insurance_id=insurance_id).all()
-        return jsonify([claim.serialize() for claim in claims]), 200
-    except SQLAlchemyError as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@api.route('/education-resources', methods=['GET'])
 def get_education_resources():
     resources = PatientEducationResource.query.all()
     return jsonify([resource.serialize() for resource in resources]), 200
@@ -2178,40 +1299,6 @@ def get_education_resource(resource_id):
     resource = PatientEducationResource.query.get_or_404(resource_id)
     return jsonify(resource.serialize()), 200
 
-@api.route('/education-resources', methods=['POST'])
-def create_education_resource():
-    data = request.get_json()
-    resource = PatientEducationResource(
-        title=data['title'],
-        content=data['content'],
-        resource_type=data['resource_type'],
-        link=data.get('link')
-    )
-    db.session.add(resource)
-    db.session.commit()
-    return jsonify(resource.serialize()), 201
-
-@api.route('/education-resources/<int:resource_id>', methods=['PUT'])
-def update_education_resource(resource_id):
-    data = request.get_json()
-    resource = PatientEducationResource.query.get_or_404(resource_id)
-    resource.title = data.get('title', resource.title)
-    resource.content = data.get('content', resource.content)
-    resource.resource_type = data.get('resource_type', resource.resource_type)
-    resource.link = data.get('link', resource.link)
-    db.session.commit()
-    return jsonify(resource.serialize()), 200
-
-@api.route('/education-resources/<int:resource_id>', methods=['DELETE'])
-def delete_education_resource(resource_id):
-    resource = PatientEducationResource.query.get_or_404(resource_id)
-    db.session.delete(resource)
-    db.session.commit()
-    return jsonify({"message": "Resource deleted"}), 200
-
-@api.route('/training-resources', methods=['GET'])
-def get_training_resources():
-    resources = StaffTrainingResource.query.all()
     return jsonify([resource.serialize() for resource in resources]), 200
 
 @api.route('/training-resources/<int:resource_id>', methods=['GET'])
@@ -2219,44 +1306,6 @@ def get_training_resource(resource_id):
     resource = StaffTrainingResource.query.get_or_404(resource_id)
     return jsonify(resource.serialize()), 200
 
-@api.route('/training-resources', methods=['POST'])
-def create_training_resource():
-    data = request.get_json()
-    resource = StaffTrainingResource(
-        title=data['title'],
-        content=data['content'],
-        resource_type=data['resource_type'],
-        link=data.get('link')
-    )
-    db.session.add(resource)
-    db.session.commit()
-    return jsonify(resource.serialize()), 201
-
-@api.route('/training-resources/<int:resource_id>', methods=['PUT'])
-def update_training_resource(resource_id):
-    data = request.get_json()
-    resource = StaffTrainingResource.query.get_or_404(resource_id)
-    resource.title = data.get('title', resource.title)
-    resource.content = data.get('content', resource.content)
-    resource.resource_type = data.get('resource_type', resource.resource_type)
-    resource.link = data.get('link', resource.link)
-    db.session.commit()
-    return jsonify(resource.serialize()), 200
-
-@api.route('/training-resources/<int:resource_id>', methods=['DELETE'])
-def delete_training_resource(resource_id):
-    resource = StaffTrainingResource.query.get_or_404(resource_id)
-    db.session.delete(resource)
-    db.session.commit()
-    return jsonify({"message": "Resource deleted"}), 200
-
-
-# loyalty program
-
-@api.route('/loyalty/points/<int:customer_id>', methods=['GET'])
-@jwt_required()
-def get_loyalty_points(customer_id):
-    customer = Customer.query.get_or_404(customer_id)
     return jsonify({"loyalty_points": customer.loyalty_points}), 200
 
 @api.route('/loyalty/points/earn', methods=['POST'])
@@ -2412,56 +1461,6 @@ def get_business(id):
     return jsonify(business.serialize()), 200
 
 
-@api.route('/businesses', methods=['POST'])
-@jwt_required()
-def create_business():
-    data = request.json
-    business = Business(
-        name=data['name'],
-        address=data['address'],
-        city=data['city'],
-        state=data['state'],
-        zip_code=data['zip_code'],
-        phone=data['phone'],
-        email=data.get('email'),
-        license_number=data['license_number'],
-        license_expiry=datetime.strptime(data['license_expiry'], '%Y-%m-%d'),
-        status=data.get('status', 'active')
-    )
-    db.session.add(business)
-    db.session.commit()
-    return jsonify(business.serialize()), 201
-
-
-@api.route('/businesses/<int:id>', methods=['PUT'])
-@jwt_required()
-def update_business(id):
-    business = Business.query.get_or_404(id)
-    data = request.json
-    for key, value in data.items():
-        setattr(business, key, value)
-    db.session.commit()
-    return jsonify(business.serialize()), 200
-
-
-@api.route('/businesses/<int:id>', methods=['DELETE'])
-@jwt_required()
-def delete_business(id):
-    business = Business.query.get_or_404(id)
-    db.session.delete(business)
-    db.session.commit()
-    return jsonify({"message": "Business deleted successfully"}), 200
-
-
-# ---------------------
-# Invoice Routes
-
-@api.route('/invoices', methods=['GET'])
-@jwt_required()
-def get_invoices():
-    customer_id = request.args.get('customer_id')
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
 
     if customer_id:
         query = Invoice.query.filter_by(customer_id=customer_id)
@@ -2480,53 +1479,6 @@ def get_invoices():
 
 
 
-@api.route('/invoices', methods=['POST'])
-@jwt_required()
-def create_invoice():
-    try:
-        data = request.json
-
-        # Validate required fields
-        required_fields = ['customer_id', 'order_id', 'total_amount']
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
-
-        # Parse due_date if provided
-        due_date = None
-        if 'due_date' in data:
-            try:
-                due_date = datetime.strptime(data['due_date'], '%Y-%m-%d')
-            except ValueError:
-                return jsonify({"error": "Invalid due_date format, expected YYYY-MM-DD"}), 400
-
-        # Create the invoice
-        invoice = Invoice(
-            customer_id=data['customer_id'],
-            order_id=data['order_id'],
-            invoice_type=data.get('invoice_type'),
-            total_amount=float(data['total_amount']),
-            payments_made=float(data.get('payments_made', 0)),
-            due_date=due_date,
-            payment_method=data.get('payment_method'),
-            sent_status=data.get('sent_status', False),
-            payment_status=data.get('payment_status', "unpaid"),
-            notes=data.get('notes')
-        )
-
-        db.session.add(invoice)
-        db.session.commit()
-
-        return jsonify(invoice.serialize()), 201
-
-    except Exception as e:
-        print(f"Error creating invoice: {e}")
-        return jsonify({"error": "An unexpected error occurred while creating the invoice"}), 500
-
-
-
-@api.route('/invoices/<int:id>', methods=['PUT'])
-@jwt_required()
 def update_invoice(id):
     invoice = Invoice.query.get_or_404(id)
     data = request.json
@@ -2536,18 +1488,6 @@ def update_invoice(id):
     return jsonify(invoice.serialize()), 200
 
 
-@api.route('/invoices/<int:id>', methods=['DELETE'])
-@jwt_required()
-def delete_invoice(id):
-    invoice = Invoice.query.get_or_404(id)
-    db.session.delete(invoice)
-    db.session.commit()
-    return jsonify({"message": "Invoice deleted successfully"}), 200
-
-
-# ---------------------
-# Run App
-# ---------------------
 if __name__ == '__main__':
     db.create_all()  # Ensure tables are created before running
     api.run(debug=True)
@@ -2564,12 +1504,6 @@ def add_dispensary():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@api.route('/dispensaries', methods=['GET'])
-def get_dispensaries():
-    dispensaries = Dispensary.query.all()
-    return jsonify([dispensary.serialize() for dispensary in dispensaries]), 200
-
-@api.route('/dispensaries/<int:id>', methods=['PUT'])
 def update_dispensary(id):
     try:
         data = request.json
@@ -2581,174 +1515,6 @@ def update_dispensary(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@api.route('/dispensaries/<int:id>', methods=['DELETE'])
-def delete_dispensary(id):
-    try:
-        dispensary = Dispensary.query.get_or_404(id)
-        db.session.delete(dispensary)
-        db.session.commit()
-        return jsonify({"message": "Dispensary deleted successfully"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-# Pricing Routes
-# @api.route('/pricing', methods=['POST'])
-# def add_pricing():
-#     try:
-#         data = request.json
-#         pricing = Pricing(**data)
-#         db.session.add(pricing)
-#         db.session.commit()
-#         return jsonify(pricing.serialize()), 201
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 400
-
-# @api.route('/prices', methods=['GET'])
-# def get_prices():
-#     # Query Parameters
-#     product_name = request.args.get('product_name')
-#     location = request.args.get('location')
-#     sort_by = request.args.get('sort_by', 'price')  # Default sorting by price
-#     real_time = request.args.get('real_time', 'false').lower() == 'true'  # Flag for real-time updates
-
-#     # Base Query
-#     query = db.session.query(
-#         Product.name.label('product_name'),
-#         Product.strain,
-#         Product.thc_content,
-#         Product.cbd_content,
-#         Pricing.price,
-#         Pricing.availability,
-#         Dispensary.name.label('dispensary_name'),
-#         Dispensary.location,
-#         Product.medical_benefits,
-#         Product.is_organic
-#     ).join(Pricing, Product.id == Pricing.product_id)\
-#      .join(Dispensary, Dispensary.id == Pricing.dispensary_id)
-
-#     # Apply Filters
-#     if product_name:
-#         query = query.filter(Product.name.ilike(f"%{product_name}%"))
-#     if location:
-#         query = query.filter(Dispensary.location.ilike(f"%{location}%"))
-
-#     # Sorting Logic
-#     if sort_by == 'price':
-#         query = query.order_by(Pricing.price.asc())
-#     elif sort_by == 'thc_content':
-#         query = query.order_by(Product.thc_content.desc())
-
-#     # Fetch Results
-#     results = query.all()
-
-#     # Prepare Response
-#     response = [
-#         {
-#             "product_name": row.product_name,
-#             "strain": row.strain,
-#             "thc_content": row.thc_content,
-#             "cbd_content": row.cbd_content,
-#             "price": float(row.price),
-#             "availability": row.availability,
-#             "dispensary_name": row.dispensary_name,
-#             "location": row.location
-#         }
-#         for row in results
-#     ]
-
-#     # Real-Time Updates (Optional WebSocket Integration)
-#     if real_time:
-#         # Emit data to a WebSocket if required
-#         # socketio.emit('real_time_price_update', response)
-#         pass
-
-#     return jsonify(response), 200
-
-@api.route('/pricing/<int:id>', methods=['DELETE'])
-def delete_pricing(id):
-    try:
-        pricing = Pricing.query.get_or_404(id)
-        db.session.delete(pricing)
-        db.session.commit()
-        return jsonify({"message": "Pricing entry deleted successfully"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-# @api.route('/prices', methods=['GET'])
-# def get_prices():
-#     product_name = request.args.get('product_name')
-#     location = request.args.get('location')
-#     sort_by = request.args.get('sort_by', 'price')  # Default sorting by price
-#     medical_benefits = request.args.get('medical_benefits')
-#     organic_certified = request.args.get('organic_certified', type=bool)
-#     on_sale = request.args.get('on_sale', type=bool)
-
-#     # Base query
-#     query = db.session.query(
-#         Product.name.label('product_name'),
-#         Product.strain,
-#         Product.thc_content,
-#         Product.cbd_content,
-#         Pricing.price,
-#         Pricing.availability,
-#         Dispensary.name.label('dispensary_name'),
-#         Dispensary.location,
-#         Product.medical_benefits,
-#         Product.is_organic
-#     ).join(Dispensary, Product.id == Pricing.product_id)\
-#      .join(Pricing, Dispensary.id == Pricing.dispensary_id)
-
-#     # Apply filters
-#     if product_name:
-#         query = query.filter(Product.name.ilike(f"%{product_name}%"))
-#     if location:
-#         query = query.filter(Dispensary.location.ilike(f"%{location}%"))
-#     if medical_benefits:
-#         query = query.filter(Product.medical_benefits.ilike(f"%{medical_benefits}%"))
-#     if organic_certified is not None:
-#         query = query.filter(Product.is_organic == organic_certified)
-#     if on_sale:
-#         query = query.filter(Pricing.price < Product.unit_price)
-
-#     # Apply sorting
-#     if sort_by == 'price':
-#         query = query.order_by(Pricing.price.asc())
-#     elif sort_by == 'thc_content':
-#         query = query.order_by(Product.thc_content.desc())
-
-#     results = query.all()
-
-#     # Add loyalty points and reviews to the response
-#     response = []
-#     for product_name, strain, thc_content, cbd_content, price, availability, dispensary_name, location, medical_benefits, is_organic in results:
-#         # Calculate estimated loyalty points
-#         loyalty_points = int(price / 10)  # Example: $10 = 1 point
-        
-#         # Fetch reviews (dummy placeholder for now)
-#         reviews = [
-#             {"rating": 5, "comment": "Amazing product!"},
-#             {"rating": 4, "comment": "Great value."}
-#         ]
-
-#         response.append({
-#             "product_name": product_name,
-#             "strain": strain,
-#             "thc_content": thc_content,
-#             "cbd_content": cbd_content,
-#             "price": float(price),
-#             "availability": availability,
-#             "dispensary_name": dispensary_name,
-#             "location": location,
-#             "medical_benefits": medical_benefits,
-#             "is_organic": is_organic,
-#             "loyalty_points": loyalty_points,
-#             "reviews": reviews
-#         })
-
-#     return jsonify(response), 200
-
-# Non-Medical Prices Route
-@api.route('/prices/non-medical', methods=['GET'])
 def get_non_medical_prices():
     product_name = request.args.get('product_name')
     location = request.args.get('location')
@@ -2894,31 +1660,6 @@ def fetch_prices(product_name=None, location=None, sort_by='price'):
     return query.all()
 
 # HTTP Endpoint for Initial Data Fetch
-@api.route('/prices', methods=['GET'])
-def get_real_time_prices():
-    product_name = request.args.get('product_name', None)
-    location = request.args.get('location', None)
-    sort_by = request.args.get('sort_by', 'price')
-
-    results = fetch_prices(product_name, location, sort_by)
-    response = [
-        {
-            "product_name": row.product_name,
-            "strain": row.strain,
-            "thc_content": row.thc_content,
-            "cbd_content": row.cbd_content,
-            "price": float(row.price),
-            "availability": row.availability,
-            "dispensary_name": row.dispensary_name,
-            "location": row.location
-        }
-        for row in results
-    ]
-
-    return jsonify(response), 200
-
-# WebSocket Endpoint for Real-Time Updates
-@socketio.on('request_real_time_prices')
 def handle_real_time_prices(data):
     product_name = data.get('product_name', None)
     location = data.get('location', None)
@@ -3030,50 +1771,6 @@ def get_all_growfarms():
 def get_growfarm(id):
     grow_farm = GrowFarm.query.get_or_404(id)
     return jsonify(grow_farm.serialize()), 200
-
-# Create a new grow farm
-@api.route('/growfarms', methods=['POST'])
-def create_growfarm():
-    data = request.json
-    new_farm = GrowFarm(
-        name=data['name'],
-        location=data.get('location'),
-        contact_info=data.get('contact_info'),
-        status=data.get('status', 'active')
-    )
-    db.session.add(new_farm)
-    db.session.commit()
-    return jsonify(new_farm.serialize()), 201
-
-# Update an existing grow farm
-@api.route('/growfarms/<int:id>', methods=['PUT'])
-def update_growfarm(id):
-    grow_farm = GrowFarm.query.get_or_404(id)
-    data = request.json
-    for key, value in data.items():
-        setattr(grow_farm, key, value)
-    db.session.commit()
-    return jsonify(grow_farm.serialize()), 200
-
-# Delete a grow farm
-@api.route('/growfarms/<int:id>', methods=['DELETE'])
-def delete_growfarm(id):
-    grow_farm = GrowFarm.query.get_or_404(id)
-    db.session.delete(grow_farm)
-    db.session.commit()
-    return jsonify({"message": "Grow farm deleted successfully"}), 200
-
-@api.route('/plant_batches', methods=['GET', 'POST'])
-def manage_plant_batches():
-    if request.method == 'GET':
-        batches = PlantBatch.query.all()
-        return jsonify([batch.serialize() for batch in batches])
-    elif request.method == 'POST':
-        data = request.json
-        batch = PlantBatch(**data)
-        db.session.add(batch)
-        db.session.commit()
-        return jsonify(batch.serialize()), 201
 
 @api.route('/plant_batches/<int:batch_id>', methods=['GET', 'PUT', 'DELETE'])
 def manage_single_batch(batch_id):
@@ -3400,48 +2097,6 @@ def get_crm_metrics():
     }
     return jsonify(metrics), 200
 
-@api.route('/notifications', methods=['GET'])
-def get_seedbank_notifications():
-    # Get storage conditions with thresholds exceeded
-    alerts = StorageConditions.query.filter(
-        (StorageConditions.temperature < 10) |  # Example threshold
-        (StorageConditions.temperature > 30) | 
-        (StorageConditions.humidity > 80)
-    ).all()
-
-    # Get seed batches nearing expiration
-    today = datetime.utcnow().date()
-    expiring_batches = SeedBatch.query.filter(
-        SeedBatch.expiration_date <= today + timedelta(days=30)
-    ).all()
-
-    notifications = {
-        "alerts": [
-            {
-                "id": condition.id,
-                "location": condition.location,
-                "message": f"Temperature: {condition.temperature}, Humidity: {condition.humidity}"
-            }
-            for condition in alerts
-        ],
-        "expiring_batches": [
-            {
-                "id": batch.id,
-                "strain": batch.strain,
-                "expiration_date": batch.expiration_date.isoformat()
-            }
-            for batch in expiring_batches
-        ]
-    }
-
-    return jsonify(notifications), 200
-
-
-# # ---------------------
-# # Validation Schemas
-# # ---------------------
-
-
 class ProductSchema(Schema):
     name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
     category = fields.Str(required=True)
@@ -3476,7 +2131,7 @@ class OrderSchema(Schema):
 class PricingSchema(Schema):
     dispensary_id = fields.Int(required=True)
     price = fields.Float(required=True)
-    availability = fields.Bool(required=True, default=True)
+    availability = fields.Bool(required=True)
 
 
 @api.route('/analytics/customer-segmentation', methods=['GET'])
@@ -3502,35 +2157,13 @@ def customer_segmentation():
 
     return jsonify(analytics_data), 200
 
-@api.route('/api/analytics', methods=['GET'])
-def get_analytics():
-    try:
-        # Example metrics calculations
-        total_patients = Patient.query.count()
-        revenue = db.session.query(db.func.sum(Sale.total_amount)).scalar() or 0
-        top_product = db.session.query(Inventory.product_name).order_by(Inventory.quantity.asc()).first()
-
-        low_stock_count = Inventory.query.filter(Inventory.quantity < 5).count()
-        missed_appointments = Appointment.query.filter(Appointment.status == 'Missed').count()
-
-        analytics = [
-            {"name": "Total Patients Served", "value": total_patients, "category": "Patient Metrics"},
-            {"name": "Revenue (This Month)", "value": f"${revenue:,.2f}", "category": "Sales and Revenue"},
-            {"name": "Top-Selling Product (Strain)", "value": top_product[0] if top_product else "N/A", "category": "Sales and Revenue"},
-            {"name": "Products with Low Stock", "value": f"{low_stock_count} products", "category": "Inventory Analytics"},
-            {"name": "Missed Appointments", "value": missed_appointments, "category": "Appointments"}
-        ]
-
-        return jsonify(analytics), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# predictive analytics
-
 @api.route('/analytics/clv-prediction', methods=['POST'])
 def predict_clv():
     import numpy as np
-    from sklearn.linear_model import LinearRegression
+    try:
+        from sklearn.linear_model import LinearRegression
+    except ImportError:
+        LinearRegression = None
 
     # Example data: Replace with your database query
     customers = Customer.query.all()
@@ -3566,13 +2199,6 @@ def complete_order():
     return jsonify({"message": "Order completed and sales history updated."}), 200
 
 
-@api.route('/reports/generate', methods=['POST'])
-def trigger_report():
-    generate_report.delay()  # Triggers the Celery task asynchronously
-    return jsonify({"message": "Report generation task started."}), 202
-
-# Clock-In Route
-@api.route('/clock-in', methods=['POST'])
 def clock_in():
     try:
         employee_id = request.json.get('employee_id')
@@ -3667,28 +2293,6 @@ def get_profile():
     customer = Customer.query.get_or_404(user_id)
     return jsonify(customer.serialize()), 200
 
-@api.route('/profile', methods=['PUT'])
-@jwt_required()
-def update_profile():
-    user_id = get_jwt_identity()
-    data = request.json
-    customer = Customer.query.get_or_404(user_id)
-    for key, value in data.items():
-        setattr(customer, key, value)
-    db.session.commit()
-    return jsonify(customer.serialize()), 200
-
-@api.route('/orders', methods=['GET'])
-@jwt_required()
-def get_order_history():
-    user_id = get_jwt_identity()
-    orders = Order.query.filter_by(customer_id=user_id).all()
-    return jsonify([order.serialize() for order in orders]), 200
-
-@api.route('/orders/<int:order_id>', methods=['GET'])
-@jwt_required()
-def get_order_details(order_id):
-    order = Order.query.get_or_404(order_id)
     return jsonify(order.serialize()), 200
 
 @api.route('/wishlist', methods=['GET'])
@@ -3698,18 +2302,6 @@ def get_wishlist():
     wishlist = Wishlist.query.filter_by(customer_id=user_id).all()
     return jsonify([item.serialize() for item in wishlist]), 200
 
-@api.route('/wishlist', methods=['POST'])
-@jwt_required()
-def add_to_wishlist():
-    user_id = get_jwt_identity()
-    data = request.json
-    new_item = Wishlist(customer_id=user_id, product_id=data['product_id'])
-    db.session.add(new_item)
-    db.session.commit()
-    return jsonify(new_item.serialize()), 201
-
-@api.route('/wishlist/<int:item_id>', methods=['DELETE'])
-@jwt_required()
 def remove_from_wishlist(item_id):
     item = Wishlist.query.get_or_404(item_id)
     db.session.delete(item)
@@ -3724,122 +2316,185 @@ def remove_from_wishlist(item_id):
 #     cart_items = Cart.query.filter_by(user_id=user_id).all()
 #     return jsonify([item.serialize() for item in cart_items]), 200
 
-@api.route('/cart', methods=['POST'])
+@api.route('/cart/add', methods=['POST'])
 @jwt_required()
+@handle_errors
 def add_to_cart():
     user_id = get_jwt_identity()
     data = request.json
-    product = Product.query.get_or_404(data['product_id'])
-
-    # Validate stock availability
-    quantity_requested = data.get('quantity', 1)
-    if product.current_stock < quantity_requested:
-        return jsonify({"error": "Insufficient stock for this product"}), 400
-
-    # Deduct stock
-    try:
-        product.current_stock -= quantity_requested
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": "Failed to update stock"}), 500
-
-    # Check if the customer has an existing cart
-    cart = Cart.query.filter_by(customer_id=user_id).first()
-    if not cart:
-        cart = Cart(customer_id=user_id)
-        db.session.add(cart)
-        db.session.flush()
-
-    # Add the item to the cart
-    try:
-        cart_item = CartItem(
-            cart_id=cart.id,
-            product_id=product.id,
-            quantity=quantity_requested
+    
+    product_id = data.get('product_id')
+    quantity = data.get('quantity', 1)
+    
+    if not product_id:
+        return jsonify({"error": "Product ID required"}), 400
+    
+    # Check if product exists and has stock
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({"error": "Product not found"}), 404
+    
+    if product.current_stock < quantity:
+        return jsonify({"error": f"Insufficient stock. Only {product.current_stock} available"}), 400
+    
+    # Check if item already in cart
+    existing_item = CartItem.query.filter_by(
+        user_id=user_id, 
+        product_id=product_id, 
+        saved_for_later=False
+    ).first()
+    
+    if existing_item:
+        new_quantity = existing_item.quantity + quantity
+        if new_quantity > product.current_stock:
+            return jsonify({"error": f"Cannot add more. Only {product.current_stock} available"}), 400
+        existing_item.quantity = new_quantity
+    else:
+        new_item = CartItem(
+            user_id=user_id,
+            product_id=product_id,
+            quantity=quantity
         )
-        db.session.add(cart_item)
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        # Rollback stock deduction if cart operation fails
-        product.current_stock += quantity_requested
-        db.session.commit()
-        return jsonify({"error": "Failed to add item to cart"}), 500
-
-    return jsonify(cart.serialize()), 201
-
-
-
-@api.route('/cart/save_for_later', methods=['POST'])
-@jwt_required()
-def save_for_later():
-    data = request.json
-    user_id = get_jwt_identity()  # Get the current user's ID
-
-    # Check if the cart item exists
-    cart_item = Cart.query.filter_by(user_id=user_id, product_id=data['product_id']).first()
-    if not cart_item:
-        return jsonify({"error": "Cart item not found"}), 404
-
-    # Move item to "saved for later"
-    saved_item = SavedForLater(
-        user_id=user_id,
-        product_id=cart_item.product_id,
-        quantity=cart_item.quantity,
-    )
-    db.session.add(saved_item)
-    db.session.delete(cart_item)
+        db.session.add(new_item)
+    
     db.session.commit()
-
-    return jsonify({"message": "Item saved for later"}), 201
-
-@api.route('/cart/apply_discount', methods=['POST'])
-@jwt_required()
-def apply_discount():
-    data = request.json
-    user_id = get_jwt_identity()  # Get the current user's ID
-
-    # Validate the discount code
-    discount = Discount.query.filter_by(code=data['code'], is_active=True).first()
-    if not discount:
-        return jsonify({"error": "Invalid or expired discount code"}), 400
-
-    # Calculate discount
-    cart_items = Cart.query.filter_by(user_id=user_id).all()
-    total = sum(item.quantity * item.product.unit_price for item in cart_items)
-    discount_amount = total * (discount.percentage / 100)
-
+    
+    # Return updated cart
+    cart_items = CartItem.query.filter_by(user_id=user_id, saved_for_later=False).all()
     return jsonify({
-        "message": "Discount applied",
-        "original_total": total,
-        "discount": discount_amount,
-        "new_total": total - discount_amount,
+        "message": "Item added to cart",
+        "items": [item.serialize() for item in cart_items]
     }), 200
-
+  
 
 @api.route('/cart/<int:item_id>', methods=['DELETE'])
 @jwt_required()
-def remove_from_cart(item_id):
-    item = Cart.query.get_or_404(item_id)
-    db.session.delete(item)
+@handle_errors
+def remove_cart_item(item_id):
+    user_id = get_jwt_identity()
+    
+    cart_item = CartItem.query.filter_by(id=item_id, user_id=user_id).first()
+    if not cart_item:
+        return jsonify({"error": "Cart item not found"}), 404
+    
+    db.session.delete(cart_item)
     db.session.commit()
+    
     return jsonify({"message": "Item removed from cart"}), 200
 
-@api.route('/cart/<int:item_id>', methods=['PATCH'])
-@jwt_required()
-def update_cart_item(item_id):
-    data = request.json
-    item = Cart.query.get_or_404(item_id)
-    if 'quantity' in data:
-        item.quantity = data['quantity']
-    db.session.commit()
-    return jsonify(item.serialize()), 200
 
-@api.route('/checkout', methods=['POST'])
+# ---------------------
+# Clear Cart
+# ---------------------
+def save_for_later():
+    user_id = get_jwt_identity()
+    data = request.json
+    
+    item_id = data.get('item_id')
+    if not item_id:
+        return jsonify({"error": "Item ID required"}), 400
+    
+    cart_item = CartItem.query.filter_by(id=item_id, user_id=user_id).first()
+    if not cart_item:
+        return jsonify({"error": "Cart item not found"}), 404
+    
+    cart_item.saved_for_later = True
+    db.session.commit()
+    
+    return jsonify({"message": "Item saved for later"}), 200
+
+
+# ---------------------
+# Move Saved Item to Cart
+# ---------------------
+@api.route('/cart/move-to-cart', methods=['POST'])
 @jwt_required()
-def checkout():
-    user_id = get_jwt_identity()  # Get the current user's ID
+@handle_errors
+def move_to_cart():
+    user_id = get_jwt_identity()
+    data = request.json
+    
+    item_id = data.get('item_id')
+    if not item_id:
+        return jsonify({"error": "Item ID required"}), 400
+    
+    cart_item = CartItem.query.filter_by(id=item_id, user_id=user_id, saved_for_later=True).first()
+    if not cart_item:
+        return jsonify({"error": "Saved item not found"}), 404
+    
+    # Check if item already in cart
+    existing_cart_item = CartItem.query.filter_by(
+        user_id=user_id, 
+        product_id=cart_item.product_id, 
+        saved_for_later=False
+    ).first()
+    
+    if existing_cart_item:
+        existing_cart_item.quantity += cart_item.quantity
+        db.session.delete(cart_item)
+    else:
+        cart_item.saved_for_later = False
+    
+    db.session.commit()
+    
+    return jsonify({"message": "Item moved to cart"}), 200
+
+
+# ---------------------
+# Apply Discount Code
+# ---------------------
+@api.route('/cart/apply-discount', methods=['POST'])
+@jwt_required()
+@handle_errors
+def apply_discount():
+    data = request.json
+    code = data.get('code', '').strip().upper()
+    
+    if not code:
+        return jsonify({"error": "Discount code required"}), 400
+    
+    discount = DiscountCode.query.filter_by(code=code, is_active=True).first()
+    
+    if not discount:
+        return jsonify({"error": "Invalid discount code"}), 404
+    
+    # Check if expired
+    if discount.expires_at and discount.expires_at < datetime.utcnow():
+        return jsonify({"error": "Discount code has expired"}), 400
+    
+    # Check usage limit
+    if discount.usage_limit and discount.times_used >= discount.usage_limit:
+        return jsonify({"error": "Discount code usage limit reached"}), 400
+    
+    return jsonify({
+        "success": True,
+        "discount_percent": discount.discount_percent,
+        "message": f"{discount.discount_percent}% discount applied"
+    }), 200
+
+
+# ---------------------
+# Get Cart Summary (for header/badge)
+# ---------------------
+@api.route('/cart/summary', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_cart_summary():
+    user_id = get_jwt_identity()
+    
+    cart_items = CartItem.query.filter_by(user_id=user_id, saved_for_later=False).all()
+    
+    item_count = sum(item.quantity for item in cart_items)
+    total = sum(float(item.product.unit_price) * item.quantity for item in cart_items)
+    
+    return jsonify({
+        "item_count": item_count,
+        "total": total
+    }), 200
+
+
+
+
     cart_items = Cart.query.filter_by(user_id=user_id).all()
     if not cart_items:
         return jsonify({"error": "Cart is empty"}), 400
@@ -3887,18 +2542,6 @@ def get_payment_methods():
     payment_methods = PaymentMethod.query.filter_by(customer_id=user_id).all()
     return jsonify([method.serialize() for method in payment_methods]), 200
 
-@api.route('/payment-methods', methods=['POST'])
-@jwt_required()
-def add_payment_method():
-    user_id = get_jwt_identity()
-    data = request.json
-    new_method = PaymentMethod(customer_id=user_id, **data)
-    db.session.add(new_method)
-    db.session.commit()
-    return jsonify(new_method.serialize()), 201
-
-@api.route('/payment-methods/<int:method_id>', methods=['DELETE'])
-@jwt_required()
 def delete_payment_method(method_id):
     method = PaymentMethod.query.get_or_404(method_id)
     db.session.delete(method)
@@ -3912,19 +2555,6 @@ def get_support_tickets():
     tickets = SupportTicket.query.filter_by(customer_id=user_id).all()
     return jsonify([ticket.serialize() for ticket in tickets]), 200
 
-@api.route('/support-tickets', methods=['POST'])
-@jwt_required()
-def create_support_ticket():
-    user_id = get_jwt_identity()
-    data = request.json
-    new_ticket = SupportTicket(customer_id=user_id, **data)
-    db.session.add(new_ticket)
-    db.session.commit()
-    return jsonify(new_ticket.serialize()), 201
-
-
-@api.route('/subscriptions', methods=['GET'])
-@jwt_required()
 def get_subscriptions():
     user_id = get_jwt_identity()
     subscriptions = Subscription.query.filter_by(customer_id=user_id).all()
@@ -3936,40 +2566,6 @@ def get_subscription_details(sub_id):
     subscription = Subscription.query.get_or_404(sub_id)
     return jsonify(subscription.serialize()), 200
 
-@api.route('/subscriptions', methods=['POST'])
-@jwt_required()
-def create_subscription():
-    user_id = get_jwt_identity()
-    data = request.json
-    new_subscription = Subscription(customer_id=user_id, **data)
-    db.session.add(new_subscription)
-    db.session.commit()
-    return jsonify(new_subscription.serialize()), 201
-
-@api.route('/subscriptions/<int:sub_id>', methods=['PUT'])
-@jwt_required()
-def update_subscription(sub_id):
-    subscription = Subscription.query.get_or_404(sub_id)
-    data = request.json
-    for key, value in data.items():
-        setattr(subscription, key, value)
-    db.session.commit()
-    return jsonify(subscription.serialize()), 200
-
-@api.route('/subscriptions/<int:sub_id>', methods=['DELETE'])
-@jwt_required()
-def delete_subscription(sub_id):
-    subscription = Subscription.query.get_or_404(sub_id)
-    db.session.delete(subscription)
-    db.session.commit()
-    return jsonify({"message": "Subscription deleted successfully"}), 200
-
-@api.route('/loyalty-program', methods=['GET'])
-@jwt_required()
-def get_loyalty_program():
-    user_id = get_jwt_identity()
-    customer = Customer.query.get_or_404(user_id)
-    logger.info(f"Loyalty program accessed by user {user_id}")
 
     # Hypothetical functions for additional details
     next_tier_points = calculate_points_for_next_tier(customer.loyalty_tier) if 'calculate_points_for_next_tier' in globals() else None
@@ -4044,42 +2640,11 @@ def get_settings():
     settings = Settings.query.filter_by(customer_id=user_id).first()
     return jsonify(settings.serialize()), 200
 
-@api.route('/settings', methods=['PUT'])
-@jwt_required()
-def update_settings():
-    user_id = get_jwt_identity()
-    data = request.json
-    settings = Settings.query.filter_by(customer_id=user_id).first()
-    
-    if not settings:
-        settings = Settings(customer_id=user_id)
-        db.session.add(settings)
-
-    for key, value in data.items():
-        setattr(settings, key, value)
-    db.session.commit()
-    return jsonify(settings.serialize()), 200
-
-
-@api.route('/addresses', methods=['GET'])
-@jwt_required()
 def get_addresses():
     user_id = get_jwt_identity()
     addresses = Address.query.filter_by(customer_id=user_id).all()
     return jsonify([addr.serialize() for addr in addresses]), 200
 
-@api.route('/addresses', methods=['POST'])
-@jwt_required()
-def add_address():
-    user_id = get_jwt_identity()
-    data = request.json
-    new_address = Address(customer_id=user_id, **data)
-    db.session.add(new_address)
-    db.session.commit()
-    return jsonify(new_address.serialize()), 201
-
-@api.route('/addresses/<int:address_id>', methods=['PUT'])
-@jwt_required()
 def update_address(address_id):
     address = Address.query.get_or_404(address_id)
     data = request.json
@@ -4087,73 +2652,6 @@ def update_address(address_id):
         setattr(address, key, value)
     db.session.commit()
     return jsonify(address.serialize()), 200
-
-@api.route('/addresses/<int:address_id>', methods=['DELETE'])
-@jwt_required()
-def delete_address(address_id):
-    address = Address.query.get_or_404(address_id)
-    db.session.delete(address)
-    db.session.commit()
-    return jsonify({"message": "Address deleted successfully"}), 200
-
-
-# pos system
-
-@api.route('/cart', methods=['GET'])
-@jwt_required()
-def get_cart():
-    user_id = get_jwt_identity()
-    cart = Cart.query.filter_by(customer_id=user_id).first()
-    if not cart:
-        return jsonify({"error": "Cart not found"}), 404
-    return jsonify(cart.serialize()), 200
-
-
-@api.route('/cart/<int:item_id>', methods=['DELETE'])
-@jwt_required()
-def delete_cart_item(item_id):
-    cart_item = CartItem.query.get_or_404(item_id)
-    db.session.delete(cart_item)
-    db.session.commit()
-    return jsonify({"message": "Item removed from cart"}), 200
-
-@api.route('/cart/clear', methods=['DELETE'])
-@jwt_required()
-def clear_cart():
-    user_id = get_jwt_identity()
-    cart = Cart.query.filter_by(customer_id=user_id).first()
-    if not cart:
-        return jsonify({"error": "Cart not found"}), 404
-    db.session.delete(cart)
-    db.session.commit()
-    return jsonify({"message": "Cart cleared successfully"}), 200
-
-@api.route('/pos/payment', methods=['POST'])
-@jwt_required()
-def process_payment():
-    data = request.json
-    order_id = data['order_id']
-    payments = data['payments']  # list of { method, amount }
-
-    order = Order.query.get_or_404(order_id)
-    total_paid = sum(payment['amount'] for payment in payments)
-
-    if total_paid < order.total_amount:
-        return jsonify({"error": "Insufficient payment"}), 400
-
-    for payment in payments:
-        payment_log = PaymentLog(
-            order_id=order.id,
-            payment_method=payment['method'],
-            amount=payment['amount']
-        )
-        db.session.add(payment_log)
-
-    order.status = "completed"
-    db.session.commit()
-
-    return jsonify({"message": "Payment processed successfully", "order": order.serialize()}), 200
-
 @api.route('/pos/receipt/<int:order_id>', methods=['GET'])
 @jwt_required()
 def generate_receipt(order_id):
@@ -4226,28 +2724,6 @@ def get_plans():
     return jsonify([plan.serialize() for plan in plans]), 200
 
 # Route to create a new plan (Admin use)
-@api.route('/plans', methods=['POST'])
-def create_plan():
-    data = request.get_json()
-
-    if not data or not all(key in data for key in ('name', 'price', 'features')):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    try:
-        new_plan = Plan(
-            name=data['name'],
-            price=data['price'],
-            features=data['features']
-        )
-        db.session.add(new_plan)
-        db.session.commit()
-        return jsonify(new_plan.serialize()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-# Route to update a specific plan by ID (Admin use)
-@api.route('/plans/<int:plan_id>', methods=['PUT'])
 def update_plan(plan_id):
     data = request.get_json()
     plan = Plan.query.get(plan_id)
@@ -4270,132 +2746,7 @@ def update_plan(plan_id):
         return jsonify({"error": str(e)}), 500
 
 # Route to delete a specific plan by ID (Admin use)
-@api.route('/plans/<int:plan_id>', methods=['DELETE'])
-def delete_plan(plan_id):
-    plan = Plan.query.get(plan_id)
-
-    if not plan:
-        return jsonify({"error": "Plan not found"}), 404
-
-    try:
-        db.session.delete(plan)
-        db.session.commit()
-        return jsonify({"message": f"Plan with ID {plan_id} deleted"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-# Route to get all deals
-
-# Route to get a specific deal by ID
-@api.route('/deals/<int:deal_id>', methods=['GET'])
-def get_deal(deal_id):
-    deal = Deal.query.get(deal_id)
-    if not deal:
-        return jsonify({"error": "Deal not found"}), 404
-    return jsonify(deal.serialize()), 200
-
-# Route to create a new deal
-@api.route('/deals', methods=['POST'])
-def create_deal():
-    data = request.get_json()
-
-    if not data or not all(key in data for key in ('name', 'stage', 'value', 'customer_id')):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    try:
-        new_deal = Deal(
-            name=data['name'],
-            description=data.get('description', None),
-            stage=data['stage'],
-            value=data['value'],
-            customer_id=data['customer_id'],
-            assigned_to=data.get('assigned_to', None)
-        )
-        db.session.add(new_deal)
-        db.session.commit()
-        return jsonify(new_deal.serialize()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-# Route to update a specific deal by ID
-@api.route('/deals/<int:deal_id>', methods=['PUT'])
-def update_deal(deal_id):
-    data = request.get_json()
-    deal = Deal.query.get(deal_id)
-
-    if not deal:
-        return jsonify({"error": "Deal not found"}), 404
-
-    try:
-        if 'name' in data:
-            deal.name = data['name']
-        if 'description' in data:
-            deal.description = data['description']
-        if 'stage' in data:
-            deal.stage = data['stage']
-        if 'value' in data:
-            deal.value = data['value']
-        if 'customer_id' in data:
-            deal.customer_id = data['customer_id']
-        if 'assigned_to' in data:
-            deal.assigned_to = data['assigned_to']
-
-        db.session.commit()
-        return jsonify(deal.serialize()), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-# Route to delete a specific deal by ID
-@api.route('/deals/<int:deal_id>', methods=['DELETE'])
-def delete_deal(deal_id):
-    deal = Deal.query.get(deal_id)
-
-    if not deal:
-        return jsonify({"error": "Deal not found"}), 404
-
-    try:
-        db.session.delete(deal)
-        db.session.commit()
-        return jsonify({"message": f"Deal with ID {deal_id} deleted"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-    
-    # Route to get all inventory logs
-
-@api.route('/inventory_logs', methods=['GET'])
-def get_inventory_logs():
-    logs = InventoryLog.query.all()
-    return jsonify([log.serialize() for log in logs]), 200
-
 # Route to create a new inventory log
-@api.route('/inventory_logs', methods=['POST'])
-def create_inventory_log():
-    data = request.get_json()
-
-    if not data or not all(key in data for key in ('product_id', 'transaction_type', 'quantity')):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    try:
-        new_log = InventoryLog(
-            product_id=data['product_id'],
-            transaction_type=data['transaction_type'],
-            quantity=data['quantity'],
-            reason=data.get('reason', None)
-        )
-        db.session.add(new_log)
-        db.session.commit()
-        return jsonify(new_log.serialize()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-    
-    
-@api.route('/inventory/check-expiry', methods=['GET'])
-@jwt_required()
 def check_expiry():
     from datetime import datetime, timedelta
     nearing_expiry = Product.query.filter(
@@ -4429,33 +2780,6 @@ def get_payroll(payroll_id):
     return jsonify(payroll.serialize()), 200
 
 # Route to create a new payroll record
-@api.route('/payroll', methods=['POST'])
-def create_payroll():
-    data = request.get_json()
-
-    if not data or not all(key in data for key in ('employee_id', 'pay_period_start', 'pay_period_end', 'hourly_rate')):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    try:
-        total_hours = data.get('total_hours', 0.0)
-        total_pay = total_hours * data['hourly_rate']
-
-        new_payroll = Payroll(
-            employee_id=data['employee_id'],
-            pay_period_start=data['pay_period_start'],
-            pay_period_end=data['pay_period_end'],
-            total_hours=total_hours,
-            hourly_rate=data['hourly_rate'],
-            total_pay=total_pay
-        )
-        db.session.add(new_payroll)
-        db.session.commit()
-        return jsonify(new_payroll.serialize()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@api.route('/payroll/calculate', methods=['POST'])
 def calculate_payroll():
     data = request.json
     employee_id = data['employee_id']
@@ -4509,28 +2833,6 @@ def get_time_logs():
     return jsonify([log.serialize() for log in logs]), 200
 
 # Route to create a new time log
-@api.route('/time_logs', methods=['POST'])
-def create_time_log():
-    data = request.get_json()
-
-    if not data or not all(key in data for key in ('employee_id', 'clock_in_time')):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    try:
-        new_log = TimeLog(
-            employee_id=data['employee_id'],
-            clock_in_time=data['clock_in_time'],
-            clock_out_time=data.get('clock_out_time', None),
-            status=data.get('status', 'clocked_in')
-        )
-        db.session.add(new_log)
-        db.session.commit()
-        return jsonify(new_log.serialize()), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@api.route('/api/products/<string:barcode>', methods=['GET'])
 def get_product_by_barcode(barcode):
     product = Product.query.filter_by(barcode=barcode).first()
     if product:
@@ -4719,64 +3021,6 @@ def create_shift():
     db.session.commit()
     return jsonify({"message": "Shift created successfully", "shift": shift.id}), 201
 
-@api.route('/shifts/validate', methods=['POST'])
-def validate_shift():
-    data = request.json
-    start_time = datetime.fromisoformat(data['start_time'])
-    end_time = datetime.fromisoformat(data['end_time'])
-    employee_id = data['employee_id']
-
-    conflicting_shift = Shift.query.filter(
-        Shift.employee_id == employee_id,
-        db.or_(
-            db.and_(Shift.start_time <= start_time, Shift.end_time >= start_time),
-            db.and_(Shift.start_time <= end_time, Shift.end_time >= end_time)
-        )
-    ).first()
-
-    if conflicting_shift:
-        return jsonify({"error": "Shift overlaps with an existing shift"}), 400
-
-    return jsonify({"message": "No conflicts found"}), 200
-
-# @api.route('/dashboard/metrics', methods=['GET'])
-# @jwt_required()
-# @handle_errors
-# def get_dashboard_metrics():
-#     # Sales Metrics
-#     completed_orders = Order.query.filter(Order.status == 'completed').all()
-#     total_sales = sum(float(order.total_amount) for order in completed_orders)
-#     order_count = len(completed_orders)
-#     average_order_value = total_sales / order_count if order_count > 0 else 0
-
-#     # Inventory Metrics
-#     low_stock_products = Product.query.filter(Product.current_stock <= Product.reorder_point).all()
-#     top_products = Product.query.order_by(Product.sales.desc()).limit(5).all()
-
-#     # Customer Metrics
-#     total_customers = Customer.query.count()
-#     top_customer = db.session.query(Customer).join(Order).group_by(Customer.id).order_by(db.func.sum(Order.total_amount).desc()).first()
-
-#     return jsonify({
-#         "sales": {
-#             "total_sales": total_sales,
-#             "order_count": order_count,
-#             "average_order_value": round(average_order_value, 2)
-#         },
-#         "inventory": {
-#             "low_stock_count": len(low_stock_products),
-#             "top_products": [{"name": p.name, "sales": p.sales} for p in top_products]
-#         },
-#         "customers": {
-#             "total_customers": total_customers,
-#             "top_customer": {
-#                 "id": top_customer.id if top_customer else None,
-#                 "name": f"{top_customer.first_name} {top_customer.last_name}" if top_customer else None,
-#                 "total_spent": round(top_customer.total_spent, 2) if top_customer else None
-#             }
-#         }
-#     }), 200
-
 @api.route('/api/prescriptions', methods=['GET'])
 def get_prescriptions():
     prescriptions = Prescription.query.all()
@@ -4789,27 +3033,6 @@ def get_prescriptions():
     } for p in prescriptions]), 200
 
 # POST new prescription
-@api.route('/api/prescriptions', methods=['POST'])
-def create_prescription():
-    data = request.get_json()
-
-    required_fields = ['patientId', 'medication', 'dosage', 'frequency']
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    new_prescription = Prescription(
-        patient_id=data['patientId'],
-        medication=data['medication'],
-        dosage=data['dosage'],
-        frequency=data['frequency']
-    )
-
-    db.session.add(new_prescription)
-    db.session.commit()
-
-    return jsonify({"message": "Prescription created successfully", "id": new_prescription.id}), 201
-
-@api.route("/api/deals/public", methods=["GET"])
 def get_public_deals():
     deals = Deal.query.filter_by(stage="published").all()
     return jsonify([deal.to_dict() for deal in deals])
@@ -4958,67 +3181,1130 @@ def get_rewards_for_tier(tier):
     return rewards.get(tier, [])
 
 
-@api.route('/products/bulk', methods=['POST'])
-@jwt_required()
-@handle_errors
-def bulk_create_products():
-    """
-    Bulk create products from CSV/PDF upload
-    Expects: { "products": [{ product_data }, ...] }
-    """
-    data = request.json
-    products_data = data.get('products', [])
-    
-    if not products_data:
-        return jsonify({"error": "No products provided"}), 400
-    
-    created_products = []
-    errors = []
-    
-    for idx, product_data in enumerate(products_data):
-        try:
-            # Validate required fields
-            if not product_data.get('name'):
-                errors.append(f"Row {idx + 1}: Missing product name")
-                continue
-                
-            product = Product(
-                name=product_data.get('name', ''),
-                category=product_data.get('category', 'Uncategorized'),
-                strain=product_data.get('strain', ''),
-                thc_content=float(product_data.get('thc_content', 0)) if product_data.get('thc_content') else 0,
-                cbd_content=float(product_data.get('cbd_content', 0)) if product_data.get('cbd_content') else 0,
-                current_stock=int(product_data.get('current_stock', 0)) if product_data.get('current_stock') else 0,
-                reorder_point=int(product_data.get('reorder_point', 10)) if product_data.get('reorder_point') else 10,
-                unit_price=float(product_data.get('unit_price', 0)) if product_data.get('unit_price') else 0,
-                supplier=product_data.get('supplier', 'Unknown'),
-                batch_number=product_data.get('batch_number', f'BULK-{idx}-{datetime.now().strftime("%Y%m%d")}'),
-                test_results=product_data.get('test_results', '')
-            )
-            db.session.add(product)
-            created_products.append(product)
-        except Exception as e:
-            errors.append(f"Row {idx + 1}: {str(e)}")
-    
-    if created_products:
-        db.session.commit()
-    
-    return jsonify({
-        "message": f"Successfully created {len(created_products)} products",
-        "created_count": len(created_products),
-        "error_count": len(errors),
-        "errors": errors,
-        "products": [p.serialize() for p in created_products]
-    }), 201
-
-
-# ---------------------
-# Hello endpoint (for testing connectivity)
-# ---------------------
-@api.route('/hello', methods=['GET'])
 def hello():
     return jsonify({"message": "Hello from the backend!"}), 200
 
 
 
 
+
+@api.route('/my-applications', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_my_applications():
+    user_id = get_jwt_identity()
+    apps = JobApplication.query.filter_by(user_id=user_id).all()
+    result = []
+    for app in apps:
+        job = Job.query.get(app.job_id)
+        company = Company.query.get(app.company_id) if app.company_id else None
+        result.append({"id": app.id, "job_id": app.job_id, "job_title": job.title if job else "Unknown", "company_name": company.name if company else "Unknown", "location": job.location if job else "", "applied_at": app.applied_at.isoformat() if app.applied_at else None})
+    return jsonify(result), 200
+
+import boto3
+from botocore.config import Config
+import os
+import uuid
+
+def get_r2_client():
+    return boto3.client(
+        's3',
+        endpoint_url=os.getenv('R2_ENDPOINT_URL'),
+        aws_access_key_id=os.getenv('R2_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('R2_SECRET_ACCESS_KEY'),
+        config=Config(signature_version='s3v4'),
+        region_name='auto'
+    )
+
+@api.route('/training/upload-video', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_training_video():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    company_id = user.company_id if user else 'unknown'
+
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files['file']
+    if not file.filename:
+        return jsonify({"error": "No file selected"}), 400
+
+    allowed = {'mp4', 'mov', 'avi', 'webm', 'mkv', 'pdf', 'doc', 'docx'}
+    ext = file.filename.rsplit('.', 1)[-1].lower()
+    if ext not in allowed:
+        return jsonify({"error": f"File type .{ext} not allowed"}), 400
+
+    filename = f"dispensarymaster/training/company_{company_id}/{uuid.uuid4()}.{ext}"
+
+    r2 = get_r2_client()
+    r2.upload_fileobj(
+        file,
+        os.getenv('R2_BUCKET_NAME'),
+        filename,
+        ExtraArgs={'ContentType': file.content_type}
+    )
+
+    public_url = f"{os.getenv('R2_ENDPOINT_URL')}/{os.getenv('R2_BUCKET_NAME')}/{filename}"
+    return jsonify({"url": public_url, "filename": filename}), 200
+
+# -------------------- TRAINING COMPLETION TRACKING --------------------
+@api.route('/training-completions', methods=['POST'])
+@jwt_required()
+@handle_errors
+def mark_training_complete():
+    user_id = get_jwt_identity()
+    data = request.json
+    resource_id = data.get('resource_id')
+    
+    existing = EmployeeTraining.query.filter_by(
+        user_id=user_id, 
+        training_resource_id=resource_id
+    ).first()
+    
+    if not existing:
+        completion = EmployeeTraining(
+            user_id=user_id,
+            training_resource_id=resource_id,
+            completion_date=datetime.utcnow(),
+            status='completed'
+        )
+        db.session.add(completion)
+        db.session.commit()
+    return jsonify({"success": True, "message": "Training marked complete"}), 200
+
+def get_team_completions():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user or user.role not in ["admin", "owner", "manager"]:
+        return jsonify({"error": "Access denied"}), 403
+    
+    company_id = user.company_id
+    resources = StaffTrainingResource.query.filter_by(company_id=company_id).all()
+    resource_ids = [r.id for r in resources]
+    
+    completions = EmployeeTraining.query.filter(
+        EmployeeTraining.training_resource_id.in_(resource_ids)
+    ).all() if resource_ids else []
+    
+    result = []
+    for c in completions:
+        u = User.query.get(c.user_id)
+        r = StaffTrainingResource.query.get(c.training_resource_id)
+        result.append({
+            "user_id": c.user_id,
+            "user_email": u.email if u else "Unknown",
+            "resource_id": c.training_resource_id,
+            "resource_title": r.title if r else "Unknown",
+            "completed_at": c.completion_date.isoformat() if c.completion_date else None,
+            "status": c.status
+        })
+    return jsonify(result), 200
+
+# -------------------- JOB APPLICATION --------------------
+@api.route('/apply', methods=['POST'])
+@jwt_required()
+@handle_errors
+def apply_to_job():
+    user_id = get_jwt_identity()
+    data = request.json
+    job_id = data.get('job_id')
+    company_id = data.get('company_id')
+
+    if not job_id:
+        return jsonify({"error": "job_id required"}), 400
+
+    # Check if already applied
+    existing = JobApplication.query.filter_by(user_id=user_id, job_id=job_id).first()
+    if existing:
+        return jsonify({"msg": "Already applied", "id": existing.id}), 200
+
+    application = JobApplication(
+        user_id=user_id,
+        job_id=job_id,
+        company_id=company_id,
+        applicant_name=data.get('name', ''),
+        applicant_email=data.get('email', ''),
+        applicant_phone=data.get('phone', ''),
+        cover_letter=data.get('cover_letter', ''),
+        status='pending',
+        applied_at=datetime.utcnow()
+    )
+    db.session.add(application)
+    db.session.commit()
+    return jsonify({"msg": "Applied successfully", "id": application.id}), 201
+
+@api.route('/jobs/<int:job_id>/applications', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_job_applications(job_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user or user.role not in ['admin', 'owner', 'manager']:
+        return jsonify({"error": "Access denied"}), 403
+    apps = JobApplication.query.filter_by(job_id=job_id).all()
+    return jsonify([a.serialize() for a in apps]), 200
+
+@api.route('/jobs/<int:job_id>/applications/<int:app_id>', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def update_application_status(job_id, app_id):
+    application = JobApplication.query.get_or_404(app_id)
+    data = request.json
+    application.status = data.get('status', application.status)
+    db.session.commit()
+    return jsonify(application.serialize()), 200
+
+@api.route('/jobs/<int:job_id>', methods=['DELETE'])
+@jwt_required()
+@handle_errors
+def delete_job(job_id):
+    job = Job.query.get_or_404(job_id)
+    db.session.delete(job)
+    db.session.commit()
+    return jsonify({"message": "Job deleted"}), 200
+
+    db.session.delete(log)
+    db.session.commit()
+    return jsonify({"message": "Deleted"}), 200
+
+# ==================== GROW FARMS - STRAINS ====================
+@api.route('/strains', methods=['GET'])
+@handle_errors
+def get_strains():
+    strains = Strain.query.all() if hasattr(Strain, 'query') else []
+    return jsonify([s.serialize() for s in strains] if strains else []), 200
+
+def get_pest_disease():
+    issues = PestDiseaseIssue.query.all() if hasattr(PestDiseaseIssue, 'query') else []
+    return jsonify([i.serialize() for i in issues] if issues else []), 200
+
+def get_storage_conditions():
+    batches = SeedBatch.query.all()
+    result = []
+    for b in batches:
+        result.append({
+            "id": b.id,
+            "strain": b.strain,
+            "batch_number": b.batch_number,
+            "storage_location": b.storage_location,
+            "quantity": b.quantity,
+            "expiration_date": b.expiration_date.isoformat() if b.expiration_date else None,
+            "germination_rate": float(b.germination_rate) if b.germination_rate else None,
+        })
+    return jsonify(result), 200
+
+@api.route('/seedbanks/overview', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_seedbank_overview():
+    from datetime import date
+    today = date.today()
+    batches = SeedBatch.query.all()
+    total_seeds = sum(b.quantity or 0 for b in batches)
+    expired = [b for b in batches if b.expiration_date and b.expiration_date < today]
+    expiring = [b for b in batches if b.expiration_date and 0 <= (b.expiration_date - today).days <= 30]
+    low_stock = [b for b in batches if (b.quantity or 0) < 10]
+    return jsonify({
+        "total_batches": len(batches),
+        "total_seeds": total_seeds,
+        "expired_batches": len(expired),
+        "expiring_soon": len(expiring),
+        "low_stock": len(low_stock),
+        "seedbanks": [s.serialize() for s in Seedbank.query.all()],
+    }), 200
+
+# ==================== CUSTOMER DASHBOARD API ====================
+@api.route('/customer/profile', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_customer_profile_me():
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    customer = Customer.query.filter_by(email=user.email).first()
+    if not customer:
+        return jsonify({
+            "id": user_id,
+            "email": user.email,
+            "role": user.role,
+            "first_name": "",
+            "last_name": "",
+            "phone": "",
+            "membership_level": "standard",
+            "loyalty_points": 0,
+            "total_orders": Order.query.filter_by(customer_id=0).count(),
+        }), 200
+    orders = Order.query.filter_by(customer_id=customer.id).all()
+    total_spent = sum(float(o.total_amount or 0) for o in orders)
+    return jsonify({
+        "id": customer.id,
+        "email": customer.email,
+        "first_name": customer.first_name,
+        "last_name": customer.last_name,
+        "phone": customer.phone,
+        "membership_level": customer.membership_level,
+        "verification_status": customer.verification_status,
+        "loyalty_points": getattr(customer, 'loyalty_points', 0),
+        "total_orders": len(orders),
+        "total_spent": round(total_spent, 2),
+        "preferences": customer.preferences,
+    }), 200
+
+def get_customer_orders_me():
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    customer = Customer.query.filter_by(email=user.email).first()
+    if not customer:
+        return jsonify([]), 200
+    orders = Order.query.filter_by(customer_id=customer.id).order_by(Order.created_at.desc()).all()
+    result = []
+    for o in orders:
+        items = OrderItem.query.filter_by(order_id=o.id).all()
+        order_data = o.serialize()
+        order_data['items'] = []
+        for item in items:
+            product = Product.query.get(item.product_id)
+            order_data['items'].append({
+                "product_name": product.name if product else "Unknown",
+                "quantity": item.quantity,
+                "unit_price": float(item.unit_price),
+                "subtotal": float(item.unit_price) * item.quantity
+            })
+        result.append(order_data)
+    return jsonify(result), 200
+
+@api.route('/customer/recommendations', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_customer_recommendations():
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    products = Product.query.filter(Product.current_stock > 0).limit(8).all()
+    return jsonify([p.serialize() for p in products]), 200
+
+@api.route('/customer/notifications', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_customer_notifications():
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    customer = Customer.query.filter_by(email=user.email).first()
+    notifications = []
+    if customer:
+        orders = Order.query.filter_by(customer_id=customer.id).order_by(Order.created_at.desc()).limit(5).all()
+        for o in orders:
+            notifications.append({
+                "id": o.id,
+                "type": "order",
+                "message": f"Order #{o.id} is {o.status}",
+                "date": o.created_at.isoformat() if o.created_at else None,
+                "read": True
+            })
+    deals = Deal.query.filter_by(is_active=True).limit(3).all() if hasattr(Deal, 'query') else []
+    for d in deals:
+        notifications.append({
+            "id": f"deal-{d.id}",
+            "type": "promotion",
+            "message": f"New deal: {d.title} — {d.discount_percent}% off",
+            "date": None,
+            "read": False
+        })
+    return jsonify(notifications), 200
+
+# ==================== LEAFBRIDGE CONNECT ROUTES ====================
+
+# --- RESUME ROUTES ---
+@api.route('/resumes', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_resumes():
+    """Dispensaries search resumes"""
+    role = request.args.get('desired_role', '')
+    location = request.args.get('location', '')
+    cannabis_exp = request.args.get('cannabis_experience')
+    min_years = request.args.get('min_years', 0, type=int)
+
+    query = Resume.query.filter_by(is_visible=True)
+    if role:
+        query = query.filter(Resume.desired_role.ilike(f'%{role}%'))
+    if location:
+        query = query.filter(Resume.location.ilike(f'%{location}%'))
+    if cannabis_exp == 'true':
+        query = query.filter_by(cannabis_experience=True)
+    if min_years:
+        query = query.filter(Resume.experience_years >= min_years)
+
+    resumes = query.order_by(Resume.created_at.desc()).all()
+    return jsonify([r.serialize() for r in resumes]), 200
+
+@api.route('/resumes/me', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_my_resume():
+    user_id = get_jwt_identity()
+    resume = Resume.query.filter_by(user_id=user_id).first()
+    if not resume:
+        return jsonify({"error": "No resume found"}), 404
+    return jsonify(resume.serialize()), 200
+
+@api.route('/resumes', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_resume():
+    user_id = get_jwt_identity()
+    data = request.json
+    existing = Resume.query.filter_by(user_id=user_id).first()
+    if existing:
+        for key, value in data.items():
+            setattr(existing, key, value)
+        db.session.commit()
+        return jsonify(existing.serialize()), 200
+    resume = Resume(user_id=user_id, **{k: v for k, v in data.items() if hasattr(Resume, k)})
+    db.session.add(resume)
+    db.session.commit()
+    return jsonify(resume.serialize()), 201
+
+@api.route('/resumes/<int:id>', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def update_resume(id):
+    user_id = get_jwt_identity()
+    resume = Resume.query.filter_by(id=id, user_id=user_id).first_or_404()
+    data = request.json
+    for key, value in data.items():
+        if hasattr(resume, key):
+            setattr(resume, key, value)
+    db.session.commit()
+    return jsonify(resume.serialize()), 200
+
+@api.route('/resumes/upload', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_resume_file():
+    user_id = get_jwt_identity()
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    allowed = {'pdf', 'doc', 'docx'}
+    ext = file.filename.rsplit('.', 1)[-1].lower()
+    if ext not in allowed:
+        return jsonify({"error": "Only PDF, DOC, DOCX allowed"}), 400
+    import uuid
+    filename = f"leafbridge/resumes/user_{user_id}/{uuid.uuid4()}.{ext}"
+    r2 = get_r2_client()
+    r2.upload_fileobj(file, os.getenv('R2_BUCKET_NAME'), filename, ExtraArgs={'ContentType': file.content_type})
+    public_url = f"{os.getenv('R2_ENDPOINT_URL')}/{os.getenv('R2_BUCKET_NAME')}/{filename}"
+    resume = Resume.query.filter_by(user_id=user_id).first()
+    if resume:
+        resume.resume_url = public_url
+        db.session.commit()
+    return jsonify({"resume_url": public_url}), 200
+
+# --- SAVED JOBS ---
+@api.route('/saved-jobs', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_saved_jobs():
+    user_id = get_jwt_identity()
+    saved = SavedJob.query.filter_by(user_id=user_id).all()
+    return jsonify([s.serialize() for s in saved]), 200
+
+@api.route('/saved-jobs', methods=['POST'])
+@jwt_required()
+@handle_errors
+def save_job():
+    user_id = get_jwt_identity()
+    job_id = request.json.get('job_id')
+    existing = SavedJob.query.filter_by(user_id=user_id, job_id=job_id).first()
+    if existing:
+        db.session.delete(existing)
+        db.session.commit()
+        return jsonify({"message": "Job unsaved"}), 200
+    saved = SavedJob(user_id=user_id, job_id=job_id)
+    db.session.add(saved)
+    db.session.commit()
+    return jsonify(saved.serialize()), 201
+
+# --- ONBOARDING ROUTES ---
+@api.route('/onboarding', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_onboarding():
+    user_id = get_jwt_identity()
+    checklists = OnboardingChecklist.query.filter_by(employee_id=user_id).all()
+    return jsonify([c.serialize() for c in checklists]), 200
+
+@api.route('/onboarding', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_onboarding():
+    data = request.json
+    checklist = OnboardingChecklist(
+        company_id=data['company_id'],
+        employee_id=data['employee_id'],
+        title=data.get('title', 'New Employee Onboarding'),
+        state=data.get('state', '')
+    )
+    db.session.add(checklist)
+    db.session.flush()
+
+    STATE_TEMPLATES = {
+        'MA': [
+            {"title": "Sign Employment Contract", "category": "paperwork", "due_days": 1},
+            {"title": "Complete I-9 Verification", "category": "compliance", "due_days": 1},
+            {"title": "Submit MA Cannabis Handler Permit", "category": "compliance", "due_days": 3},
+            {"title": "Complete CORI Background Check", "category": "compliance", "due_days": 3},
+            {"title": "Review MA Cannabis Control Commission Rules", "category": "training", "due_days": 5},
+            {"title": "Setup Direct Deposit", "category": "paperwork", "due_days": 3},
+            {"title": "Complete Sexual Harassment Training", "category": "training", "due_days": 7},
+            {"title": "Receive Employee Handbook", "category": "paperwork", "due_days": 1},
+            {"title": "Setup POS System Access", "category": "equipment", "due_days": 2},
+            {"title": "Complete Seed-to-Sale Training", "category": "training", "due_days": 7},
+        ],
+        'CA': [
+            {"title": "Sign Employment Contract", "category": "paperwork", "due_days": 1},
+            {"title": "Complete I-9 Verification", "category": "compliance", "due_days": 1},
+            {"title": "Submit CA Cannabis Worker Permit", "category": "compliance", "due_days": 3},
+            {"title": "Complete Live Scan Background Check", "category": "compliance", "due_days": 3},
+            {"title": "Review DCC Regulations", "category": "training", "due_days": 5},
+            {"title": "Setup Direct Deposit", "category": "paperwork", "due_days": 3},
+            {"title": "Complete Responsible Vendor Training", "category": "training", "due_days": 7},
+            {"title": "Receive Employee Handbook", "category": "paperwork", "due_days": 1},
+            {"title": "Setup Metrc System Access", "category": "equipment", "due_days": 2},
+        ],
+        'CO': [
+            {"title": "Sign Employment Contract", "category": "paperwork", "due_days": 1},
+            {"title": "Complete I-9 Verification", "category": "compliance", "due_days": 1},
+            {"title": "Submit MED Badge Application", "category": "compliance", "due_days": 3},
+            {"title": "Complete Background Check", "category": "compliance", "due_days": 3},
+            {"title": "Review MED Rules and Regulations", "category": "training", "due_days": 5},
+            {"title": "Setup Direct Deposit", "category": "paperwork", "due_days": 3},
+            {"title": "Complete Cannabis Training", "category": "training", "due_days": 7},
+            {"title": "Receive Employee Handbook", "category": "paperwork", "due_days": 1},
+        ],
+        'DEFAULT': [
+            {"title": "Sign Employment Contract", "category": "paperwork", "due_days": 1},
+            {"title": "Complete I-9 Verification", "category": "compliance", "due_days": 1},
+            {"title": "Submit State Cannabis Worker Permit", "category": "compliance", "due_days": 3},
+            {"title": "Complete Background Check", "category": "compliance", "due_days": 3},
+            {"title": "Review State Cannabis Regulations", "category": "training", "due_days": 5},
+            {"title": "Setup Direct Deposit", "category": "paperwork", "due_days": 3},
+            {"title": "Complete Cannabis Compliance Training", "category": "training", "due_days": 7},
+            {"title": "Receive Employee Handbook", "category": "paperwork", "due_days": 1},
+            {"title": "Setup System Access", "category": "equipment", "due_days": 2},
+        ]
+    }
+
+    state = data.get('state', 'DEFAULT').upper()
+    template = STATE_TEMPLATES.get(state, STATE_TEMPLATES['DEFAULT'])
+    custom_tasks = data.get('tasks', [])
+    all_tasks = template + custom_tasks
+
+    for task_data in all_tasks:
+        task = OnboardingTask(
+            checklist_id=checklist.id,
+            title=task_data['title'],
+            category=task_data.get('category', 'general'),
+            due_days=task_data.get('due_days', 3),
+            required=task_data.get('required', True),
+        )
+        db.session.add(task)
+
+    db.session.commit()
+    return jsonify(checklist.serialize()), 201
+
+@api.route('/onboarding/<int:id>', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_onboarding_detail(id):
+    checklist = OnboardingChecklist.query.get_or_404(id)
+    return jsonify(checklist.serialize()), 200
+
+@api.route('/onboarding/tasks/<int:task_id>/complete', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def complete_onboarding_task(task_id):
+    task = OnboardingTask.query.get_or_404(task_id)
+    task.completed = not task.completed
+    task.completed_at = datetime.utcnow() if task.completed else None
+    checklist = OnboardingChecklist.query.get(task.checklist_id)
+    if checklist and all(t.completed for t in checklist.tasks if t.required):
+        checklist.status = 'completed'
+        checklist.completed_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify(task.serialize()), 200
+
+# --- PERFORMANCE REVIEW ROUTES ---
+@api.route('/performance-reviews', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_performance_reviews():
+    user_id = get_jwt_identity()
+    company_id = request.args.get('company_id', type=int)
+    employee_id = request.args.get('employee_id', type=int)
+    query = PerformanceReview.query
+    if company_id:
+        query = query.filter_by(company_id=company_id)
+    if employee_id:
+        query = query.filter_by(employee_id=employee_id)
+    reviews = query.order_by(PerformanceReview.created_at.desc()).all()
+    return jsonify([r.serialize() for r in reviews]), 200
+
+@api.route('/performance-reviews', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_performance_review():
+    user_id = get_jwt_identity()
+    data = request.json
+    training_count = EmployeeTraining.query.filter_by(
+        user_id=data.get('employee_id')
+    ).filter(EmployeeTraining.completion_date.isnot(None)).count()
+    ratings = [data.get(k) for k in ['attendance_rating','performance_rating','teamwork_rating','knowledge_rating','customer_service_rating'] if data.get(k)]
+    overall = round(sum(ratings) / len(ratings), 1) if ratings else None
+    review = PerformanceReview(
+        employee_id=data['employee_id'],
+        reviewer_id=user_id,
+        company_id=data['company_id'],
+        review_period=data.get('review_period', ''),
+        overall_rating=overall,
+        attendance_rating=data.get('attendance_rating'),
+        performance_rating=data.get('performance_rating'),
+        teamwork_rating=data.get('teamwork_rating'),
+        knowledge_rating=data.get('knowledge_rating'),
+        customer_service_rating=data.get('customer_service_rating'),
+        strengths=data.get('strengths', ''),
+        improvements=data.get('improvements', ''),
+        goals=data.get('goals', ''),
+        manager_comments=data.get('manager_comments', ''),
+        training_completed=training_count,
+        status='submitted'
+    )
+    db.session.add(review)
+    db.session.commit()
+    return jsonify(review.serialize()), 201
+
+@api.route('/performance-reviews/<int:id>', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def update_performance_review(id):
+    review = PerformanceReview.query.get_or_404(id)
+    data = request.json
+    for key, value in data.items():
+        if hasattr(review, key):
+            setattr(review, key, value)
+    db.session.commit()
+    return jsonify(review.serialize()), 200
+
+@api.route('/performance-reviews/<int:id>/acknowledge', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def acknowledge_review(id):
+    review = PerformanceReview.query.get_or_404(id)
+    review.status = 'acknowledged'
+    review.employee_comments = request.json.get('employee_comments', '')
+    db.session.commit()
+    return jsonify(review.serialize()), 200
+
+# ==================== STRIPE PAYMENTS ====================
+@api.route('/payments/create-intent', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_payment_intent():
+    import stripe
+    stripe.api_key = current_app.config.get('STRIPE_SECRET_KEY', '')
+    if not stripe.api_key:
+        return jsonify({"error": "Stripe not configured. Add STRIPE_SECRET_KEY to .env"}), 503
+    data = request.json
+    amount = int(float(data.get('amount', 0)) * 100)  # convert to cents
+    intent = stripe.PaymentIntent.create(
+        amount=amount, currency='usd',
+        metadata={'order_id': data.get('order_id'), 'customer_id': data.get('customer_id')}
+    )
+    payment = StripePayment(
+        order_id=data.get('order_id'),
+        stripe_payment_intent_id=intent.id,
+        amount=float(data.get('amount', 0)),
+        status='pending'
+    )
+    db.session.add(payment)
+    db.session.commit()
+    return jsonify({"client_secret": intent.client_secret, "payment_intent_id": intent.id}), 200
+
+@api.route('/payments/confirm', methods=['POST'])
+@jwt_required()
+@handle_errors
+def confirm_payment():
+    data = request.json
+    payment_intent_id = data.get('payment_intent_id')
+    payment = StripePayment.query.filter_by(stripe_payment_intent_id=payment_intent_id).first()
+    if payment:
+        payment.status = 'succeeded'
+        payment.payment_method = data.get('payment_method', 'card')
+        db.session.commit()
+        # Send SMS confirmation
+        order = Order.query.get(payment.order_id)
+        if order and order.customer:
+            _send_sms(order.customer.phone, f"DispenseMaster: Payment confirmed for Order #{order.id}. Total: ${payment.amount:.2f}. Thank you!")
+    return jsonify({"status": "confirmed"}), 200
+
+@api.route('/payments/config', methods=['GET'])
+@handle_errors
+def get_stripe_config():
+    return jsonify({"publishable_key": current_app.config.get('STRIPE_PUBLISHABLE_KEY', '')}), 200
+
+# ==================== SMS / TWILIO ====================
+def _send_sms(to_number, message):
+    """Internal helper to send SMS via Twilio"""
+    try:
+        account_sid = current_app.config.get('TWILIO_ACCOUNT_SID', '')
+        auth_token = current_app.config.get('TWILIO_AUTH_TOKEN', '')
+        from_number = current_app.config.get('TWILIO_PHONE_NUMBER', '')
+        if not all([account_sid, auth_token, from_number, to_number]):
+            return False
+        from twilio.rest import Client
+        client = Client(account_sid, auth_token)
+        msg = client.messages.create(body=message, from_=from_number, to=to_number)
+        log = SMSLog(to_number=to_number, message=message, status='sent', twilio_sid=msg.sid)
+        db.session.add(log)
+        db.session.commit()
+        return True
+    except Exception as e:
+        log = SMSLog(to_number=to_number or 'unknown', message=message, status='failed')
+        db.session.add(log)
+        db.session.commit()
+        return False
+
+@api.route('/sms/send', methods=['POST'])
+@jwt_required()
+@handle_errors
+def send_sms():
+    data = request.json
+    success = _send_sms(data.get('to'), data.get('message'))
+    return jsonify({"success": success}), 200 if success else 503
+
+@api.route('/sms/order-ready/<int:order_id>', methods=['POST'])
+@jwt_required()
+@handle_errors
+def sms_order_ready(order_id):
+    order = Order.query.get_or_404(order_id)
+    customer = Customer.query.get(order.customer_id)
+    if not customer or not customer.phone:
+        return jsonify({"error": "No phone number on file"}), 400
+    msg = f"Hi {customer.first_name}! Your order #{order_id} is ready for pickup. Please bring your ID. Thank you!"
+    success = _send_sms(customer.phone, msg)
+    return jsonify({"success": success, "sent_to": customer.phone}), 200
+
+@api.route('/sms/delivery-update/<int:delivery_id>', methods=['POST'])
+@jwt_required()
+@handle_errors
+def sms_delivery_update(delivery_id):
+    delivery = DeliveryOrder.query.get_or_404(delivery_id)
+    customer = Customer.query.get(delivery.customer_id)
+    if not customer or not customer.phone:
+        return jsonify({"error": "No phone number"}), 400
+    status_msgs = {
+        'assigned': 'Your order has been assigned to a driver and will be on its way soon!',
+        'en_route': 'Your driver is on the way! Estimated arrival in 20-30 minutes.',
+        'delivered': 'Your order has been delivered. Enjoy! Leave us a review!'
+    }
+    msg = f"DispenseMaster: {status_msgs.get(delivery.status, 'Your order status has been updated.')}"
+    success = _send_sms(customer.phone, msg)
+    return jsonify({"success": success}), 200
+
+@api.route('/sms/loyalty-reminder', methods=['POST'])
+@jwt_required()
+@handle_errors
+def sms_loyalty_reminder():
+    data = request.json
+    customer_id = data.get('customer_id')
+    customer = Customer.query.get_or_404(customer_id)
+    if not customer.phone:
+        return jsonify({"error": "No phone"}), 400
+    points = getattr(customer, 'loyalty_points', 0)
+    msg = f"Hi {customer.first_name}! You have {points} loyalty points. Stop by and redeem them for discounts!"
+    success = _send_sms(customer.phone, msg)
+    return jsonify({"success": success}), 200
+
+@api.route('/sms/logs', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_sms_logs():
+    logs = SMSLog.query.order_by(SMSLog.created_at.desc()).limit(100).all()
+    return jsonify([l.serialize() for l in logs]), 200
+
+# ==================== METRC INTEGRATION ====================
+@api.route('/metrc/sync-inventory', methods=['POST'])
+@jwt_required()
+@handle_errors
+def metrc_sync_inventory():
+    api_key = current_app.config.get('METRC_API_KEY', '')
+    base_url = current_app.config.get('METRC_BASE_URL', '')
+    if not api_key:
+        return jsonify({"error": "Metrc not configured. Add METRC_API_KEY to .env", "configured": False}), 503
+    import requests as req
+    products = Product.query.filter(Product.current_stock > 0).all()
+    synced = []
+    errors = []
+    for product in products:
+        try:
+            payload = {
+                "Label": product.batch_number or f"DM-{product.id}",
+                "Name": product.name,
+                "Quantity": float(product.current_stock),
+                "UnitOfMeasureName": "Grams",
+                "ProductCategoryName": product.category,
+            }
+            response = req.post(f"{base_url}/packages/v1/adjust",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json=[payload], timeout=10)
+            sync = MetrcSync(sync_type='inventory', local_id=product.id,
+                           status='synced' if response.ok else 'failed',
+                           response=response.json() if response.ok else {"error": response.text})
+            db.session.add(sync)
+            if response.ok:
+                synced.append(product.id)
+            else:
+                errors.append({"product_id": product.id, "error": response.text})
+        except Exception as e:
+            errors.append({"product_id": product.id, "error": str(e)})
+    db.session.commit()
+    return jsonify({"synced": len(synced), "errors": errors, "total": len(products)}), 200
+
+@api.route('/metrc/sync-sale', methods=['POST'])
+@jwt_required()
+@handle_errors
+def metrc_sync_sale():
+    api_key = current_app.config.get('METRC_API_KEY', '')
+    base_url = current_app.config.get('METRC_BASE_URL', '')
+    if not api_key:
+        return jsonify({"error": "Metrc not configured", "configured": False}), 503
+    data = request.json
+    order_id = data.get('order_id')
+    order = Order.query.get_or_404(order_id)
+    import requests as req
+    payload = {
+        "SalesDateTime": order.created_at.isoformat() if order.created_at else datetime.utcnow().isoformat(),
+        "SalesCustomerType": "Consumer",
+        "Transactions": [
+            {
+                "PackageLabel": item.product.batch_number if item.product else f"DM-{item.product_id}",
+                "Quantity": float(item.quantity),
+                "UnitOfMeasureName": "Grams",
+                "TotalAmount": float(item.unit_price * item.quantity)
+            } for item in order.order_items
+        ]
+    }
+    try:
+        response = req.post(f"{base_url}/sales/v1/receipts",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json=[payload], timeout=10)
+        sync = MetrcSync(sync_type='sale', local_id=order_id,
+                        status='synced' if response.ok else 'failed',
+                        metrc_id=str(response.json()[0].get('Id', '')) if response.ok else None,
+                        response=response.json() if response.ok else {"error": response.text})
+        db.session.add(sync)
+        db.session.commit()
+        return jsonify({"synced": response.ok, "metrc_response": response.json() if response.ok else response.text}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/metrc/status', methods=['GET'])
+@jwt_required()
+@handle_errors
+def metrc_status():
+    api_key = current_app.config.get('METRC_API_KEY', '')
+    configured = bool(api_key)
+    recent_syncs = MetrcSync.query.order_by(MetrcSync.synced_at.desc()).limit(10).all()
+    return jsonify({
+        "configured": configured,
+        "recent_syncs": [s.serialize() for s in recent_syncs],
+        "total_synced": MetrcSync.query.filter_by(status='synced').count(),
+        "total_failed": MetrcSync.query.filter_by(status='failed').count(),
+    }), 200
+
+# ==================== DELIVERY TRACKING ====================
+@api.route('/deliveries', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_deliveries():
+    status = request.args.get('status')
+    driver_id = request.args.get('driver_id', type=int)
+    query = DeliveryOrder.query
+    if status: query = query.filter_by(status=status)
+    if driver_id: query = query.filter_by(driver_id=driver_id)
+    deliveries = query.order_by(DeliveryOrder.created_at.desc()).all()
+    return jsonify([d.serialize() for d in deliveries]), 200
+
+@api.route('/deliveries', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_delivery():
+    data = request.json
+    delivery = DeliveryOrder(
+        order_id=data['order_id'], customer_id=data['customer_id'],
+        delivery_address=data['delivery_address'],
+        customer_lat=data.get('customer_lat'), customer_lng=data.get('customer_lng'),
+        notes=data.get('notes', '')
+    )
+    db.session.add(delivery)
+    db.session.commit()
+    return jsonify(delivery.serialize()), 201
+
+@api.route('/deliveries/<int:id>/assign', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def assign_driver(id):
+    delivery = DeliveryOrder.query.get_or_404(id)
+    data = request.json
+    delivery.driver_id = data['driver_id']
+    delivery.status = 'assigned'
+    db.session.commit()
+    _send_sms_for_delivery(delivery, 'assigned')
+    return jsonify(delivery.serialize()), 200
+
+@api.route('/deliveries/<int:id>/location', methods=['PUT'])
+@handle_errors
+def update_driver_location(id):
+    delivery = DeliveryOrder.query.get_or_404(id)
+    data = request.json
+    delivery.driver_lat = data.get('lat')
+    delivery.driver_lng = data.get('lng')
+    if data.get('status'): delivery.status = data['status']
+    if data.get('status') == 'delivered':
+        delivery.delivered_at = datetime.utcnow()
+        _send_sms_for_delivery(delivery, 'delivered')
+    elif data.get('status') == 'en_route':
+        _send_sms_for_delivery(delivery, 'en_route')
+    db.session.commit()
+    return jsonify(delivery.serialize()), 200
+
+def _send_sms_for_delivery(delivery, status):
+    customer = Customer.query.get(delivery.customer_id)
+    if not customer or not customer.phone: return
+    msgs = {
+        'assigned': 'Your delivery has been assigned to a driver!',
+        'en_route': 'Your driver is on the way! ETA 20-30 minutes.',
+        'delivered': 'Your order has been delivered! Enjoy!'
+    }
+    _send_sms(customer.phone, f"DispenseMaster: {msgs.get(status, 'Delivery update.')}")
+
+@api.route('/deliveries/<int:id>', methods=['GET'])
+@handle_errors
+def get_delivery_tracking(id):
+    delivery = DeliveryOrder.query.get_or_404(id)
+    return jsonify(delivery.serialize()), 200
+
+# ==================== PRODUCT REVIEWS ====================
+@api.route('/products/<int:product_id>/reviews', methods=['GET'])
+@handle_errors
+def get_product_reviews(product_id):
+    reviews = ProductReview.query.filter_by(product_id=product_id).order_by(ProductReview.created_at.desc()).all()
+    avg = sum(r.rating for r in reviews) / len(reviews) if reviews else 0
+    return jsonify({"reviews": [r.serialize() for r in reviews], "average_rating": round(avg, 1), "total": len(reviews)}), 200
+
+@api.route('/products/<int:product_id>/reviews', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_product_review(product_id):
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    customer = Customer.query.filter_by(email=user.email).first()
+    if not customer:
+        return jsonify({"error": "Customer account required to review"}), 403
+    data = request.json
+    existing = ProductReview.query.filter_by(product_id=product_id, customer_id=customer.id).first()
+    if existing:
+        for k, v in data.items():
+            if hasattr(existing, k): setattr(existing, k, v)
+        db.session.commit()
+        return jsonify(existing.serialize()), 200
+    review = ProductReview(product_id=product_id, customer_id=customer.id,
+        rating=data.get('rating', 5), review_text=data.get('review_text', ''),
+        effects=data.get('effects', []), would_recommend=data.get('would_recommend', True))
+    db.session.add(review)
+    db.session.commit()
+    return jsonify(review.serialize()), 201
+
+# ==================== WAITLIST / QUEUE ====================
+@api.route('/waitlist', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_waitlist():
+    store_id = request.args.get('store_id', type=int)
+    query = WaitlistEntry.query.filter_by(status='waiting')
+    if store_id: query = query.filter_by(store_id=store_id)
+    entries = query.order_by(WaitlistEntry.position).all()
+    return jsonify([e.serialize() for e in entries]), 200
+
+@api.route('/waitlist', methods=['POST'])
+@jwt_required()
+@handle_errors
+def join_waitlist():
+    data = request.json
+    store_id = data.get('store_id')
+    last = WaitlistEntry.query.filter_by(store_id=store_id, status='waiting').order_by(WaitlistEntry.position.desc()).first()
+    position = (last.position + 1) if last else 1
+    entry = WaitlistEntry(customer_id=data['customer_id'], store_id=store_id, position=position, notes=data.get('notes', ''))
+    db.session.add(entry)
+    db.session.commit()
+    customer = Customer.query.get(data['customer_id'])
+    if customer and customer.phone:
+        _send_sms(customer.phone, f"Hi {customer.first_name}! You are #{position} in the queue. We will text you when ready!")
+    return jsonify(entry.serialize()), 201
+
+@api.route('/waitlist/<int:id>/call', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def call_next(id):
+    entry = WaitlistEntry.query.get_or_404(id)
+    entry.status = 'called'
+    entry.called_at = datetime.utcnow()
+    db.session.commit()
+    customer = Customer.query.get(entry.customer_id)
+    if customer and customer.phone:
+        _send_sms(customer.phone, f"Hi {customer.first_name}! It is your turn. Please come to the counter now. Thank you!")
+    return jsonify(entry.serialize()), 200
+
+@api.route('/waitlist/<int:id>/serve', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def mark_served(id):
+    entry = WaitlistEntry.query.get_or_404(id)
+    entry.status = 'served'
+    entry.served_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify(entry.serialize()), 200
+
+# ==================== MULTI-LOCATION SYNC ====================
+@api.route('/locations/sync-inventory', methods=['POST'])
+@jwt_required()
+@handle_errors
+def sync_inventory_across_locations():
+    stores = Store.query.filter_by(is_active=True).all() if hasattr(Store, 'is_active') else Store.query.all()
+    products = Product.query.all()
+    sync_report = {
+        "stores": len(stores),
+        "products": len(products),
+        "low_stock_alerts": [],
+        "out_of_stock": []
+    }
+    for product in products:
+        if product.current_stock <= 0:
+            sync_report["out_of_stock"].append({"id": product.id, "name": product.name})
+        elif hasattr(product, 'reorder_point') and product.current_stock <= product.reorder_point:
+            sync_report["low_stock_alerts"].append({"id": product.id, "name": product.name, "stock": product.current_stock})
+    return jsonify(sync_report), 200
+
+@api.route('/locations/inventory-summary', methods=['GET'])
+@jwt_required()
+@handle_errors
+def location_inventory_summary():
+    stores = Store.query.all()
+    summary = []
+    for store in stores:
+        store_data = store.serialize()
+        store_data['total_products'] = Product.query.count()
+        store_data['low_stock'] = Product.query.filter(Product.current_stock <= Product.reorder_point).count() if hasattr(Product, 'reorder_point') else 0
+        store_data['out_of_stock'] = Product.query.filter(Product.current_stock <= 0).count()
+        summary.append(store_data)
+    return jsonify(summary), 200
+
+# ==================== EMBEDDABLE MENU ====================
+@api.route('/menu/embed/<int:store_id>', methods=['GET'])
+def get_embeddable_menu(store_id):
+    """Public endpoint - no auth required for embedding"""
+    category = request.args.get('category')
+    query = Product.query.filter(Product.current_stock > 0)
+    if category: query = query.filter_by(category=category)
+    products = query.order_by(Product.name).all()
+    deals = []
+    try:
+        from api.models import Deal
+        deals = Deal.query.filter_by(is_active=True).all()
+    except: pass
+    return jsonify({
+        "store_id": store_id,
+        "products": [p.serialize() for p in products],
+        "deals": [d.serialize() for d in deals],
+        "categories": list(set(p.category for p in products if p.category)),
+        "embed_script": f'<script src="{request.host_url}static/embed.js" data-store="{store_id}"></script>'
+    }), 200
+
+# ==================== GRAM LIMITS (State Compliance) ====================
+@api.route('/compliance/gram-limit-check', methods=['POST'])
+@jwt_required()
+@handle_errors
+def check_gram_limit():
+    data = request.json
+    customer_id = data.get('customer_id')
+    requested_grams = float(data.get('grams', 0))
+    state = data.get('state', 'MA')
+    STATE_LIMITS = {
+        'MA': 28.0, 'CA': 28.35, 'CO': 28.0, 'WA': 28.0,
+        'OR': 28.0, 'IL': 30.0, 'NV': 28.0, 'AZ': 28.0,
+        'MI': 42.0, 'NY': 85.0
+    }
+    daily_limit = STATE_LIMITS.get(state.upper(), 28.0)
+    today = datetime.utcnow().date()
+    existing_orders = Order.query.filter(
+        Order.customer_id == customer_id,
+        db.func.date(Order.created_at) == today
+    ).all()
+    grams_today = 0
+    for order in existing_orders:
+        for item in order.order_items:
+            grams_today += float(item.quantity)
+    remaining = daily_limit - grams_today
+    allowed = requested_grams <= remaining
+    return jsonify({
+        "allowed": allowed,
+        "requested_grams": requested_grams,
+        "grams_purchased_today": grams_today,
+        "daily_limit": daily_limit,
+        "remaining_allowed": max(0, remaining),
+        "state": state
+    }), 200
+
+# ==================== DIGITAL RECEIPTS ====================
+@api.route('/receipts/<int:order_id>/email', methods=['POST'])
+@jwt_required()
+@handle_errors
+def email_receipt(order_id):
+    order = Order.query.get_or_404(order_id)
+    customer = Customer.query.get(order.customer_id)
+    if not customer:
+        return jsonify({"error": "Customer not found"}), 404
+    try:
+        from api.utils import send_email
+        items_text = ""
+        for item in order.order_items:
+            product = Product.query.get(item.product_id)
+        email_body = f"""
+Thank you for your purchase!
+
+Order #{order.id}
+Date: {order.created_at.strftime('%B %d, %Y') if order.created_at else 'N/A'}
+
+Items:
+{items_text}
+Total: ${float(order.total_amount):.2f}
+
+Thank you for choosing us!
+        """
+        send_email(customer.email, f"Your Receipt - Order #{order.id}", email_body)
+        return jsonify({"sent": True, "email": customer.email}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/receipts/<int:order_id>/sms', methods=['POST'])
+@jwt_required()
+@handle_errors
+def sms_receipt(order_id):
+    order = Order.query.get_or_404(order_id)
+    customer = Customer.query.get(order.customer_id)
+    if not customer or not customer.phone:
+        return jsonify({"error": "No phone number"}), 400
+    msg = f"DispenseMaster Receipt - Order #{order.id}: ${float(order.total_amount):.2f}. Thank you {customer.first_name}!"
+    success = _send_sms(customer.phone, msg)
+    return jsonify({"sent": success}), 200

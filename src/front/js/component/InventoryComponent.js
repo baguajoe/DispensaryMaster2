@@ -1,201 +1,78 @@
 import React, { useEffect, useState } from "react";
-import io from "socket.io-client";
-import "../../styles/inventory.css";
 
 const InventoryComponent = () => {
-    const [file, setFile] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [uploadStatus, setUploadStatus] = useState(null);
-    const [stockLevels, setStockLevels] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedLocation, setSelectedLocation] = useState("Main Warehouse");
-    const [loading, setLoading] = useState(false);
-    const socket = io(process.env.BACKEND_URL);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState("");
+    const [updating, setUpdating] = useState({});
 
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
-        setUploadStatus(null);
+    const token = localStorage.getItem("token");
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+
+    useEffect(() => { fetchProducts(); }, []);
+
+    const fetchProducts = async () => {
+        try {
+            const r = await fetch(`${process.env.BACKEND_URL}/api/products`, { headers });
+            const data = await r.json();
+            setProducts(Array.isArray(data) ? data : []);
+        } catch (e) { console.error(e); }
+        finally { setLoading(false); }
     };
 
-    const handleUpload = async () => {
-        if (!file) {
-            setUploadStatus({ success: false, message: "Please select a file" });
-            return;
-        }
-
-        setIsLoading(true);
+    const updateStock = async (product, delta) => {
+        const newStock = Math.max(0, product.stock + delta);
+        setUpdating(prev => ({ ...prev, [product.id]: true }));
         try {
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const response = await fetch(`${process.env.BACKEND_URL}/api/inventory/import`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: formData,
+            const r = await fetch(`${process.env.BACKEND_URL}/api/products/${product.id}`, {
+                method: "PUT", headers,
+                body: JSON.stringify({ ...product, current_stock: newStock })
             });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to import inventory");
+            if (r.ok) {
+                setProducts(prev => prev.map(p => p.id === product.id ? { ...p, current_stock: newStock } : p));
             }
-
-            const result = await response.json();
-            setUploadStatus({ success: true, message: result.message || "Import completed successfully" });
-            fetchStockLevels();
-        } catch (error) {
-            setUploadStatus({ success: false, message: error.message || "Failed to import inventory" });
-        } finally {
-            setIsLoading(false);
-        }
+        } catch (e) { console.error(e); }
+        finally { setUpdating(prev => ({ ...prev, [product.id]: false })); }
     };
 
-    const fetchStockLevels = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${process.env.BACKEND_URL}/api/inventory/stock`);
-            const data = await response.json();
-            setStockLevels(data);
-        } catch (error) {
-            console.error("Error fetching stock levels:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const recallBatch = async (batchNumber) => {
-        try {
-            const response = await fetch(`${process.env.BACKEND_URL}/api/recall/${batchNumber}`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert(`Batch ${batchNumber} recalled successfully!`);
-                fetchStockLevels();
-            } else {
-                alert(`Failed to recall batch: ${data.error}`);
-            }
-        } catch (error) {
-            console.error("Error recalling batch:", error);
-        }
-    };
-
-    const updateInventory = (location, id, newStock) => {
-        setStockLevels((prev) =>
-            prev.map((item) =>
-                item.id === id ? { ...item, current_stock: newStock } : item
-            )
-        );
-    };
-
-    useEffect(() => {
-        fetchStockLevels();
-
-        socket.on("inventory_update", (data) => {
-            setStockLevels((prev) =>
-                prev.map((item) =>
-                    item.id === data.product_id
-                        ? { ...item, current_stock: data.new_stock, last_updated: data.timestamp }
-                        : item
-                )
-            );
-        });
-
-        return () => {
-            socket.disconnect();
-        };
-    }, [socket]);
-
-    const filteredStockLevels = stockLevels.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filtered = products.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.batch_number?.toLowerCase().includes(search.toLowerCase())
     );
 
+    if (loading) return <div className="text-center py-4"><div className="spinner-border text-success" /></div>;
+
     return (
-        <div className="p-6">
-            {/* File Upload Section */}
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-2">Import Inventory</h2>
-                <input type="file" onChange={handleFileChange} className="mb-2" />
-                <button
-                    onClick={handleUpload}
-                    className={`px-4 py-2 rounded text-white ${
-                        isLoading ? "bg-gray-500" : "bg-blue-500"
-                    } disabled:opacity-50`}
-                    disabled={isLoading}
-                >
-                    {isLoading ? "Uploading..." : "Upload"}
-                </button>
-                {uploadStatus && (
-                    <div
-                        className={`mt-4 p-4 rounded ${
-                            uploadStatus.success
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                        }`}
-                    >
-                        {uploadStatus.message}
-                    </div>
-                )}
-            </div>
-
-            {/* Search Inventory */}
-            <div className="search-inventory mb-6">
-                <input
-                    type="text"
-                    placeholder="Search inventory..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border p-2 rounded"
-                />
-            </div>
-
-            {/* Inventory Display Section */}
-            <div>
-                <h2 className="text-lg font-semibold mb-2">Inventory for Location: {selectedLocation}</h2>
-                {loading ? (
-                    <p>Loading inventory...</p>
-                ) : stockLevels.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredStockLevels.map((item) => (
-                            <div key={item.id} className="border p-4 rounded shadow">
-                                <h3 className="text-lg font-semibold">{item.name}</h3>
-                                <p>Current Stock: {item.current_stock}</p>
-                                <p>Batch Number: {item.batch_number}</p>
-                                <input
-                                    type="number"
-                                    value={item.current_stock}
-                                    onChange={(e) =>
-                                        updateInventory(selectedLocation, item.id, parseInt(e.target.value, 10))
-                                    }
-                                    className="border p-2 rounded w-full mb-2"
-                                />
-                                <button
-                                    onClick={() =>
-                                        updateInventory(selectedLocation, item.id, item.current_stock + 1)
-                                    }
-                                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                                >
-                                    Add Stock
-                                </button>
-                                <button
-                                    onClick={() => recallBatch(item.batch_number)}
-                                    className="bg-red-500 text-white px-4 py-2 rounded mt-2 hover:bg-red-600"
-                                >
-                                    Recall Batch
-                                </button>
+        <div>
+            <input className="form-control mb-3" placeholder="Search products..."
+                value={search} onChange={e => setSearch(e.target.value)} />
+            <div className="row g-3">
+                {filtered.map(item => (
+                    <div key={item.id} className="col-md-4">
+                        <div className={`card ${item.stock <= item.reorder_point ? "border-danger" : ""}`}>
+                            <div className="card-body">
+                                <h6 className="card-title">{item.name}</h6>
+                                <p className="small text-muted mb-1">{item.category} {item.strain && `· ${item.strain}`}</p>
+                                <p className="small mb-1">Batch: <code>{item.batch_number}</code></p>
+                                <div className="d-flex align-items-center gap-2 mt-2">
+                                    <button className="btn btn-sm btn-outline-danger"
+                                        onClick={() => updateStock(item, -1)}
+                                        disabled={updating[item.id]}>-</button>
+                                    <span className={`badge ${item.stock === 0 ? "bg-danger" : item.stock <= item.reorder_point ? "bg-warning text-dark" : "bg-success"}`}>
+                                        {item.stock} units
+                                    </span>
+                                    <button className="btn btn-sm btn-outline-success"
+                                        onClick={() => updateStock(item, 1)}
+                                        disabled={updating[item.id]}>+</button>
+                                </div>
+                                {item.stock <= item.reorder_point && (
+                                    <small className="text-danger d-block mt-1">⚠️ Below reorder point ({item.reorder_point})</small>
+                                )}
                             </div>
-                        ))}
+                        </div>
                     </div>
-                ) : (
-                    <p>No inventory items available.</p>
-                )}
+                ))}
+                {filtered.length === 0 && <p className="text-muted text-center py-3">No inventory items found</p>}
             </div>
         </div>
     );

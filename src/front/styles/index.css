@@ -1,3 +1,160 @@
-/* 
-    General Styles used on every website (Don't Repeat Yourself)
-*/
+/* DispenseMaster Global Styles */
+:root {
+    --dm-bg: #0f2027;
+    --dm-bg2: #1a2f3a;
+    --dm-bg3: rgba(255,255,255,0.06);
+    --dm-border: rgba(255,255,255,0.12);
+    --dm-text: #ffffff;
+    --dm-text-muted: rgba(255,255,255,0.55);
+    --dm-green: #2dce89;
+    --dm-teal: #1a6b5a;
+    --dm-accent: #11cdef;
+}
+
+/* Override Bootstrap white backgrounds */
+.main-content .card,
+.main-content .card-header,
+.main-content .card-footer {
+    background: var(--dm-bg3) !important;
+    border-color: var(--dm-border) !important;
+    color: var(--dm-text) !important;
+}
+
+.main-content .table {
+    color: var(--dm-text) !important;
+}
+
+.main-content .table > :not(caption) > * > * {
+    background-color: transparent !important;
+    color: var(--dm-text) !important;
+    border-bottom-color: var(--dm-border) !important;
+}
+
+.main-content .table thead th {
+    background: rgba(255,255,255,0.08) !important;
+    color: var(--dm-text) !important;
+    border-color: var(--dm-border) !important;
+}
+
+.main-content .table-hover tbody tr:hover > * {
+    background-color: rgba(255,255,255,0.06) !important;
+}
+
+.main-content .form-control,
+.main-content .form-select {
+    background: rgba(255,255,255,0.08) !important;
+    border-color: var(--dm-border) !important;
+    color: var(--dm-text) !important;
+}
+
+.main-content .form-control::placeholder {
+    color: var(--dm-text-muted) !important;
+}
+
+.main-content .form-control:focus,
+.main-content .form-select:focus {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.3) !important;
+    color: var(--dm-text) !important;
+    box-shadow: none !important;
+}
+
+.main-content .form-select option {
+    background: #1a2f3a;
+    color: white;
+}
+
+.main-content .form-label,
+.main-content label {
+    color: var(--dm-text) !important;
+}
+
+.main-content .text-muted {
+    color: var(--dm-text-muted) !important;
+}
+
+.main-content .bg-white {
+    background: var(--dm-bg3) !important;
+}
+
+.main-content .bg-light {
+    background: rgba(255,255,255,0.06) !important;
+}
+
+.main-content .border {
+    border-color: var(--dm-border) !important;
+}
+
+.main-content .modal-content {
+    background: #1a2f3a !important;
+    color: white !important;
+    border-color: var(--dm-border) !important;
+}
+
+.main-content .modal-header,
+.main-content .modal-footer {
+    border-color: var(--dm-border) !important;
+}
+
+.main-content .btn-close {
+    filter: invert(1);
+}
+
+.main-content .input-group-text {
+    background: rgba(255,255,255,0.1) !important;
+    border-color: var(--dm-border) !important;
+    color: var(--dm-text) !important;
+}
+
+.main-content .list-group-item {
+    background: var(--dm-bg3) !important;
+    border-color: var(--dm-border) !important;
+    color: var(--dm-text) !important;
+}
+
+.main-content h1, .main-content h2, .main-content h3,
+.main-content h4, .main-content h5, .main-content h6 {
+    color: var(--dm-text) !important;
+}
+
+.main-content p, .main-content span, .main-content td, .main-content th {
+    color: var(--dm-text);
+}
+
+/* Stat cards */
+.stat-card {
+    background: var(--dm-bg3) !important;
+    border: 1px solid var(--dm-border) !important;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white !important;
+}
+
+.stat-icon { font-size: 2rem; }
+.stat-title { font-size: 0.8rem; color: var(--dm-text-muted) !important; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 1.6rem; font-weight: 700; margin: 0; color: white !important; }
+.trend-up { color: var(--dm-green) !important; font-size: 0.8rem; margin: 0; }
+.trend-down { color: #f5365c !important; font-size: 0.8rem; margin: 0; }
+
+/* Glass panel */
+.glass-panel {
+    background: var(--dm-bg3);
+    border: 1px solid var(--dm-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+/* Page header */
+.page-header {
+    margin-bottom: 1.5rem;
+}
+.page-header h2 { color: white !important; margin: 0; }
+.page-header p { color: var(--dm-text-muted) !important; margin: 0; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }

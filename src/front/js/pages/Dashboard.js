@@ -1,189 +1,167 @@
-import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client";
-// import GridLayoutComponent from "../component/GridLayoutComponent";
-import MetricCard from "../component/MetricCard";
-import ChartCard from "../component/ChartCard";
-import TableCard from "../component/TableCard";
-import PersonalizedRecommendations from "../component/PersonalizedRecommendations";
-import SentimentAnalysis from "../component/SentimentAnalysis";
-import Inventory from "../component/Inventory";
-// import HeatmapChart from "../component/HeatMapChart";
-import NotificationPanel from "../component/NotificationPanel";
+import React, { useState, useEffect, useContext } from "react";
+import { Context } from "../store/appContext";
+import { Link, useNavigate } from "react-router-dom";
 
-import "../../styles/dashboard.css";
-
+const StatCard = ({ title, value, icon, trend, color }) => (
+    <div className="glass-panel d-flex align-items-center gap-3">
+        <div style={{fontSize:"2rem"}}>{icon}</div>
+        <div>
+            <p style={{fontSize:"0.75rem", color:"rgba(255,255,255,0.55)", textTransform:"uppercase", letterSpacing:"0.5px", margin:0}}>{title}</p>
+            <p style={{fontSize:"1.6rem", fontWeight:700, color:"white", margin:0}}>{value}</p>
+            {trend !== undefined && (
+                <p style={{fontSize:"0.75rem", color: trend >= 0 ? "#2dce89" : "#f5365c", margin:0}}>
+                    {trend >= 0 ? "▲" : "▼"} {Math.abs(trend)}%
+                </p>
+            )}
+        </div>
+    </div>
+);
 
 const Dashboard = () => {
-    const [metrics, setMetrics] = useState([]);
-    const [topCategories, setTopCategories] = useState([]);
-    const [salesPerformance, setSalesPerformance] = useState({
-        labels: [],
-        datasets: [],
-    });
-    const [notifications, setNotifications] = useState([]);
-    const [layout, setLayout] = useState([
-        { i: "metrics", x: 0, y: 0, w: 12, h: 2 },
-        { i: "sales", x: 0, y: 2, w: 6, h: 4 },
-        { i: "categories", x: 6, y: 2, w: 6, h: 4 },
-        { i: "recommendations", x: 0, y: 6, w: 6, h: 4 },
-        { i: "reviews", x: 6, y: 6, w: 6, h: 4 },
-        { i: "inventory", x: 0, y: 10, w: 12, h: 6 },
-        { i: "inventoryWidget", x: 6, y: 10, w: 6, h: 6 },
-        { i: "compliance", x: 6, y: 10, w: 6, h: 6 },
-        { i: "salesWidget", x: 0, y: 16, w: 12, h: 4 },
-        { i: "heatmap", x: 0, y: 20, w: 12, h: 6 },
-        { i: "notifications", x: 0, y: 26, w: 12, h: 4 },
-        { i: "predictive", x: 0, y: 30, w: 12, h: 6 },
-        { i: "priceComparison", x: 0, y: 36, w: 12, h: 6 },
-    ]);
+    const { store, actions } = useContext(Context);
+    const [metrics, setMetrics] = useState(null);
+    const [lowStock, setLowStock] = useState([]);
+    const [recentOrders, setRecentOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
 
     useEffect(() => {
-        const socket = io(process.env.REACT_APP_BACKEND_URL);
+        const load = async () => {
+            try {
+                const [analyticsR, productsR, ordersR] = await Promise.all([
+                    fetch(`${process.env.BACKEND_URL}/api/analytics?type=sales`, { headers }),
+                    fetch(`${process.env.BACKEND_URL}/api/products`, { headers }),
+                    fetch(`${process.env.BACKEND_URL}/api/orders`, { headers })
+                ]);
+                const analytics = analyticsR.ok ? await analyticsR.json() : {};
+                const products = productsR.ok ? await productsR.json() : [];
+                const orders = ordersR.ok ? await ordersR.json() : [];
 
-        // Real-time notifications listener
-        socket.on("customer_notifications", (notification) => {
-            setNotifications((prev) => [...prev, notification]);
-        });
-
-        socket.on("real_time_price_update", (data) => {
-            console.log("Real-time price update:", data);
-        });
-
-        return () => {
-            socket.disconnect();
+                setMetrics({
+                    total_sales: analytics.total_sales || 0,
+                    order_count: analytics.order_count || 0,
+                    total_products: Array.isArray(products) ? products.length : 0,
+                    low_stock: Array.isArray(products) ? products.filter(p => (p.stock || 0) <= (p.reorder_point || 0)).length : 0,
+                });
+                setLowStock(Array.isArray(products) ? products.filter(p => (p.stock || 0) <= (p.reorder_point || 0)).slice(0, 5) : []);
+                setRecentOrders(Array.isArray(orders) ? orders.slice(0, 5) : []);
+            } catch(e) { console.error(e); }
+            finally { setLoading(false); }
         };
+        load();
     }, []);
 
-    useEffect(() => {
-        // Simulated metric data
-        const staticMetrics = [
-            { title: "Total Sales", value: "$12,500", icon: "💰", trend: 8, bgColor: "bg-green-100", textColor: "text-green-900" },
-            { title: "New Products", value: "12", icon: "📦", trend: 5, bgColor: "bg-blue-100", textColor: "text-blue-900" },
-            { title: "Average Purchase Order", value: "$180", icon: "🛒", trend: 2, bgColor: "bg-yellow-100", textColor: "text-yellow-900" },
-            { title: "Users", value: "1,345", icon: "👤", trend: 15, bgColor: "bg-purple-100", textColor: "text-purple-900" },
-            { title: "Refunds", value: "$320", icon: "💸", trend: -3, bgColor: "bg-red-100", textColor: "text-red-900" },
-            { title: "Product Availability", value: "93%", icon: "📊", trend: 1, bgColor: "bg-teal-100", textColor: "text-teal-900" },
-            { title: "Supply Below Safety Stock", value: "8", icon: "📉", trend: -2, bgColor: "bg-gray-100", textColor: "text-gray-900" },
-            { title: "Invoices", value: "295", icon: "🧾", trend: 7, bgColor: "bg-indigo-100", textColor: "text-indigo-900" },
-            { title: "Today's Invoice", value: "28", icon: "📆", trend: 3, bgColor: "bg-orange-100", textColor: "text-orange-900" },
-            { title: "Current Monthly", value: "$22,560", icon: "📅", trend: 10, bgColor: "bg-green-100", textColor: "text-green-900" },
-            { title: "Inventory", value: "965", icon: "📦", trend: 4, bgColor: "bg-blue-100", textColor: "text-blue-900" },
-            { title: "Stores", value: "4", icon: "🏬", trend: 0, bgColor: "bg-yellow-100", textColor: "text-yellow-900" },
-            { title: "Top Categories", value: "Electronics, Clothing", icon: "📂", trend: 6, bgColor: "bg-purple-100", textColor: "text-purple-900" },
-            { title: "Sales Performance", value: "Trending Up", icon: "📈", trend: 12, bgColor: "bg-teal-100", textColor: "text-teal-900" },
-        ];
-        setMetrics(staticMetrics);
-
-        // Fetch top categories
-        fetch(`${process.env.BACKEND_URL}/api/dashboard/top-categories`,{headers:{"Authorization":`Bearer ${localStorage.getItem("token")}`}})
-            .then((response) => response.json())
-            .then((data) => setTopCategories(data.top_categories))
-
-        fetch(`${process.env.BACKEND_URL}/api/dashboard/metrics`,{headers:{"Authorization":`Bearer ${localStorage.getItem("token")}`}})
-            .then((response) => response.json())
-            .then((data) => setMetrics(data))
-            .catch((error) => console.error("Error fetching top categories:", error));
-
-        // Fetch sales performance data
-        fetch(`${process.env.BACKEND_URL}/api/dashboard/sales-performance`,{headers:{"Authorization":`Bearer ${localStorage.getItem("token")}`}})
-            .then((response) => response.json())
-            .then((data) => {
-                setSalesPerformance(data.sales_performance);
-            })
-            .catch((error) => {
-                console.error("Error fetching sales performance:", error);
-            });
-    }, []);
-
-    const handleLayoutChange = (newLayout) => {
-        setLayout(newLayout);
-        localStorage.setItem("dashboardLayout", JSON.stringify(newLayout));
-    };
+    if (loading) return (
+        <div className="main-content d-flex justify-content-center align-items-center" style={{minHeight:"60vh"}}>
+            <div className="spinner-border text-light" />
+        </div>
+    );
 
     return (
-        <div className="main-content p-6 bg-gray-100">
-            <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-            {/* <GridLayoutComponent
-                className="layout"
-                layout={layout}
-                cols={12}
-                rowHeight={30}
-                width={1200}
-                onLayoutChange={handleLayoutChange}
-            > */}
-                {/* Metrics Section */}
-                <div key="metrics" className="widget">
-                    <div className="d-flex text-dark flex-wrap gap-4 ms-5">
-                        {metrics.map((metric, index) => (
-                            <MetricCard
-                                key={index}
-                                title={metric.title}
-                                value={metric.value}
-                                icon={metric.icon}
-                                trend={metric.trend}
-                            />
-                        ))}
+        <div className="main-content p-4">
+            <div className="page-header mb-4">
+                <h2>Dashboard</h2>
+                <p>Welcome back — here's what's happening today</p>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="row g-3 mb-4">
+                {[
+                    { title:"Total Sales", value:`$${(metrics?.total_sales || 0).toFixed(2)}`, icon:"💰", trend: 5 },
+                    { title:"Orders", value: metrics?.order_count || 0, icon:"📦", trend: 2 },
+                    { title:"Products", value: metrics?.total_products || 0, icon:"🌿", trend: 0 },
+                    { title:"Low Stock", value: metrics?.low_stock || 0, icon:"⚠️", trend: metrics?.low_stock > 0 ? -10 : 0 },
+                ].map((s, i) => (
+                    <div key={i} className="col-6 col-md-3">
+                        <StatCard {...s} />
+                    </div>
+                ))}
+            </div>
+
+            <div className="row g-3">
+                {/* Recent Orders */}
+                <div className="col-md-7">
+                    <div className="glass-panel h-100">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="mb-0">Recent Orders</h5>
+                            <Link to="/orders" className="btn btn-sm btn-outline-light">View All</Link>
+                        </div>
+                        {recentOrders.length === 0 ? (
+                            <p style={{color:"rgba(255,255,255,0.5)"}} className="text-center py-3">No orders yet</p>
+                        ) : (
+                            <table className="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {recentOrders.map(o => (
+                                        <tr key={o.id}>
+                                            <td>#{o.id}</td>
+                                            <td>Customer {o.customer_id}</td>
+                                            <td className="text-success">${parseFloat(o.total_amount || 0).toFixed(2)}</td>
+                                            <td><span className={`badge bg-${o.status === "completed" ? "success" : o.status === "pending" ? "warning" : "secondary"}`}>{o.status}</span></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
 
-                {/* Sales Performance Chart */}
-                <div key="sales" className="sales-performance">
-                    <h2 className="text-xl font-semibold mb-4">Sales Performance</h2>
-                    <ChartCard type="line" data={salesPerformance} title="Sales Over Time" />
+                {/* Low Stock Alerts */}
+                <div className="col-md-5">
+                    <div className="glass-panel h-100">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="mb-0">⚠️ Low Stock</h5>
+                            <Link to="/inventory" className="btn btn-sm btn-outline-warning">Manage</Link>
+                        </div>
+                        {lowStock.length === 0 ? (
+                            <p style={{color:"rgba(255,255,255,0.5)"}} className="text-center py-3">✅ All stock levels OK</p>
+                        ) : (
+                            lowStock.map(p => (
+                                <div key={p.id} className="d-flex justify-content-between align-items-center mb-2 p-2 rounded"
+                                    style={{background:"rgba(245,54,92,0.1)", border:"1px solid rgba(245,54,92,0.3)"}}>
+                                    <div>
+                                        <div style={{fontSize:"0.85rem", fontWeight:600}}>{p.name}</div>
+                                        <div style={{fontSize:"0.75rem", color:"rgba(255,255,255,0.55)"}}>{p.category}</div>
+                                    </div>
+                                    <span className={`badge ${p.stock === 0 ? "bg-danger" : "bg-warning text-dark"}`}>
+                                        {p.stock === 0 ? "Out of stock" : `${p.stock} left`}
+                                    </span>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
+            </div>
 
-                {/* Top Categories Table */}
-                <div key="categories" className="widget">
-                    <h2 className="text-xl font-semibold mb-4">Top Categories</h2>
-                    <TableCard
-                        data={topCategories}
-                        columns={["Category", "Sales", "Revenue"]}
-                        keyMapping={{
-                            Category: "category",
-                            Sales: "sales",
-                            Revenue: "revenue",
-                        }}
-                    />
+            {/* Quick Actions */}
+            <div className="row g-3 mt-1">
+                <div className="col-12">
+                    <div className="glass-panel">
+                        <h5 className="mb-3">Quick Actions</h5>
+                        <div className="d-flex flex-wrap gap-2">
+                            {[
+                                { label:"+ New Product", to:"/products", color:"success" },
+                                { label:"+ New Order", to:"/orders", color:"primary" },
+                                { label:"Open POS", to:"/pos", color:"warning" },
+                                { label:"View Inventory", to:"/inventory", color:"info" },
+                                { label:"Post a Job", to:"/jobs/post", color:"secondary" },
+                            ].map((a, i) => (
+                                <Link key={i} to={a.to} className={`btn btn-${a.color} btn-sm`}>{a.label}</Link>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-
-                {/* Personalized Recommendations
-                <div key="recommendations" className="widget">
-                    <h2 className="text-xl font-semibold mb-4">Personalized Recommendations</h2>
-                    <PersonalizedRecommendations customerId={1} />
-                </div> */}
-
-                {/* Customer Reviews */}
-                {/* <div key="reviews" className="widget">
-                    <h2 className="text-xl font-semibold mb-4">Customer Reviews</h2>
-                    <SentimentAnalysis />
-                </div> */}
-
-                {/* Inventory Section */}
-                {/* <div key="inventory" className="widget">
-                    <h2 className="text-xl font-semibold mb-4">Inventory</h2>
-                    <Inventory />
-                </div> */}
-
-                {/* Notifications */}
-                {/* <div key="notifications" className="widget">
-                    <h2 className="text-xl font-semibold mb-4">Notifications</h2>
-                    <NotificationPanel notifications={notifications} />
-                </div> */}
-
-                {/* Predictive Analytics */}
-                {/* <div key="predictive" className="widget">
-                    <h2 className="text-xl font-semibold mb-4">Predictive Analytics</h2>
-                    <PredictiveAnalyticsWidget /> 
-                </div>*/}
-
-                {/* Price Comparison */}
-                {/* <div key="priceComparison" className="widget">
-                    <h2 className="text-xl font-semibold mb-4">Price Comparison</h2>
-                    <PriceComparisonWidget />
-                </div> */}
-            {/* </GridLayoutComponent> */}
+            </div>
         </div>
     );
 };
-
 export default Dashboard;
