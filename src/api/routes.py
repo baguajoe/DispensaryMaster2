@@ -4507,3 +4507,144 @@ def get_compliance_reports_summary():
         "completed": 0,
         "reports": []
     }), 200
+
+# ==================== PAYROLL FULL CRUD ====================
+
+@api.route('/payroll', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_payroll():
+    data = request.json
+    employee_id = data.get('employee_id')
+    employee = Employee.query.get_or_404(employee_id)
+    payroll = Payroll(
+        employee_id=employee_id,
+        pay_period_start=data.get('pay_period_start'),
+        pay_period_end=data.get('pay_period_end'),
+        total_hours=float(data.get('total_hours', 0)),
+        hourly_rate=float(data.get('hourly_rate', employee.hourly_rate if hasattr(employee, 'hourly_rate') else 0)),
+    )
+    payroll.total_pay = payroll.total_hours * payroll.hourly_rate
+    db.session.add(payroll)
+    db.session.commit()
+    return jsonify(payroll.serialize()), 201
+
+@api.route('/payroll/<int:payroll_id>', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def update_payroll(payroll_id):
+    payroll = Payroll.query.get_or_404(payroll_id)
+    data = request.json
+    for k, v in data.items():
+        if hasattr(payroll, k): setattr(payroll, k, v)
+    payroll.total_pay = payroll.total_hours * payroll.hourly_rate
+    db.session.commit()
+    return jsonify(payroll.serialize()), 200
+
+@api.route('/payroll/<int:payroll_id>', methods=['DELETE'])
+@jwt_required()
+@handle_errors
+def delete_payroll(payroll_id):
+    payroll = Payroll.query.get_or_404(payroll_id)
+    db.session.delete(payroll)
+    db.session.commit()
+    return jsonify({"message": "Payroll record deleted"}), 200
+
+@api.route('/payroll/summary', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_payroll_summary():
+    payrolls = Payroll.query.all()
+    total_paid = sum(p.total_pay for p in payrolls)
+    total_hours = sum(p.total_hours for p in payrolls)
+    employees_paid = len(set(p.employee_id for p in payrolls))
+    return jsonify({
+        "total_paid": round(total_paid, 2),
+        "total_hours": round(total_hours, 2),
+        "employees_paid": employees_paid,
+        "total_records": len(payrolls),
+        "payrolls": [p.serialize() for p in payrolls]
+    }), 200
+
+@api.route('/employees', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_employees():
+    employees = Employee.query.all()
+    return jsonify([{
+        "id": e.id,
+        "name": e.name,
+        "role": e.role,
+        "email": e.email,
+    } for e in employees]), 200
+
+@api.route('/employees', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_employee():
+    data = request.json
+    from werkzeug.security import generate_password_hash
+    employee = Employee(
+        name=data['name'],
+        role=data.get('role', 'staff'),
+        email=data['email'],
+        password_hash=generate_password_hash(data.get('password', 'changeme123'))
+    )
+    db.session.add(employee)
+    db.session.commit()
+    return jsonify({"id": employee.id, "name": employee.name, "role": employee.role, "email": employee.email}), 201
+
+@api.route('/employees/<int:id>', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def update_employee(id):
+    employee = Employee.query.get_or_404(id)
+    data = request.json
+    for k, v in data.items():
+        if hasattr(employee, k) and k != 'password_hash': setattr(employee, k, v)
+    db.session.commit()
+    return jsonify({"id": employee.id, "name": employee.name, "role": employee.role}), 200
+
+@api.route('/employees/<int:id>', methods=['DELETE'])
+@jwt_required()
+@handle_errors
+def delete_employee(id):
+    employee = Employee.query.get_or_404(id)
+    db.session.delete(employee)
+    db.session.commit()
+    return jsonify({"message": "Employee deleted"}), 200
+
+# ==================== COMPLIANCE MISSING ROUTES ====================
+
+@api.route('/compliance/alerts', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_compliance_alert():
+    data = request.json
+    alert = ComplianceAlert(**{k: v for k, v in data.items() if hasattr(ComplianceAlert, k)})
+    db.session.add(alert)
+    db.session.commit()
+    return jsonify({"id": alert.id, "message": "Alert created"}), 201
+
+@api.route('/compliance/licenses', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_licenses():
+    licenses = License.query.all()
+    return jsonify([{
+        "id": l.id,
+        "type": getattr(l, 'license_type', 'unknown'),
+        "number": getattr(l, 'license_number', ''),
+        "expiry": getattr(l, 'expiry_date', None),
+        "status": getattr(l, 'status', 'active'),
+    } for l in licenses]), 200
+
+@api.route('/compliance/licenses', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_license():
+    data = request.json
+    license = License(**{k: v for k, v in data.items() if hasattr(License, k)})
+    db.session.add(license)
+    db.session.commit()
+    return jsonify({"id": license.id}), 201
