@@ -1,125 +1,89 @@
-import React, { useEffect, useContext, useState } from "react";
-import { Context } from "../store/appContext";
+import React, { useState, useEffect } from "react";
 
 const Suppliers = () => {
-    const { store, actions } = useContext(Context);
-    const [showModal, setShowModal] = useState(false);
+    const [suppliers, setSuppliers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [search, setSearch] = useState("");
     const [saving, setSaving] = useState(false);
-    const [form, setForm] = useState({ name:"", company_name:"", contact_info:"", email:"", phone:"", address:"", country:"USA", region:"", is_active:true, rating:5 });
+    const [search, setSearch] = useState("");
+    const [form, setForm] = useState({ name:"", contact_name:"", email:"", phone:"", address:"", city:"", state:"", products_supplied:"", payment_terms:"", notes:"" });
+    const token = localStorage.getItem("token");
+    const headers = { "Content-Type":"application/json", Authorization:`Bearer ${token}` };
 
-    useEffect(() => { actions.fetchSuppliers(); }, []);
-
-    const suppliers = store.suppliers || [];
-    const filtered = suppliers.filter(s =>
-        (s.name||s.company_name||"").toLowerCase().includes(search.toLowerCase()) ||
-        (s.contact_info||"").toLowerCase().includes(search.toLowerCase())
-    );
-
-    const openNew = () => { setEditing(null); setForm({ name:"", company_name:"", contact_info:"", email:"", phone:"", address:"", country:"USA", region:"", is_active:true, rating:5 }); setShowModal(true); };
-    const openEdit = (s) => { setEditing(s); setForm({ name:s.name||"", company_name:s.company_name||"", contact_info:s.contact_info||"", email:s.email||"", phone:s.phone||"", address:s.address||"", country:s.country||"USA", region:s.region||"", is_active:s.is_active!==false, rating:s.rating||5 }); setShowModal(true); };
-
-    const handleSave = async () => {
-        setSaving(true);
-        if (editing) await actions.editSupplier(editing.id, form);
-        else await actions.addSupplier(form);
-        await actions.fetchSuppliers();
-        setShowModal(false);
-        setSaving(false);
+    const load = () => {
+        fetch(`${process.env.BACKEND_URL}/api/suppliers`, { headers })
+            .then(r => r.ok ? r.json() : [])
+            .then(data => { setSuppliers(Array.isArray(data) ? data : []); setLoading(false); })
+            .catch(() => setLoading(false));
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Delete this supplier?")) {
-            await actions.deleteSupplier(id);
-            await actions.fetchSuppliers();
-        }
+    useEffect(() => { load(); }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); setSaving(true);
+        try {
+            const url = editing ? `${process.env.BACKEND_URL}/api/suppliers/${editing.id}` : `${process.env.BACKEND_URL}/api/suppliers`;
+            const r = await fetch(url, { method: editing?"PUT":"POST", headers, body: JSON.stringify(form) });
+            if (r.ok) { load(); setShowForm(false); setEditing(null); setForm({ name:"", contact_name:"", email:"", phone:"", address:"", city:"", state:"", products_supplied:"", payment_terms:"", notes:"" }); }
+        } catch(e) { console.error(e); } finally { setSaving(false); }
     };
+
+    const filtered = suppliers.filter(s => s.name?.toLowerCase().includes(search.toLowerCase()) || s.contact_name?.toLowerCase().includes(search.toLowerCase()));
+
+    if (loading) return <div className="main-content d-flex justify-content-center align-items-center" style={{minHeight:"60vh"}}><div className="spinner-border text-light"/></div>;
 
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>Suppliers</h2><p>{suppliers.length} suppliers registered</p></div>
-                <button className="btn btn-success" onClick={openNew}>+ Add Supplier</button>
+                <div className="page-header"><h2>🚚 Suppliers</h2><p>{suppliers.length} suppliers</p></div>
+                <button className="btn btn-success" onClick={() => { setEditing(null); setShowForm(!showForm); }}>+ Add Supplier</button>
             </div>
-            <div className="glass-panel mb-3">
-                <input className="form-control" placeholder="Search suppliers..." value={search} onChange={e => setSearch(e.target.value)} />
+
+            <div className="glass-panel mb-4">
+                <input className="form-control" placeholder="Search suppliers..." value={search} onChange={e=>setSearch(e.target.value)} />
             </div>
-            <div className="glass-panel">
-                {filtered.length === 0 ? (
-                    <div className="text-center py-5" style={{color:"rgba(255,255,255,0.5)"}}>
-                        <div style={{fontSize:"3rem"}}>🏭</div>
-                        <h5>No suppliers yet</h5>
-                        <button className="btn btn-success mt-2" onClick={openNew}>Add First Supplier</button>
-                    </div>
-                ) : (
-                    <table className="table mb-0">
-                        <thead><tr><th>Company</th><th>Contact</th><th>Region</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            {filtered.map(s => (
-                                <tr key={s.id}>
-                                    <td><strong>{s.company_name||s.name}</strong><div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.5)"}}>{s.name}</div></td>
-                                    <td><div>{s.contact_info||s.email}</div><div style={{fontSize:"0.8rem",color:"rgba(255,255,255,0.5)"}}>{s.phone}</div></td>
-                                    <td>{s.region||s.country||"—"}</td>
-                                    <td>{"⭐".repeat(Math.min(5, Math.round(s.rating||0)))}</td>
-                                    <td><span className={`badge ${s.is_active!==false?"bg-success":"bg-secondary"}`}>{s.is_active!==false?"Active":"Inactive"}</span></td>
-                                    <td>
-                                        <button className="btn btn-sm btn-outline-light me-1" onClick={() => openEdit(s)}>Edit</button>
-                                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(s.id)}>Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
-            {showModal && (
-                <>
-                    <div className="modal fade show d-block" tabIndex="-1">
-                        <div className="modal-dialog modal-lg">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">{editing ? "Edit Supplier" : "Add Supplier"}</h5>
-                                    <button className="btn-close" onClick={() => setShowModal(false)} />
-                                </div>
-                                <div className="modal-body">
-                                    <div className="row g-3">
-                                        {[
-                                            { label:"Contact Name", key:"name" },
-                                            { label:"Company Name", key:"company_name" },
-                                            { label:"Contact Info / Email", key:"contact_info" },
-                                            { label:"Phone", key:"phone" },
-                                            { label:"Address", key:"address" },
-                                            { label:"Country", key:"country" },
-                                            { label:"Region / State", key:"region" },
-                                        ].map(f => (
-                                            <div key={f.key} className="col-md-6">
-                                                <label className="form-label">{f.label}</label>
-                                                <input className="form-control" value={form[f.key]} onChange={e => setForm({...form, [f.key]:e.target.value})} />
-                                            </div>
-                                        ))}
-                                        <div className="col-md-3">
-                                            <label className="form-label">Rating (1-5)</label>
-                                            <input className="form-control" type="number" min="1" max="5" value={form.rating} onChange={e => setForm({...form, rating:parseFloat(e.target.value)})} />
-                                        </div>
-                                        <div className="col-md-3 d-flex align-items-end">
-                                            <div className="form-check">
-                                                <input className="form-check-input" type="checkbox" checked={form.is_active} onChange={e => setForm({...form, is_active:e.target.checked})} />
-                                                <label className="form-check-label">Active</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="modal-footer">
-                                    <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                                    <button className="btn btn-success" onClick={handleSave} disabled={saving}>{saving ? <span className="spinner-border spinner-border-sm" /> : "Save"}</button>
-                                </div>
+
+            {showForm && (
+                <div className="glass-panel mb-4">
+                    <h5 className="mb-3">{editing ? "Edit Supplier" : "New Supplier"}</h5>
+                    <form onSubmit={handleSubmit}>
+                        <div className="row g-3">
+                            <div className="col-md-4"><label className="form-label">Company Name *</label><input className="form-control" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} /></div>
+                            <div className="col-md-4"><label className="form-label">Contact Name</label><input className="form-control" value={form.contact_name} onChange={e=>setForm({...form,contact_name:e.target.value})} /></div>
+                            <div className="col-md-4"><label className="form-label">Email</label><input className="form-control" type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} /></div>
+                            <div className="col-md-3"><label className="form-label">Phone</label><input className="form-control" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} /></div>
+                            <div className="col-md-3"><label className="form-label">City</label><input className="form-control" value={form.city} onChange={e=>setForm({...form,city:e.target.value})} /></div>
+                            <div className="col-md-2"><label className="form-label">State</label><input className="form-control" value={form.state} onChange={e=>setForm({...form,state:e.target.value})} /></div>
+                            <div className="col-md-4"><label className="form-label">Products Supplied</label><input className="form-control" value={form.products_supplied} onChange={e=>setForm({...form,products_supplied:e.target.value})} placeholder="Flower, Edibles..." /></div>
+                            <div className="col-md-4"><label className="form-label">Payment Terms</label><input className="form-control" value={form.payment_terms} onChange={e=>setForm({...form,payment_terms:e.target.value})} placeholder="Net 30, COD..." /></div>
+                            <div className="col-12"><label className="form-label">Notes</label><textarea className="form-control" rows="2" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} /></div>
+                            <div className="col-12 d-flex gap-2">
+                                <button type="button" className="btn btn-outline-light" onClick={()=>setShowForm(false)}>Cancel</button>
+                                <button type="submit" className="btn btn-success flex-grow-1" disabled={saving}>{saving?<span className="spinner-border spinner-border-sm"/>:editing?"Update":"Save Supplier"}</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            <div className="row g-3">
+                {filtered.map(s => (
+                    <div key={s.id} className="col-md-6 col-lg-4">
+                        <div className="glass-panel h-100">
+                            <h5 className="mb-1">{s.name}</h5>
+                            {s.contact_name && <p style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.6)",margin:"0 0 0.25rem"}}>👤 {s.contact_name}</p>}
+                            {s.email && <p style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.6)",margin:"0 0 0.25rem"}}>✉️ {s.email}</p>}
+                            {s.phone && <p style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.6)",margin:"0 0 0.25rem"}}>📞 {s.phone}</p>}
+                            {s.products_supplied && <p style={{fontSize:"0.8rem",color:"#2dce89",margin:"0 0 0.75rem"}}>📦 {s.products_supplied}</p>}
+                            <div className="d-flex gap-2">
+                                <button className="btn btn-outline-light btn-sm flex-grow-1" onClick={()=>{ setEditing(s); setForm(s); setShowForm(true); }}>Edit</button>
+                                <button className="btn btn-outline-danger btn-sm" onClick={async()=>{ if(window.confirm("Delete?")){ await fetch(`${process.env.BACKEND_URL}/api/suppliers/${s.id}`,{method:"DELETE",headers}); load(); } }}>Delete</button>
                             </div>
                         </div>
                     </div>
-                    <div className="modal-backdrop fade show" onClick={() => setShowModal(false)} />
-                </>
-            )}
+                ))}
+            </div>
         </div>
     );
 };

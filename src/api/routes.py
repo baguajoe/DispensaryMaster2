@@ -1117,37 +1117,6 @@ def get_reports():
     reports = reports.order_by(Report.created_at.desc()).all()
     return jsonify([report.serialize() for report in reports]), 200
 
-@api.route('/reports/generate', methods=['POST'])
-@api.route('/reports/export/<int:id>', methods=['GET'])
-@jwt_required()
-def export_report(id):
-    format = request.args.get('format', 'pdf')
-    report = Report.query.get_or_404(id)
-
-    # Define the base path
-    export_dir = "exports"
-    os.makedirs(export_dir, exist_ok=True)
-
-    if format == 'pdf':
-        exported_file_path = os.path.join(export_dir, f"report_{id}.pdf")
-        # ✍️ Replace this with actual PDF generation logic
-        with open(exported_file_path, "w") as f:
-            f.write(f"PDF export for Report ID {id}")
-
-    elif format == 'csv':
-        exported_file_path = os.path.join(export_dir, f"report_{id}.csv")
-        # ✍️ Replace this with actual CSV generation logic
-        with open(exported_file_path, "w") as f:
-            f.write(f"CSV export for Report ID {id}")
-
-    else:
-        return jsonify({"error": "Invalid format"}), 400
-
-    # ✅ Return the file
-    return send_file(exported_file_path, as_attachment=True), 200
-
-
-
 @api.route('/compliance/reports', methods=['GET'])
 def generate_compliance_report():
     transactions = Transaction.query.all()
