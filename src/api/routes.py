@@ -4870,3 +4870,55 @@ def accept_connection(conn_id):
     conn.status = 'accepted'
     db.session.commit()
     return jsonify({"status": "accepted"}), 200
+
+# ── TRAINING ASSIGNMENTS ─────────────────────────────────────────
+@api.route('/training-assignments', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_training_assignments():
+    from api.models import TrainingAssignment
+    assignments = TrainingAssignment.query.all()
+    return jsonify([a.serialize() for a in assignments]), 200
+
+@api.route('/training-assignments', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_training_assignments():
+    from api.models import TrainingAssignment
+    data = request.json
+    resource_id = data.get('resource_id')
+    employee_ids = data.get('employee_ids', [])
+    results = []
+    for emp_id in employee_ids:
+        existing = TrainingAssignment.query.filter_by(resource_id=resource_id, employee_id=emp_id).first()
+        if not existing:
+            a = TrainingAssignment(resource_id=resource_id, employee_id=emp_id)
+            db.session.add(a)
+            results.append({"resource_id": resource_id, "employee_id": emp_id})
+    db.session.commit()
+    return jsonify(results), 201
+
+# ── POST IMAGE UPLOAD ─────────────────────────────────────────────
+@api.route('/leafbridge/posts/upload-image', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_post_image():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files['file']
+    allowed = {'jpg','jpeg','png','gif','webp'}
+    ext = file.filename.rsplit('.',1)[-1].lower() if '.' in file.filename else ''
+    if ext not in allowed:
+        return jsonify({"error": "Only JPG, PNG, GIF, WebP allowed"}), 400
+    try:
+        import uuid, boto3
+        filename = f"posts/{uuid.uuid4()}.{ext}"
+        r2 = boto3.client('s3',
+            endpoint_url=os.getenv('R2_ENDPOINT_URL'),
+            aws_access_key_id=os.getenv('R2_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('R2_SECRET_ACCESS_KEY'))
+        r2.upload_fileobj(file, os.getenv('R2_BUCKET_NAME',''), filename, ExtraArgs={'ContentType': file.content_type})
+        url = f"{os.getenv('R2_ENDPOINT_URL')}/{os.getenv('R2_BUCKET_NAME')}/{filename}"
+        return jsonify({"url": url, "filename": filename}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

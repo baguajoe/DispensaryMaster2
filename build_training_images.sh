@@ -1,4 +1,21 @@
-import React, { useState, useEffect } from "react";
+#!/bin/bash
+# ============================================================
+# BudphoriaPro — Training Complete + Image Uploads in Feed
+# Run from: /workspaces/DispensaryMaster2
+# ============================================================
+set -e
+cd /workspaces/DispensaryMaster2
+
+echo "Step 1 — Building TrainingHome + assignment model + routes..."
+python3 << 'PYEOF'
+import os
+
+BASE = "src"
+
+# ── TRAINING HOME with manager dashboard + assignment UI ──────────
+TRAINING_HOME = open("src/front/js/pages/Training/TrainingHome.js").read() if False else None
+
+TRAINING_HOME = r"""import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const QuizViewer = ({ questions, onComplete }) => {
@@ -353,3 +370,157 @@ const TrainingHome = () => {
     );
 };
 export default TrainingHome;
+"""
+
+with open(f"{BASE}/front/js/pages/Training/TrainingHome.js", "w") as f:
+    f.write(TRAINING_HOME)
+print("✓ TrainingHome.js written with manager dashboard + assignment UI + quiz viewer")
+
+# ── TRAINING ASSIGNMENT MODEL ─────────────────────────────────────
+TRAINING_MODEL = """
+class TrainingAssignment(db.Model):
+    __tablename__ = 'training_assignment'
+    id = db.Column(db.Integer, primary_key=True)
+    resource_id = db.Column(db.Integer, nullable=False)
+    employee_id = db.Column(db.Integer, nullable=False)
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def serialize(self):
+        return {"id":self.id,"resource_id":self.resource_id,"employee_id":self.employee_id,"assigned_at":self.assigned_at.isoformat() if self.assigned_at else None}
+"""
+
+with open(f"{BASE}/api/models.py","r") as f:
+    models = f.read()
+if "class TrainingAssignment(" not in models:
+    with open(f"{BASE}/api/models.py","a") as f:
+        f.write(TRAINING_MODEL)
+    print("✓ TrainingAssignment model added")
+else:
+    print("  TrainingAssignment model already exists")
+
+# ── TRAINING ASSIGNMENT ROUTES ────────────────────────────────────
+TRAINING_ROUTES = """
+# ── TRAINING ASSIGNMENTS ─────────────────────────────────────────
+@api.route('/training-assignments', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_training_assignments():
+    from api.models import TrainingAssignment
+    assignments = TrainingAssignment.query.all()
+    return jsonify([a.serialize() for a in assignments]), 200
+
+@api.route('/training-assignments', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_training_assignments():
+    from api.models import TrainingAssignment
+    data = request.json
+    resource_id = data.get('resource_id')
+    employee_ids = data.get('employee_ids', [])
+    results = []
+    for emp_id in employee_ids:
+        existing = TrainingAssignment.query.filter_by(resource_id=resource_id, employee_id=emp_id).first()
+        if not existing:
+            a = TrainingAssignment(resource_id=resource_id, employee_id=emp_id)
+            db.session.add(a)
+            results.append({"resource_id": resource_id, "employee_id": emp_id})
+    db.session.commit()
+    return jsonify(results), 201
+"""
+
+with open(f"{BASE}/api/routes.py","r") as f:
+    routes = f.read()
+if "training-assignments" not in routes:
+    with open(f"{BASE}/api/routes.py","a") as f:
+        f.write(TRAINING_ROUTES)
+    print("✓ Training assignment routes added")
+else:
+    print("  Training routes already exist")
+
+# ── IMAGE UPLOAD ROUTE ────────────────────────────────────────────
+IMAGE_ROUTE = """
+# ── POST IMAGE UPLOAD ─────────────────────────────────────────────
+@api.route('/leafbridge/posts/upload-image', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_post_image():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files['file']
+    allowed = {'jpg','jpeg','png','gif','webp'}
+    ext = file.filename.rsplit('.',1)[-1].lower() if '.' in file.filename else ''
+    if ext not in allowed:
+        return jsonify({"error": "Only JPG, PNG, GIF, WebP allowed"}), 400
+    try:
+        import uuid, boto3
+        filename = f"posts/{uuid.uuid4()}.{ext}"
+        r2 = boto3.client('s3',
+            endpoint_url=os.getenv('R2_ENDPOINT_URL'),
+            aws_access_key_id=os.getenv('R2_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('R2_SECRET_ACCESS_KEY'))
+        r2.upload_fileobj(file, os.getenv('R2_BUCKET_NAME',''), filename, ExtraArgs={'ContentType': file.content_type})
+        url = f"{os.getenv('R2_ENDPOINT_URL')}/{os.getenv('R2_BUCKET_NAME')}/{filename}"
+        return jsonify({"url": url, "filename": filename}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+"""
+
+if 'upload_post_image' not in routes:
+    with open(f"{BASE}/api/routes.py","a") as f:
+        f.write(IMAGE_ROUTE)
+    print("✓ Post image upload route added")
+else:
+    print("  Image upload route already exists")
+
+print("\nAll Python done.")
+PYEOF
+
+echo ""
+echo "Step 2 — DB migration..."
+cd src && pipenv run python -c "
+import sys; sys.path.insert(0,'.')
+from app import app
+from api.models import db
+with app.app_context():
+    db.create_all()
+    print('✓ All tables created')
+" 2>&1 | grep -E "✓|Error" | head -5
+cd ..
+
+echo ""
+echo "Step 3 — Verify route count..."
+cd src && pipenv run python -c "
+from app import app
+rules = [r.rule for r in app.url_map._rules if 'static' not in r.rule]
+training = [r for r in rules if 'training' in r]
+print(f'✓ {len(rules)} total routes')
+print(f'✓ Training routes: {len(training)}')
+for r in training: print(f'   {r}')
+" 2>&1 | grep -E "✓|  /" | head -20
+cd ..
+
+echo ""
+echo "Step 4 — Commit and push..."
+git add .
+git commit -m "Training COMPLETE: manager dashboard, employee assignment, quiz viewer, image upload route"
+git push origin medical
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║       TRAINING + IMAGE UPLOADS — COMPLETE                   ║"
+echo "╠══════════════════════════════════════════════════════════════╣"
+echo "║                                                              ║"
+echo "║  TRAINING NOW HAS:                                           ║"
+echo "║    ✅ Library view — browse, watch, mark complete            ║"
+echo "║    ✅ Manager Dashboard — completion % per employee          ║"
+echo "║    ✅ Overdue alerts — who is behind on required training     ║"
+echo "║    ✅ Assign to employees — pick specific staff               ║"
+echo "║    ✅ Select All / Clear buttons for bulk assign              ║"
+echo "║    ✅ Per-module completion table with rate bar               ║"
+echo "║    ✅ Quiz viewer — A/B/C/D answers, 70% passing score       ║"
+echo "║    ✅ Video embed — YouTube + R2 uploaded videos              ║"
+echo "║                                                              ║"
+echo "║  LEAFBRIDGE FEED NOW HAS:                                    ║"
+echo "║    ✅ Image upload route — POST /api/leafbridge/posts/upload  ║"
+echo "║    ✅ Stored in Cloudflare R2 under posts/ folder            ║"
+echo "║    (frontend image UI added to LeafBridgeHub next)           ║"
+echo "╚══════════════════════════════════════════════════════════════╝"

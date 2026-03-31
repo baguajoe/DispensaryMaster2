@@ -2623,3 +2623,12 @@ class LeafBridgeEndorsement(db.Model):
     def serialize(self):
         return {"id": self.id, "from_user_id": self.from_user_id,
                 "to_user_id": self.to_user_id, "skill": self.skill}
+
+class TrainingAssignment(db.Model):
+    __tablename__ = 'training_assignment'
+    id = db.Column(db.Integer, primary_key=True)
+    resource_id = db.Column(db.Integer, nullable=False)
+    employee_id = db.Column(db.Integer, nullable=False)
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def serialize(self):
+        return {"id":self.id,"resource_id":self.resource_id,"employee_id":self.employee_id,"assigned_at":self.assigned_at.isoformat() if self.assigned_at else None}
