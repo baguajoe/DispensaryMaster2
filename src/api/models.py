@@ -1332,6 +1332,7 @@ class YieldPrediction(db.Model):
 
 class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     theme = db.Column(db.String(50))
     notifications_enabled = db.Column(db.Boolean, default=True)
@@ -1682,6 +1683,7 @@ class Cart(db.Model):
 class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cart_id = db.Column(db.Integer, db.ForeignKey('cart.id'), nullable=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
@@ -2188,8 +2190,10 @@ class PestDiseaseIssue(db.Model):
 # ==================== LEAFBRIDGE CONNECT MODELS ====================
 
 class Resume(db.Model):
+    # profile_photo added for LeafBridge photo system
     __tablename__ = 'resume'
     id = db.Column(db.Integer, primary_key=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), nullable=False)
@@ -2341,6 +2345,7 @@ class PerformanceReview(db.Model):
 class SavedJob(db.Model):
     __tablename__ = 'saved_job'
     id = db.Column(db.Integer, primary_key=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False)
     saved_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -2486,6 +2491,7 @@ class StripePayment(db.Model):
 class LeafBridgePost(db.Model):
     __tablename__ = 'leafbridge_post'
     id = db.Column(db.Integer, primary_key=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     post_type = db.Column(db.String(30), default='update')
@@ -2500,6 +2506,7 @@ class LeafBridgePost(db.Model):
 class LeafBridgeConnection(db.Model):
     __tablename__ = 'leafbridge_connection'
     id = db.Column(db.Integer, primary_key=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     target_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     status = db.Column(db.String(20), default='pending')
@@ -2530,6 +2537,7 @@ class LeafBridgeMessage(db.Model):
 class LeafBridgeConversation(db.Model):
     __tablename__ = 'leafbridge_conversation'
     id = db.Column(db.Integer, primary_key=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     other_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -2542,6 +2550,7 @@ class LeafBridgeComment(db.Model):
     __tablename__ = 'leafbridge_comment'
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('leafbridge_post.id'), nullable=False)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -2553,6 +2562,7 @@ class LeafBridgeComment(db.Model):
 class LeafBridgeNotification(db.Model):
     __tablename__ = 'leafbridge_notification'
     id = db.Column(db.Integer, primary_key=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     type = db.Column(db.String(50), nullable=False)
     message = db.Column(db.String(255), nullable=False)
@@ -2576,11 +2586,14 @@ class LeafBridgeCompany(db.Model):
     website = db.Column(db.String(200), nullable=True)
     verified = db.Column(db.Boolean, default=False)
     followers = db.Column(db.Integer, default=0)
+    logo_url = db.Column(db.String(500), nullable=True)
+    cover_url = db.Column(db.String(500), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     def serialize(self):
         return {"id": self.id, "name": self.name, "type": self.type, "state": self.state,
                 "description": self.description, "website": self.website,
-                "verified": self.verified, "followers": self.followers}
+                "verified": self.verified, "followers": self.followers,
+                "logo_url": self.logo_url, "cover_url": self.cover_url}
 
 class LeafBridgeGroup(db.Model):
     __tablename__ = 'leafbridge_group'
@@ -2632,3 +2645,33 @@ class TrainingAssignment(db.Model):
     assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
     def serialize(self):
         return {"id":self.id,"resource_id":self.resource_id,"employee_id":self.employee_id,"assigned_at":self.assigned_at.isoformat() if self.assigned_at else None}
+
+# ──────────────────────────────────────────────────
+# LeafBridge Photo System Models
+# ──────────────────────────────────────────────────
+
+class LeafBridgePhoto(db.Model):
+    __tablename__ = 'leafbridge_photo'
+    id = db.Column(db.Integer, primary_key=True)
+    profile_photo = db.Column(db.String(500), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    url = db.Column(db.String(500), nullable=False)
+    caption = db.Column(db.String(200), nullable=True)
+    photo_type = db.Column(db.String(30), nullable=False, default='gallery')
+    # photo_type: avatar, gallery, company_logo, company_cover, 
+    #              company_gallery, event_photo, post_image
+    related_id = db.Column(db.Integer, nullable=True)
+    # related_id: company_id, event_id, or post_id depending on photo_type
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='photos', lazy=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "url": self.url,
+            "caption": self.caption,
+            "photo_type": self.photo_type,
+            "related_id": self.related_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }

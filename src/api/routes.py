@@ -5076,3 +5076,282 @@ def update_discount(id):
 @handle_errors
 def delete_discount(id):
     return jsonify({"message": "Discount deleted"}), 200
+
+# ══════════════════════════════════════════════════════════════
+# LEAFBRIDGE PHOTO SYSTEM
+# ══════════════════════════════════════════════════════════════
+
+import uuid as uuid_module
+import boto3
+from botocore.exceptions import ClientError
+
+def upload_to_r2(file, folder, content_type=None):
+    """Upload file to Cloudflare R2 and return public URL"""
+    try:
+        ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else 'jpg'
+        filename = f"{folder}/{uuid_module.uuid4()}.{ext}"
+        r2 = boto3.client(
+            's3',
+            endpoint_url=os.getenv('R2_ENDPOINT_URL'),
+            aws_access_key_id=os.getenv('R2_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('R2_SECRET_ACCESS_KEY'),
+        )
+        bucket = os.getenv('R2_BUCKET_NAME', 'streampirex-media')
+        ct = content_type or f"image/{ext}"
+        r2.upload_fileobj(file, bucket, filename, ExtraArgs={'ContentType': ct, 'ACL': 'public-read'})
+        url = f"{os.getenv('R2_ENDPOINT_URL')}/{bucket}/{filename}"
+        return url, filename
+    except Exception as e:
+        raise Exception(f"R2 upload failed: {str(e)}")
+
+ALLOWED_IMAGE_TYPES = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
+MAX_SIZES = {
+    'avatar': 5,        # 5MB
+    'gallery': 10,      # 10MB
+    'company_logo': 5,
+    'company_cover': 10,
+    'company_gallery': 20,
+    'event_photo': 20,
+    'post_image': 10,
+}
+
+def validate_image(file, photo_type='gallery'):
+    ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+    if ext not in ALLOWED_IMAGE_TYPES:
+        raise Exception(f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}")
+    file.seek(0, 2)
+    size_mb = file.tell() / (1024 * 1024)
+    file.seek(0)
+    max_mb = MAX_SIZES.get(photo_type, 10)
+    if size_mb > max_mb:
+        raise Exception(f"File too large. Max {max_mb}MB for {photo_type}")
+    return ext
+
+# ── PROFILE AVATAR ─────────────────────────────────────────
+@api.route('/leafbridge/profile/photo', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_profile_photo():
+    from api.models import LeafBridgePhoto, Resume
+    user_id = get_jwt_identity()
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    ext = validate_image(file, 'avatar')
+    url, filename = upload_to_r2(file, f"profiles/{user_id}/avatar")
+    # Save to photos table
+    photo = LeafBridgePhoto(user_id=user_id, url=url, photo_type='avatar')
+    db.session.add(photo)
+    # Update resume with avatar url
+    resume = Resume.query.filter_by(user_id=user_id).first()
+    if resume:
+        resume.profile_photo = url
+    db.session.commit()
+    return jsonify({"url": url}), 200
+
+# ── PROFILE GALLERY ────────────────────────────────────────
+@api.route('/leafbridge/profile/gallery', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_profile_gallery():
+    from api.models import LeafBridgePhoto
+    user_id = get_jwt_identity()
+    target_id = request.args.get('user_id', user_id)
+    photos = LeafBridgePhoto.query.filter_by(
+        user_id=target_id, photo_type='gallery'
+    ).order_by(LeafBridgePhoto.created_at.desc()).all()
+    return jsonify([p.serialize() for p in photos]), 200
+
+@api.route('/leafbridge/profile/gallery', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_gallery_photo():
+    from api.models import LeafBridgePhoto
+    user_id = get_jwt_identity()
+    # Check limit — max 20 gallery photos
+    count = LeafBridgePhoto.query.filter_by(user_id=user_id, photo_type='gallery').count()
+    if count >= 20:
+        return jsonify({"error": "Gallery limit reached (20 photos max)"}), 400
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    caption = request.form.get('caption', '')
+    ext = validate_image(file, 'gallery')
+    url, filename = upload_to_r2(file, f"profiles/{user_id}/gallery")
+    photo = LeafBridgePhoto(user_id=user_id, url=url, caption=caption, photo_type='gallery')
+    db.session.add(photo)
+    db.session.commit()
+    return jsonify(photo.serialize()), 201
+
+@api.route('/leafbridge/profile/gallery/<int:photo_id>', methods=['DELETE'])
+@jwt_required()
+@handle_errors
+def delete_gallery_photo(photo_id):
+    from api.models import LeafBridgePhoto
+    user_id = get_jwt_identity()
+    photo = LeafBridgePhoto.query.filter_by(id=photo_id, user_id=user_id).first_or_404()
+    db.session.delete(photo)
+    db.session.commit()
+    return jsonify({"message": "Photo deleted"}), 200
+
+# ── COMPANY PHOTOS ─────────────────────────────────────────
+@api.route('/leafbridge/companies/<int:company_id>/logo', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_company_logo(company_id):
+    from api.models import LeafBridgePhoto, LeafBridgeCompany
+    user_id = get_jwt_identity()
+    company = LeafBridgeCompany.query.filter_by(id=company_id, owner_id=user_id).first_or_404()
+    if 'file' not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files['file']
+    validate_image(file, 'company_logo')
+    url, _ = upload_to_r2(file, f"companies/{company_id}/logo")
+    company.logo_url = url
+    # Save photo record
+    photo = LeafBridgePhoto(user_id=user_id, url=url, photo_type='company_logo', related_id=company_id)
+    db.session.add(photo)
+    db.session.commit()
+    return jsonify({"url": url}), 200
+
+@api.route('/leafbridge/companies/<int:company_id>/cover', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_company_cover(company_id):
+    from api.models import LeafBridgePhoto, LeafBridgeCompany
+    user_id = get_jwt_identity()
+    company = LeafBridgeCompany.query.filter_by(id=company_id, owner_id=user_id).first_or_404()
+    if 'file' not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files['file']
+    validate_image(file, 'company_cover')
+    url, _ = upload_to_r2(file, f"companies/{company_id}/cover")
+    company.cover_url = url
+    photo = LeafBridgePhoto(user_id=user_id, url=url, photo_type='company_cover', related_id=company_id)
+    db.session.add(photo)
+    db.session.commit()
+    return jsonify({"url": url}), 200
+
+@api.route('/leafbridge/companies/<int:company_id>/gallery', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_company_gallery(company_id):
+    from api.models import LeafBridgePhoto
+    photos = LeafBridgePhoto.query.filter_by(
+        photo_type='company_gallery', related_id=company_id
+    ).order_by(LeafBridgePhoto.created_at.desc()).all()
+    return jsonify([p.serialize() for p in photos]), 200
+
+@api.route('/leafbridge/companies/<int:company_id>/gallery', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_company_gallery_photo(company_id):
+    from api.models import LeafBridgePhoto, LeafBridgeCompany
+    user_id = get_jwt_identity()
+    company = LeafBridgeCompany.query.filter_by(id=company_id, owner_id=user_id).first_or_404()
+    # Max 50 company gallery photos
+    count = LeafBridgePhoto.query.filter_by(photo_type='company_gallery', related_id=company_id).count()
+    if count >= 50:
+        return jsonify({"error": "Company gallery limit reached (50 photos)"}), 400
+    if 'file' not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files['file']
+    caption = request.form.get('caption', '')
+    validate_image(file, 'company_gallery')
+    url, _ = upload_to_r2(file, f"companies/{company_id}/gallery")
+    photo = LeafBridgePhoto(user_id=user_id, url=url, caption=caption, photo_type='company_gallery', related_id=company_id)
+    db.session.add(photo)
+    db.session.commit()
+    return jsonify(photo.serialize()), 201
+
+# ── EVENT PHOTOS ───────────────────────────────────────────
+@api.route('/leafbridge/events/<int:event_id>/photos', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_event_photos(event_id):
+    from api.models import LeafBridgePhoto
+    photos = LeafBridgePhoto.query.filter_by(
+        photo_type='event_photo', related_id=event_id
+    ).order_by(LeafBridgePhoto.created_at.desc()).all()
+    return jsonify([p.serialize() for p in photos]), 200
+
+@api.route('/leafbridge/events/<int:event_id>/photos', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_event_photo(event_id):
+    from api.models import LeafBridgePhoto
+    user_id = get_jwt_identity()
+    # Max 100 event photos
+    count = LeafBridgePhoto.query.filter_by(photo_type='event_photo', related_id=event_id).count()
+    if count >= 100:
+        return jsonify({"error": "Event photo limit reached (100 photos)"}), 400
+    if 'file' not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files['file']
+    caption = request.form.get('caption', '')
+    validate_image(file, 'event_photo')
+    url, _ = upload_to_r2(file, f"events/{event_id}/photos")
+    photo = LeafBridgePhoto(user_id=user_id, url=url, caption=caption, photo_type='event_photo', related_id=event_id)
+    db.session.add(photo)
+    db.session.commit()
+    return jsonify(photo.serialize()), 201
+
+@api.route('/leafbridge/events/<int:event_id>/photos/<int:photo_id>', methods=['DELETE'])
+@jwt_required()
+@handle_errors
+def delete_event_photo(event_id, photo_id):
+    from api.models import LeafBridgePhoto
+    user_id = get_jwt_identity()
+    photo = LeafBridgePhoto.query.filter_by(id=photo_id, user_id=user_id, related_id=event_id).first_or_404()
+    db.session.delete(photo)
+    db.session.commit()
+    return jsonify({"message": "Photo deleted"}), 200
+
+# ── FEED POST IMAGES ───────────────────────────────────────
+@api.route('/leafbridge/posts/upload-image', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_post_image():
+    from api.models import LeafBridgePhoto
+    user_id = get_jwt_identity()
+    if 'file' not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files['file']
+    validate_image(file, 'post_image')
+    url, _ = upload_to_r2(file, f"posts/{user_id}")
+    photo = LeafBridgePhoto(user_id=user_id, url=url, photo_type='post_image')
+    db.session.add(photo)
+    db.session.commit()
+    return jsonify({"url": url, "photo_id": photo.id}), 201
+
+# ── BULK UPLOAD (multiple files at once) ───────────────────
+@api.route('/leafbridge/upload/bulk', methods=['POST'])
+@jwt_required()
+@handle_errors
+def bulk_upload():
+    from api.models import LeafBridgePhoto
+    user_id = get_jwt_identity()
+    photo_type = request.form.get('photo_type', 'gallery')
+    related_id = request.form.get('related_id')
+    files = request.files.getlist('files')
+    if not files:
+        return jsonify({"error": "No files provided"}), 400
+    if len(files) > 10:
+        return jsonify({"error": "Max 10 files per upload"}), 400
+    uploaded = []
+    for file in files:
+        try:
+            validate_image(file, photo_type)
+            folder = f"bulk/{user_id}/{photo_type}"
+            url, _ = upload_to_r2(file, folder)
+            photo = LeafBridgePhoto(
+                user_id=user_id, url=url,
+                photo_type=photo_type,
+                related_id=int(related_id) if related_id else None
+            )
+            db.session.add(photo)
+            uploaded.append({"url": url, "filename": file.filename})
+        except Exception as e:
+            uploaded.append({"error": str(e), "filename": file.filename})
+    db.session.commit()
+    return jsonify({"uploaded": uploaded, "count": len([u for u in uploaded if 'url' in u])}), 201

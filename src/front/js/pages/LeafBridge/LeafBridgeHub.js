@@ -237,7 +237,25 @@ const FeedTab = ({ headers, myProfile }) => {
                             )}
                         </div>
                     )}
-                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <label style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.4rem 0.75rem", borderRadius: 8, fontSize: "0.75rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                            &#128247; Add Photo
+                            <input type="file" accept="image/*" multiple style={{ display: "none" }} onChange={async (e) => {
+                                const files = Array.from(e.target.files).slice(0, 4);
+                                const urls = [];
+                                for (const file of files) {
+                                    const fd = new FormData();
+                                    fd.append("file", file);
+                                    const r = await fetch(`${process.env.BACKEND_URL}/api/leafbridge/posts/upload-image`, {
+                                        method: "POST",
+                                        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                                        body: fd
+                                    });
+                                    if (r.ok) { const d = await r.json(); urls.push(d.url); }
+                                }
+                                if (urls.length) setNewPost(prev => prev + (prev ? "\n" : "") + urls.join("\n"));
+                            }} />
+                        </label>
                         <button onClick={handlePost} disabled={posting || !newPost.trim()} style={{ background: newPost.trim() ? "#69f0ae" : "rgba(105,240,174,0.15)", color: newPost.trim() ? "#080c10" : "rgba(255,255,255,0.3)", border: "none", padding: "0.5rem 1.5rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: newPost.trim() ? "pointer" : "not-allowed" }}>
                             {posting ? "Posting..." : "Post"}
                         </button>
@@ -900,9 +918,27 @@ const EventsTab = ({ headers }) => {
                                 <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>{event.description}</p>
                             </div>
                         </div>
-                        <button onClick={() => handleRSVP(event.id)} style={{ background: event.rsvped ? "rgba(105,240,174,0.1)" : "#69f0ae", color: event.rsvped ? "#69f0ae" : "#080c10", border: event.rsvped ? "1px solid rgba(105,240,174,0.3)" : "none", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer", flexShrink: 0 }}>
-                            {event.rsvped ? "✓ Going" : "RSVP"}
-                        </button>
+                        <div style={{ display: "flex", gap: "0.4rem", flexShrink: 0, flexWrap: "wrap" }}>
+                            <button onClick={() => handleRSVP(event.id)} style={{ background: event.rsvped ? "rgba(105,240,174,0.1)" : "#69f0ae", color: event.rsvped ? "#69f0ae" : "#080c10", border: event.rsvped ? "1px solid rgba(105,240,174,0.3)" : "none", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>
+                                {event.rsvped ? "✓ Going" : "RSVP"}
+                            </button>
+                            <label style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.45rem 0.75rem", borderRadius: 8, fontSize: "0.72rem", cursor: "pointer" }} title="Upload event photos">
+                                &#128247; Photos
+                                <input type="file" accept="image/*" multiple style={{ display: "none" }} onChange={async (e) => {
+                                    const files = Array.from(e.target.files).slice(0, 10);
+                                    for (const file of files) {
+                                        const fd = new FormData();
+                                        fd.append("file", file);
+                                        await fetch(`${process.env.BACKEND_URL}/api/leafbridge/events/${event.id}/photos`, {
+                                            method: "POST",
+                                            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                                            body: fd
+                                        });
+                                    }
+                                    alert(`${files.length} photo(s) uploaded to event!`);
+                                }} />
+                            </label>
+                        </div>
                     </div>
                 ))}
                 {events.length === 0 && !loading && <div className="glass-panel text-center py-5"><div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>📅</div><p style={{ color: "rgba(255,255,255,0.4)" }}>No events yet.</p></div>}
@@ -1320,6 +1356,44 @@ const ProfileTab = ({ headers, navigate, myProfile, setMyProfile }) => {
     const [edit, setEdit] = useState(false);
     const [saving, setSaving] = useState(false);
     const [profilePhoto, setProfilePhoto] = useState(null);
+    const [gallery, setGallery] = useState([]);
+    const [galleryUploading, setGalleryUploading] = useState(false);
+    const [lightboxPhoto, setLightboxPhoto] = useState(null);
+
+    useEffect(() => {
+        fetch(`${process.env.BACKEND_URL}/api/leafbridge/profile/gallery`, { headers })
+            .then(r => r.ok ? r.json() : [])
+            .then(d => setGallery(Array.isArray(d) ? d : []))
+            .catch(() => {});
+    }, []);
+
+    const handleGalleryUpload = async (files) => {
+        if (!files.length) return;
+        setGalleryUploading(true);
+        for (const file of Array.from(files).slice(0, 10)) {
+            const formData = new FormData();
+            formData.append("file", file);
+            try {
+                const r = await fetch(`${process.env.BACKEND_URL}/api/leafbridge/profile/gallery`, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                    body: formData
+                });
+                if (r.ok) {
+                    const photo = await r.json();
+                    setGallery(prev => [photo, ...prev]);
+                }
+            } catch(e) { console.error(e); }
+        }
+        setGalleryUploading(false);
+    };
+
+    const handleDeleteGalleryPhoto = async (photoId) => {
+        await fetch(`${process.env.BACKEND_URL}/api/leafbridge/profile/gallery/${photoId}`, {
+            method: "DELETE", headers
+        });
+        setGallery(prev => prev.filter(p => p.id !== photoId));
+    };
 
     useEffect(() => { if (myProfile) setForm(myProfile); }, [myProfile]);
 
@@ -1370,10 +1444,13 @@ const ProfileTab = ({ headers, navigate, myProfile, setMyProfile }) => {
             {/* Profile photo */}
             <div className="glass-panel" style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "1.25rem" }}>
                 <div style={{ position: "relative" }}>
-                    <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(105,240,174,0.15)", border: "3px solid rgba(105,240,174,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae", fontSize: "1.5rem", overflow: "hidden" }}>
+                    <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(105,240,174,0.15)", border: "3px solid rgba(105,240,174,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae", fontSize: "1.5rem", overflow: "hidden" }}>
                         {profilePhoto ? <img src={profilePhoto} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (form.first_name?.[0] || "?")}
                     </div>
-                    {edit && <label style={{ position: "absolute", bottom: 0, right: 0, width: 22, height: 22, borderRadius: "50%", background: "#69f0ae", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "0.7rem" }}>📷<input type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files[0] && handlePhotoUpload(e.target.files[0])} /></label>}
+                    <label style={{ position: "absolute", bottom: 0, right: 0, width: 26, height: 26, borderRadius: "50%", background: "#69f0ae", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.5)" }} title="Upload profile photo">
+                        &#128247;
+                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files[0] && handlePhotoUpload(e.target.files[0])} />
+                    </label>
                 </div>
                 <div>
                     <div style={{ fontWeight: 800, fontSize: "1.1rem" }}>{form.first_name} {form.last_name}</div>
