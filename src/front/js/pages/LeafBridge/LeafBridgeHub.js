@@ -44,6 +44,7 @@ const LeafBridgeHub = () => {
         { id: "groups",      icon: "👥", label: "Groups" },
         { id: "events",      icon: "📅", label: "Events" },
         { id: "salary",      icon: "💰", label: "Salary" },
+        { id: "market",       icon: "📊", label: "Labor Market" },
         { id: "training",    icon: "🎓", label: "Training" },
         { id: "onboarding",  icon: "📋", label: "Onboarding" },
         { id: "reviews",     icon: "⭐", label: "Reviews" },
@@ -125,6 +126,7 @@ const LeafBridgeHub = () => {
                 {activeTab === "groups"       && <GroupsTab headers={headers} />}
                 {activeTab === "events"       && <EventsTab headers={headers} />}
                 {activeTab === "salary"       && <SalaryTab headers={headers} />}
+                {activeTab === "market"        && <LaborMarketTab />}
                 {activeTab === "training"     && <TrainingTab headers={headers} navigate={navigate} />}
                 {activeTab === "onboarding"   && <OnboardingTab headers={headers} />}
                 {activeTab === "reviews"      && <ReviewsTab headers={headers} />}
