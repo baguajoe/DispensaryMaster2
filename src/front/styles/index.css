@@ -3,7 +3,7 @@
    Background: #0a0800 (warm dark)
    Primary:    #ffab00 (cannabis amber/gold)
    Accent:     #2e7d32 (deep forest green)
-   Text:       #fff8e1 (warm cream)
+   Text:       #0a08008e1 (warm cream)
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800;900&display=swap');
@@ -23,7 +23,7 @@
   --green:        #4caf50;
   --green-dark:   #2e7d32;
   --green-dim:    rgba(76,175,80,0.15);
-  --text:         #fff8e1;
+  --text:         #0a08008e1;
   --text-muted:   rgba(255,248,225,0.55);
   --text-dim:     rgba(255,248,225,0.25);
   --danger:       #ff5252;
