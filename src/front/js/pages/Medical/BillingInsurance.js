@@ -42,7 +42,7 @@ const BillingInsurance = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>\u{1F3E5} Billing & Insurance</h2>
+                    <h2>🏥 Billing & Insurance</h2>
                     {patient && <p style={{color:"rgba(255,255,255,0.6)"}}>Patient: {patient.first_name} {patient.last_name}</p>}
                 </div>
                 <div className="d-flex gap-2">
@@ -68,7 +68,7 @@ const BillingInsurance = () => {
                 </div>
             )}
             {insurance.length===0
-                ? <div className="glass-panel text-center py-5" style={{color:"rgba(255,255,255,0.5)"}}><div style={{fontSize:"3rem"}}>\u{1F3E5}</div><h5>No insurance records on file</h5></div>
+                ? <div className="glass-panel text-center py-5" style={{color:"rgba(255,255,255,0.5)"}}><div style={{fontSize:"3rem"}}>🏥</div><h5>No insurance records on file</h5></div>
                 : <div className="row g-3">{insurance.map((ins,i)=>(
                     <div key={i} className="col-md-6"><div className="glass-panel">
                         <div className="d-flex justify-content-between mb-2"><h5 className="mb-0">{ins.provider_name}</h5><span className="badge bg-success">Active</span></div>

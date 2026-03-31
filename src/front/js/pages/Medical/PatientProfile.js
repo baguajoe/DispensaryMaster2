@@ -34,11 +34,11 @@ const PatientProfile = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>\u{1F464} {patient.first_name} {patient.last_name}</h2>
-                    <p style={{color:"rgba(255,255,255,0.6)"}}>Patient #{patient.id} \u00b7 Card: {patient.medical_card_number || "N/A"}</p>
+                    <h2>👤 {patient.first_name} {patient.last_name}</h2>
+                    <p style={{color:"rgba(255,255,255,0.6)"}}>Patient #{patient.id} · Card: {patient.medical_card_number || "N/A"}</p>
                 </div>
                 <div className="d-flex gap-2">
-                    <button className="btn btn-outline-info btn-sm" onClick={() => navigate(`/medical/billing/${id}`)}>\u{1F3E5} Billing</button>
+                    <button className="btn btn-outline-info btn-sm" onClick={() => navigate(`/medical/billing/${id}`)}>🏥 Billing</button>
                     <button className="btn btn-outline-warning btn-sm" onClick={() => navigate(`/medical/patient-registration?id=${id}`)}>Edit</button>
                     <button className="btn btn-outline-light btn-sm" onClick={() => navigate("/medical/patient-list")}> Back</button>
                 </div>
@@ -67,7 +67,7 @@ const PatientProfile = () => {
                     {prescriptions.slice(0,5).map((rx,i)=>(
                         <div key={i} className="mb-2 p-2 rounded" style={{background:"rgba(255,255,255,0.06)"}}>
                             <div style={{fontWeight:500,fontSize:"0.9rem"}}>Rx #{rx.id}</div>
-                            <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.5)"}}>{rx.dosage||"\u2014"} \u00b7 {rx.frequency||"\u2014"}</div>
+                            <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.5)"}}>{rx.dosage||"\u2014"} · {rx.frequency||"\u2014"}</div>
                         </div>
                     ))}
                     {prescriptions.length===0 && <p style={{color:"rgba(255,255,255,0.4)",fontSize:"0.85rem"}}>No prescriptions</p>}
