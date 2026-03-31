@@ -2687,44 +2687,6 @@ def generate_pos_reports():
     }), 200
 
 # Route to get all plans
-@api.route('/plans', methods=['GET'])
-def get_plans():
-    plans = Plan.query.all()
-    return jsonify([plan.serialize() for plan in plans]), 200
-
-# Route to create a new plan (Admin use)
-def update_plan(plan_id):
-    data = request.get_json()
-    plan = Plan.query.get(plan_id)
-
-    if not plan:
-        return jsonify({"error": "Plan not found"}), 404
-
-    try:
-        if 'name' in data:
-            plan.name = data['name']
-        if 'price' in data:
-            plan.price = data['price']
-        if 'features' in data:
-            plan.features = data['features']
-
-        db.session.commit()
-        return jsonify(plan.serialize()), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-# Route to delete a specific plan by ID (Admin use)
-# Route to create a new inventory log
-def check_expiry():
-    from datetime import datetime, timedelta
-    nearing_expiry = Product.query.filter(
-        Product.expiry_date != None,
-        Product.expiry_date <= datetime.utcnow() + timedelta(days=30)
-    ).all()
-    return jsonify([product.serialize() for product in nearing_expiry]), 200
-
-# Route to get all payroll records
 @api.route('/payroll', methods=['GET'])
 def get_payrolls():
     store_id = request.args.get('store_id')  # Get the store_id from query parameters
