@@ -79,7 +79,7 @@ const Shop = () => {
                             value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <div className="col-md-4">
-                        <div className="d-flex flex-wrap gap-1">
+                        <div style={{ display: "flex", gap: "0.4rem", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "2px" }}>
                             {CATEGORIES.map(c => (
                                 <button key={c} className={`btn btn-sm ${category===c?"btn-success":"btn-outline-success"}`}
                                     onClick={() => setCategory(c)}>{c}</button>
