@@ -96,7 +96,7 @@ def serve_any_other_file(path):
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({"status": "ok", "message": "DispenseMaster running"}), 200
+    return jsonify({"status": "ok", "message": "BudphoriaPro running"}), 200
 
 # SocketIO events
 @socketio.on('connect')

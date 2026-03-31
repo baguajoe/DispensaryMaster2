@@ -131,7 +131,7 @@ export const Sidebar = () => {
 
             {!isCollapsed && (
                 <div className="sidebar-brand">
-                    <span>DispenseMaster</span>
+                    <span>BudphoriaPro</span>
                 </div>
             )}
 

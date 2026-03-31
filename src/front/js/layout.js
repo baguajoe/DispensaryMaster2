@@ -9,6 +9,7 @@ import AgeVerification from "./pages/AgeVerification";
 
 // Core Pages
 import Home from "./pages/Home";
+import Pricing from "./pages/Pricing";
 import AboutUs from "./pages/AboutUs";
 import Shop from "./pages/Shop";
 import Deals from "./pages/Deals";
@@ -138,7 +139,8 @@ const Layout = () => {
                             {/* Public */}
                             <Route path="/" element={<AgeVerification />} />
                             <Route path="/home" element={<RequireAgeVerification><Home /></RequireAgeVerification>} />
-                            <Route path="/about-us" element={<AboutUs />} />
+                            <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/about-us" element={<AboutUs />} />
                             <Route path="/shop" element={<Shop />} />
                             <Route path="/deals" element={<Deals />} />
                             <Route path="/contact-us" element={<ContactUs />} />

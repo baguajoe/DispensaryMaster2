@@ -210,7 +210,7 @@ def forgot_password():
     token = jwt.encode({"email": email, "exp": expiration_time}, os.getenv("FLASK_APP_KEY"), algorithm="HS256")
 
     email_value=f"Click here to reset password.\n{os.getenv('FRONTEND_URL')}/forgot-password?token={token}"
-    send_email(email, email_value, "Password Recovery: DispenseMaster")
+    send_email(email, email_value, "Password Recovery: BudphoriaPro")
     return jsonify({"message": "recovery email sent"}), 200
     
 
@@ -235,7 +235,7 @@ def reset_password(token):
     user.password=generate_password_hash(password)
     db.session.commit()
 
-    send_email(email, "password successfully reset", "password reset confirmation for DispenseMaster")
+    send_email(email, "password successfully reset", "password reset confirmation for BudphoriaPro")
     return jsonify({"message": "password reset email sent"}), 200
     
 # products    
@@ -3776,7 +3776,7 @@ def confirm_payment():
         # Send SMS confirmation
         order = Order.query.get(payment.order_id)
         if order and order.customer:
-            _send_sms(order.customer.phone, f"DispenseMaster: Payment confirmed for Order #{order.id}. Total: ${payment.amount:.2f}. Thank you!")
+            _send_sms(order.customer.phone, f"BudphoriaPro: Payment confirmed for Order #{order.id}. Total: ${payment.amount:.2f}. Thank you!")
     return jsonify({"status": "confirmed"}), 200
 
 @api.route('/payments/config', methods=['GET'])
@@ -3839,7 +3839,7 @@ def sms_delivery_update(delivery_id):
         'en_route': 'Your driver is on the way! Estimated arrival in 20-30 minutes.',
         'delivered': 'Your order has been delivered. Enjoy! Leave us a review!'
     }
-    msg = f"DispenseMaster: {status_msgs.get(delivery.status, 'Your order status has been updated.')}"
+    msg = f"BudphoriaPro: {status_msgs.get(delivery.status, 'Your order status has been updated.')}"
     success = _send_sms(customer.phone, msg)
     return jsonify({"success": success}), 200
 
@@ -4018,7 +4018,7 @@ def _send_sms_for_delivery(delivery, status):
         'en_route': 'Your driver is on the way! ETA 20-30 minutes.',
         'delivered': 'Your order has been delivered! Enjoy!'
     }
-    _send_sms(customer.phone, f"DispenseMaster: {msgs.get(status, 'Delivery update.')}")
+    _send_sms(customer.phone, f"BudphoriaPro: {msgs.get(status, 'Delivery update.')}")
 
 @api.route('/deliveries/<int:id>', methods=['GET'])
 @handle_errors
@@ -4236,7 +4236,7 @@ def sms_receipt(order_id):
     customer = Customer.query.get(order.customer_id)
     if not customer or not customer.phone:
         return jsonify({"error": "No phone number"}), 400
-    msg = f"DispenseMaster Receipt - Order #{order.id}: ${float(order.total_amount):.2f}. Thank you {customer.first_name}!"
+    msg = f"BudphoriaPro Receipt - Order #{order.id}: ${float(order.total_amount):.2f}. Thank you {customer.first_name}!"
     success = _send_sms(customer.phone, msg)
     return jsonify({"sent": success}), 200
 

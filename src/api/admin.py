@@ -8,7 +8,7 @@ from .models import (db, User, Plan, Product, OrderItem, Order, Customer,
 def setup_admin(app):
     app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
-    admin = Admin(app, name='DispenseMaster Admin')
+    admin = Admin(app, name='BudphoriaPro Admin')
 
     # Core
     admin.add_view(ModelView(User, db.session))
