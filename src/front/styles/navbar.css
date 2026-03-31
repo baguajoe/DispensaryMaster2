@@ -1,124 +1,37 @@
-/* General Navbar Styles */
-.navbar {
-    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
-    padding: 16px 0;
-    color: white;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+/* BudphoriaPro Navbar — Midnight Amber */
+nav, .navbar {
+    background: rgba(10,8,0,0.96) !important;
+    border-bottom: 1px solid rgba(255,171,0,0.15) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    padding: 0.7rem 1.5rem !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
 }
-
-/* Navbar Toggler */
-.navbar-toggler {
+.navbar-brand, .nav-brand {
+    color: #ffab00 !important;
+    font-weight: 900 !important;
+    font-size: 1rem !important;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
+    gap: 0.4rem;
     cursor: pointer;
-    transition: color 0.3s ease;
 }
-
-.navbar-toggler:hover {
-    color: #cbd5e0; /* Light Gray on Hover */
-}
-
-/* Navigation Links */
+.navbar-brand:hover { opacity: 0.85; }
 .nav-link {
-    color: white;
-    text-decoration: none;
-    font-size: 1rem;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    color: rgba(255,248,225,0.55) !important;
+    font-size: 0.875rem !important;
+    transition: color 0.2s !important;
+    padding: 0.35rem 0.5rem !important;
 }
-
-.nav-link:hover,
-.nav-link.active {
-    background: rgba(255, 255, 255, 0.2); /* Light Overlay on Hover */
-    color: white;
+.nav-link:hover, .nav-link.active {
+    color: #ffab00 !important;
 }
-
-/* Dropdown Toggle */
-.dropdown-toggle {
-    color: white;
-    background: transparent;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: color 0.3s ease;
+.navbar-toggler {
+    border-color: rgba(255,171,0,0.3) !important;
 }
-
-.dropdown-toggle:hover {
-    color: #cbd5e0; /* Light Gray on Hover */
+.navbar-toggler-icon {
+    filter: invert(0.8) sepia(1) saturate(3) hue-rotate(5deg) !important;
 }
-
-/* Dropdown Menu */
-.dropdown-menu {
-    background: #285e61; /* Matches Sidebar and Product Background */
-    color: white;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 8px;
-    padding: 8px 0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: none;
-    transition: opacity 0.3s ease;
-    opacity: 0;
-    visibility: hidden;
-}
-
-.dropdown-menu a {
-    color: white;
-    padding: 8px 16px;
-    display: block;
-    text-decoration: none;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background: rgba(255, 255, 255, 0.1); /* Light Overlay on Hover */
-    color: #cbd5e0; /* Matches Sidebar Link Hover */
-}
-
-.dropdown-toggle:hover + .dropdown-menu,
-.dropdown-menu:hover {
-    display: block;
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-    .navbar-toggler {
-        display: block;
-    }
-
-    .navbar .md\\:flex {
-        display: none;
-    }
-
-    .dropdown-menu {
-        position: static;
-        margin-top: 0;
-        box-shadow: none;
-        border-radius: 0;
-    }
-}
-
-/* Additional Adjustments for Extra Small Screens */
-@media (max-width: 576px) {
-    .nav-link {
-        padding: 8px;
-        font-size: 0.9rem; /* Slightly smaller font for smaller screens */
-    }
-
-    .dropdown-menu a {
-        padding: 8px 12px; /* Smaller padding for smaller screens */
-    }
-}
+.navbar-collapse { background: rgba(10,8,0,0.98) !important; }

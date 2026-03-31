@@ -30,6 +30,7 @@ fbprophet = "*"
 pandas = "*"
 prophet = "*"
 boto3 = "==1.34.0"
+flask-limiter = "*"
 
 [requires]
 python_version = "3.10"

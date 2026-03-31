@@ -19,7 +19,7 @@ const Pricing = () => {
         {
             name: "Professional", price: 449, period: "mo",
             desc: "Growing dispensary operations",
-            color: "#69f0ae", highlight: true,
+            color: "#ffab00", highlight: true,
             features: [
                 "Everything in Starter",
                 "Medical Patient Records", "Prescription Management",
@@ -64,18 +64,18 @@ const Pricing = () => {
     ];
 
     return (
-        <div style={{ background: "#080c10", color: "#e4ede6", fontFamily: "'DM Sans', sans-serif", minHeight: "100vh" }}>
+        <div style={{ background: "#0a0800", color: "#e4ede6", fontFamily: "'DM Sans', sans-serif", minHeight: "100vh" }}>
             <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
 
             {/* Nav */}
             <nav style={{ padding: "1.25rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                 <div onClick={() => navigate("/")} style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
                     <span style={{ fontSize: "1.2rem" }}>🌿</span>
-                    <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, color: "#69f0ae" }}>BudphoriaPro</span>
+                    <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, color: "#ffab00" }}>BudphoriaPro</span>
                 </div>
                 <div style={{ display: "flex", gap: "1rem" }}>
                     <button onClick={() => navigate("/")} style={{ background: "transparent", color: "rgba(255,255,255,0.5)", border: "none", cursor: "pointer", fontSize: "0.875rem" }}>← Back</button>
-                    <button onClick={() => navigate("/register")} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.4rem 1.25rem", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem" }}>Start Free Trial</button>
+                    <button onClick={() => navigate("/register")} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.4rem 1.25rem", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: "0.875rem" }}>Start Free Trial</button>
                 </div>
             </nav>
 
@@ -83,10 +83,10 @@ const Pricing = () => {
                 {/* Header */}
                 <div style={{ textAlign: "center", marginBottom: "4rem" }}>
                     <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "clamp(2rem, 5vw, 3.5rem)", marginBottom: "1rem" }}>
-                        Simple, <span style={{ color: "#69f0ae" }}>Honest</span> Pricing
+                        Simple, <span style={{ color: "#ffab00" }}>Honest</span> Pricing
                     </h1>
                     <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "1rem", marginBottom: "0.5rem" }}>No hidden fees. No per-transaction cuts. No surprises.</p>
-                    <p style={{ color: "#69f0ae", fontSize: "0.875rem", fontWeight: 600 }}>14-day free trial · No credit card required · Cancel anytime</p>
+                    <p style={{ color: "#ffab00", fontSize: "0.875rem", fontWeight: 600 }}>14-day free trial · No credit card required · Cancel anytime</p>
                 </div>
 
                 {/* Plans */}
@@ -99,7 +99,7 @@ const Pricing = () => {
                             transform: plan.highlight ? "scale(1.03)" : "none",
                             boxShadow: plan.highlight ? `0 0 60px ${plan.color}15` : "none",
                         }}>
-                            {plan.highlight && <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: plan.color, color: "#080c10", fontSize: "0.7rem", fontWeight: 800, padding: "3px 14px", borderRadius: 100 }}>MOST POPULAR</div>}
+                            {plan.highlight && <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: plan.color, color: "#0a0800", fontSize: "0.7rem", fontWeight: 800, padding: "3px 14px", borderRadius: 100 }}>MOST POPULAR</div>}
                             <h3 style={{ fontWeight: 800, color: plan.color, marginBottom: "0.25rem" }}>{plan.name}</h3>
                             <div style={{ display: "flex", alignItems: "baseline", gap: "0.25rem", marginBottom: "0.25rem" }}>
                                 <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "2.8rem" }}>${plan.price}</span>
@@ -115,7 +115,7 @@ const Pricing = () => {
                             </div>
                             <button onClick={() => navigate("/register")} style={{
                                 width: "100%", background: plan.highlight ? plan.color : "transparent",
-                                color: plan.highlight ? "#080c10" : plan.color,
+                                color: plan.highlight ? "#0a0800" : plan.color,
                                 border: `1px solid ${plan.color}60`,
                                 padding: "0.75rem", borderRadius: 10, fontWeight: 700,
                                 fontSize: "0.875rem", cursor: "pointer",
@@ -129,14 +129,14 @@ const Pricing = () => {
                 {/* Add-ons */}
                 <div style={{ marginBottom: "4rem" }}>
                     <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "1.5rem", marginBottom: "1.5rem", textAlign: "center" }}>
-                        Add-Ons & <span style={{ color: "#69f0ae" }}>Extras</span>
+                        Add-Ons & <span style={{ color: "#ffab00" }}>Extras</span>
                     </h2>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1rem" }}>
                         {ADDONS.map((a, i) => (
                             <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "1.25rem" }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
                                     <h4 style={{ fontWeight: 700, fontSize: "0.875rem" }}>{a.name}</h4>
-                                    <span style={{ color: "#69f0ae", fontWeight: 800, fontSize: "0.875rem", whiteSpace: "nowrap", marginLeft: "0.5rem" }}>{a.price}</span>
+                                    <span style={{ color: "#ffab00", fontWeight: 800, fontSize: "0.875rem", whiteSpace: "nowrap", marginLeft: "0.5rem" }}>{a.price}</span>
                                 </div>
                                 <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>{a.desc}</p>
                             </div>
@@ -147,12 +147,12 @@ const Pricing = () => {
                 {/* FAQ */}
                 <div style={{ marginBottom: "4rem" }}>
                     <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "1.5rem", marginBottom: "1.5rem", textAlign: "center" }}>
-                        Frequently Asked <span style={{ color: "#69f0ae" }}>Questions</span>
+                        Frequently Asked <span style={{ color: "#ffab00" }}>Questions</span>
                     </h2>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                         {FAQ.map((f, i) => (
                             <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "1.25rem" }}>
-                                <h4 style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: "0.5rem", color: "#69f0ae" }}>{f.q}</h4>
+                                <h4 style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: "0.5rem", color: "#ffab00" }}>{f.q}</h4>
                                 <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>{f.a}</p>
                             </div>
                         ))}
@@ -160,10 +160,10 @@ const Pricing = () => {
                 </div>
 
                 {/* CTA */}
-                <div style={{ textAlign: "center", background: "rgba(105,240,174,0.05)", border: "1px solid rgba(105,240,174,0.15)", borderRadius: 20, padding: "3rem" }}>
+                <div style={{ textAlign: "center", background: "rgba(105,240,174,0.05)", border: "1px solid rgba(255,171,0,0.15)", borderRadius: 20, padding: "3rem" }}>
                     <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "2rem", marginBottom: "0.75rem" }}>Ready to get started?</h2>
                     <p style={{ color: "rgba(255,255,255,0.45)", marginBottom: "2rem" }}>14-day free trial. No credit card required. Setup in minutes.</p>
-                    <button onClick={() => navigate("/register")} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.9rem 3rem", borderRadius: 12, fontWeight: 800, fontSize: "1rem", cursor: "pointer" }}>
+                    <button onClick={() => navigate("/register")} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.9rem 3rem", borderRadius: 12, fontWeight: 800, fontSize: "1rem", cursor: "pointer" }}>
                         Start Free Trial
                     </button>
                 </div>

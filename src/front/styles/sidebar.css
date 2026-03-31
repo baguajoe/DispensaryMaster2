@@ -1,130 +1,104 @@
-/* Sidebar Container */
+/* BudphoriaPro Sidebar — Midnight Amber */
 .sidebar {
-    position: fixed; /* Keeps the sidebar fixed on the page */
-    top: 96px; /* Aligns the sidebar just below the navbar */
-    left: 0;
-    width: 16rem; /* Sidebar width */
-    height: calc(100vh - 140px); /* Adjusts height to account for the navbar */
-    background: linear-gradient(to bottom, #2a4365, #285e61); /* Blue to Teal Gradient */
-    color: white;
-    padding: 1rem;
-    overflow-y: auto; /* Enable vertical scrolling for long content */
-    transition: width 0.3s ease; /* Smooth transition for sidebar toggle */
-    z-index: 1000; /* Ensure it stays on top of other elements */
+    background: #0f0e00;
+    border-right: 1px solid rgba(255,171,0,0.15);
+    width: 240px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: width 0.25s ease;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
 }
-
-/* Collapsed Sidebar */
-.sidebar-collapsed {
-    width: 4rem; /* Reduced width for collapsed sidebar */
-    overflow: hidden; /* Hide overflowing content */
+.sidebar-collapsed { width: 60px; }
+.sidebar-brand {
+    color: #ffab00;
+    font-weight: 900;
+    font-size: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid rgba(255,171,0,0.12);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
 }
-
-/* Sidebar Toggle Button */
 .sidebar-toggle {
     background: transparent;
-    border: none;
-    color: white;
+    border: 1px solid rgba(255,171,0,0.15);
+    color: rgba(255,248,225,0.4);
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    margin: 0.65rem;
     cursor: pointer;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    transition: transform 0.3s ease;
+    font-size: 0.85rem;
+    align-self: flex-start;
+    transition: all 0.2s;
 }
-
 .sidebar-toggle:hover {
-    transform: scale(1.1); /* Slightly enlarges the button on hover */
+    border-color: #ffab00;
+    color: #ffab00;
 }
-
-/* Sidebar Heading */
+.sidebar-nav { padding: 0.5rem 0; flex: 1; }
 .sidebar-heading {
-    font-size: 1.1rem;
-    margin: 1rem 0 0.5rem;
-    color: #cbd5e0;
+    color: rgba(255,248,225,0.25);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.75rem 1.1rem 0.3rem;
     cursor: pointer;
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    transition: color 0.2s;
+    font-weight: 700;
 }
-
-.sidebar-heading:hover {
-    color: white; /* Changes color to white on hover */
-}
-
-/* Dropdown Content */
-.dropdown-content {
-    margin-left: 1rem;
-    margin-top: 0.5rem;
-}
-
-/* Navigation Links */
-.nav-link {
+.sidebar-heading:hover { color: #ffab00; }
+.sidebar-arrow { font-size: 0.6rem; }
+.dropdown-content { padding-left: 0.75rem; }
+.sidebar-nav .nav-link {
+    color: rgba(255,248,225,0.5);
+    padding: 0.4rem 1.1rem;
+    font-size: 0.8rem;
     display: block;
-    padding: 0.5rem 1rem;
-    margin: 0.25rem 0;
-    border-radius: 8px;
-    color: rgba(255, 255, 255, 0.9); /* White with some transparency */
-    text-decoration: none;
-    font-size: 1rem;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-
-.nav-link:hover,
-.nav-link.active {
-    background: rgba(255, 255, 255, 0.2); /* Light white overlay on hover or active */
-    color: white;
+.sidebar-nav .nav-link:hover {
+    color: #ffab00;
+    background: rgba(255,171,0,0.06);
+    border-left-color: rgba(255,171,0,0.4);
+    padding-left: 1.4rem;
 }
-
-/* Sidebar Divider */
+.sidebar-nav .nav-link.active {
+    color: #ffab00;
+    background: rgba(255,171,0,0.1);
+    border-left-color: #ffab00;
+    font-weight: 700;
+}
 .sidebar-divider {
-    border-color: rgba(255, 255, 255, 0.2);
-    margin: 1rem 0;
+    border: none;
+    border-top: 1px solid rgba(255,171,0,0.08);
+    margin: 0.2rem 0;
 }
-
-/* Responsive Sidebar */
-@media (max-height: 768px) {
-    .sidebar {
-        overflow-y: auto; /* Enable scrolling for smaller screens */
-    }
+.logout-btn {
+    color: rgba(255,82,82,0.7);
+    padding: 0.5rem 1.1rem;
+    font-size: 0.8rem;
+    background: transparent;
+    border: none;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-top: 1px solid rgba(255,171,0,0.08);
+    margin-top: auto;
 }
-
-@media (max-width: 768px) {
-    .sidebar {
-        position: absolute;
-        top: 140px; /* Keeps it aligned below the navbar */
-        width: 100%;
-        height: calc(100vh - 140px); /* Adjusts height for navbar */
-        z-index: 1000; /* Ensure visibility on top */
-    }
-
-    .sidebar-collapsed {
-        height: auto;
-    }
-}
-
-/* Adjustments for Small Screens */
-@media (max-width: 576px) {
-    .sidebar {
-        width: 14rem; /* Slightly narrower sidebar for smaller screens */
-    }
-
-    .sidebar-collapsed {
-        width: 3.5rem; /* Narrower collapsed sidebar */
-    }
-}
-
-/* Scrollbar Styles for Sidebar */
-.sidebar::-webkit-scrollbar {
-    width: 8px; /* Width of the scrollbar */
-}
-
-.sidebar::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1); /* Track color */
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.5); /* Thumb color */
-    border-radius: 4px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.7); /* Thumb hover color */
+.logout-btn:hover {
+    color: #ff5252;
+    background: rgba(255,82,82,0.08);
 }

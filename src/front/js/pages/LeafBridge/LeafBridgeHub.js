@@ -53,15 +53,15 @@ const LeafBridgeHub = () => {
     ];
 
     return (
-        <div className="main-content" style={{ background: "#080c10", minHeight: "100vh", padding: 0 }}>
+        <div className="main-content" style={{ background: "#0a0800", minHeight: "100vh", padding: 0 }}>
 
             {/* Brand Header */}
-            <div style={{ background: "linear-gradient(135deg, rgba(105,240,174,0.1) 0%, rgba(105,240,174,0.03) 100%)", borderBottom: "1px solid rgba(105,240,174,0.15)", padding: "1rem 2rem" }}>
+            <div style={{ background: "linear-gradient(135deg, rgba(255,171,0,0.1) 0%, rgba(105,240,174,0.03) 100%)", borderBottom: "1px solid rgba(255,171,0,0.15)", padding: "1rem 2rem" }}>
                 <div style={{ maxWidth: "100%", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                         <span style={{ fontSize: "1.5rem" }}>🌿</span>
                         <div>
-                            <div style={{ fontWeight: 800, fontSize: "1.15rem", color: "#69f0ae" }}>LeafBridge Connect</div>
+                            <div style={{ fontWeight: 800, fontSize: "1.15rem", color: "#ffab00" }}>LeafBridge Connect</div>
                             <div style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.7rem" }}>Cannabis Industry Professional Network</div>
                         </div>
                     </div>
@@ -72,23 +72,23 @@ const LeafBridgeHub = () => {
                             { label: "Applications", value: stats.applications || 0 },
                         ].map((s, i) => (
                             <div key={i} style={{ textAlign: "center" }}>
-                                <div style={{ fontWeight: 800, color: "#69f0ae", fontSize: "1rem" }}>{s.value}</div>
+                                <div style={{ fontWeight: 800, color: "#ffab00", fontSize: "1rem" }}>{s.value}</div>
                                 <div style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.65rem" }}>{s.label}</div>
                             </div>
                         ))}
                     </div>
                     {myProfile ? (
                         <div onClick={() => setActiveTab("profile")} style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "4px 12px 4px 4px", cursor: "pointer" }}>
-                            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(105,240,174,0.2)", border: "2px solid rgba(105,240,174,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae", fontSize: "0.8rem" }}>
+                            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,171,0,0.2)", border: "2px solid rgba(255,171,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#ffab00", fontSize: "0.8rem" }}>
                                 {myProfile.first_name?.[0] || "?"}
                             </div>
                             <div>
                                 <div style={{ fontSize: "0.75rem", fontWeight: 700 }}>{myProfile.first_name} {myProfile.last_name}</div>
-                                <div style={{ fontSize: "0.62rem", color: "#69f0ae" }}>{myProfile.position || "Cannabis Pro"}</div>
+                                <div style={{ fontSize: "0.62rem", color: "#ffab00" }}>{myProfile.position || "Cannabis Pro"}</div>
                             </div>
                         </div>
                     ) : (
-                        <button onClick={() => setActiveTab("profile")} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.4rem 0.9rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>Complete Profile</button>
+                        <button onClick={() => setActiveTab("profile")} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.4rem 0.9rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>Complete Profile</button>
                     )}
                 </div>
             </div>
@@ -99,8 +99,8 @@ const LeafBridgeHub = () => {
                     {TABS.map(tab => (
                         <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
                             background: "transparent", border: "none",
-                            borderBottom: `2px solid ${activeTab === tab.id ? "#69f0ae" : "transparent"}`,
-                            color: activeTab === tab.id ? "#69f0ae" : "rgba(255,255,255,0.4)",
+                            borderBottom: `2px solid ${activeTab === tab.id ? "#ffab00" : "transparent"}`,
+                            color: activeTab === tab.id ? "#ffab00" : "rgba(255,255,255,0.4)",
                             padding: "0.75rem 0.85rem", cursor: "pointer",
                             fontWeight: activeTab === tab.id ? 700 : 400,
                             fontSize: "0.78rem", whiteSpace: "nowrap",
@@ -214,16 +214,16 @@ const FeedTab = ({ headers, myProfile }) => {
                     <div style={{ display: "flex", gap: "0.4rem", marginBottom: "0.6rem", flexWrap: "wrap" }}>
                         {POST_TYPES.map(pt => (
                             <button key={pt.v} onClick={() => { setPostType(pt.v); setShowPoll(pt.v === "poll"); }} style={{
-                                background: postType === pt.v ? "rgba(105,240,174,0.15)" : "rgba(255,255,255,0.04)",
-                                border: `1px solid ${postType === pt.v ? "rgba(105,240,174,0.4)" : "rgba(255,255,255,0.1)"}`,
-                                color: postType === pt.v ? "#69f0ae" : "rgba(255,255,255,0.45)",
+                                background: postType === pt.v ? "rgba(255,171,0,0.15)" : "rgba(255,255,255,0.04)",
+                                border: `1px solid ${postType === pt.v ? "rgba(255,171,0,0.4)" : "rgba(255,255,255,0.1)"}`,
+                                color: postType === pt.v ? "#ffab00" : "rgba(255,255,255,0.45)",
                                 padding: "3px 10px", borderRadius: 100, fontSize: "0.72rem", cursor: "pointer", fontWeight: postType === pt.v ? 700 : 400,
                             }}>{pt.l}</button>
                         ))}
                     </div>
                     <textarea rows={3} style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "0.7rem 1rem", color: "#e4ede6", resize: "vertical", fontSize: "0.875rem", outline: "none", marginBottom: "0.5rem" }}
                         placeholder="Share an update, job opening, harvest result, compliance news..." value={newPost} onChange={e => setNewPost(e.target.value)}
-                        onFocus={e => e.target.style.borderColor = "#69f0ae"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
+                        onFocus={e => e.target.style.borderColor = "#ffab00"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
                     {showPoll && (
                         <div style={{ marginBottom: "0.75rem" }}>
                             <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", marginBottom: "0.5rem" }}>Poll Options</div>
@@ -233,7 +233,7 @@ const FeedTab = ({ headers, myProfile }) => {
                                     placeholder={`Option ${i + 1}`} />
                             ))}
                             {pollOptions.length < 4 && (
-                                <button onClick={() => setPollOptions([...pollOptions, ""])} style={{ background: "transparent", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.3rem 0.75rem", borderRadius: 7, fontSize: "0.75rem", cursor: "pointer" }}>+ Add Option</button>
+                                <button onClick={() => setPollOptions([...pollOptions, ""])} style={{ background: "transparent", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.3rem 0.75rem", borderRadius: 7, fontSize: "0.75rem", cursor: "pointer" }}>+ Add Option</button>
                             )}
                         </div>
                     )}
@@ -256,29 +256,29 @@ const FeedTab = ({ headers, myProfile }) => {
                                 if (urls.length) setNewPost(prev => prev + (prev ? "\n" : "") + urls.join("\n"));
                             }} />
                         </label>
-                        <button onClick={handlePost} disabled={posting || !newPost.trim()} style={{ background: newPost.trim() ? "#69f0ae" : "rgba(105,240,174,0.15)", color: newPost.trim() ? "#080c10" : "rgba(255,255,255,0.3)", border: "none", padding: "0.5rem 1.5rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: newPost.trim() ? "pointer" : "not-allowed" }}>
+                        <button onClick={handlePost} disabled={posting || !newPost.trim()} style={{ background: newPost.trim() ? "#ffab00" : "rgba(255,171,0,0.15)", color: newPost.trim() ? "#0a0800" : "rgba(255,255,255,0.3)", border: "none", padding: "0.5rem 1.5rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: newPost.trim() ? "pointer" : "not-allowed" }}>
                             {posting ? "Posting..." : "Post"}
                         </button>
                     </div>
                 </div>
 
-                {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+                {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
                 {!loading && posts.length === 0 && <div className="glass-panel text-center py-5"><div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>📰</div><p style={{ color: "rgba(255,255,255,0.45)" }}>No posts yet.</p></div>}
 
                 {posts.map((post, i) => (
                     <div key={post.id || i} className="glass-panel" style={{ marginBottom: "1rem" }}>
                         {/* Post header */}
                         <div style={{ display: "flex", gap: "0.65rem", marginBottom: "0.65rem", alignItems: "flex-start" }}>
-                            <div style={{ width: 38, height: 38, borderRadius: "50%", flexShrink: 0, background: "rgba(105,240,174,0.15)", border: "2px solid rgba(105,240,174,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae", fontSize: "0.85rem" }}>
+                            <div style={{ width: 38, height: 38, borderRadius: "50%", flexShrink: 0, background: "rgba(255,171,0,0.15)", border: "2px solid rgba(255,171,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#ffab00", fontSize: "0.85rem" }}>
                                 {post.author_name?.[0] || "?"}
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                                     <span style={{ fontWeight: 700, fontSize: "0.875rem" }}>{post.author_name || "Cannabis Pro"}</span>
-                                    {post.author_verified && <span style={{ background: "rgba(105,240,174,0.15)", color: "#69f0ae", fontSize: "0.62rem", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>✓ Verified</span>}
+                                    {post.author_verified && <span style={{ background: "rgba(255,171,0,0.15)", color: "#ffab00", fontSize: "0.62rem", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>✓ Verified</span>}
                                 </div>
                                 <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.35)" }}>
-                                    {post.author_role && <span style={{ color: "#69f0ae", marginRight: "0.4rem" }}>{post.author_role}</span>}
+                                    {post.author_role && <span style={{ color: "#ffab00", marginRight: "0.4rem" }}>{post.author_role}</span>}
                                     {post.created_at ? new Date(post.created_at).toLocaleDateString() : ""}
                                     {post.shared_from && <span style={{ marginLeft: "0.4rem", color: "rgba(255,255,255,0.3)" }}>· Shared</span>}
                                 </div>
@@ -296,11 +296,11 @@ const FeedTab = ({ headers, myProfile }) => {
                                     const pct = totalVotes ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
                                     const voted = post.user_voted !== undefined;
                                     return (
-                                        <div key={idx} onClick={() => !voted && handlePollVote(post.id, idx)} style={{ marginBottom: "0.4rem", cursor: voted ? "default" : "pointer", position: "relative", borderRadius: 8, overflow: "hidden", border: `1px solid ${post.user_voted === idx ? "rgba(105,240,174,0.5)" : "rgba(255,255,255,0.1)"}` }}>
-                                            {voted && <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, background: "rgba(105,240,174,0.12)", transition: "width 0.5s" }} />}
+                                        <div key={idx} onClick={() => !voted && handlePollVote(post.id, idx)} style={{ marginBottom: "0.4rem", cursor: voted ? "default" : "pointer", position: "relative", borderRadius: 8, overflow: "hidden", border: `1px solid ${post.user_voted === idx ? "rgba(255,171,0,0.5)" : "rgba(255,255,255,0.1)"}` }}>
+                                            {voted && <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, background: "rgba(255,171,0,0.12)", transition: "width 0.5s" }} />}
                                             <div style={{ position: "relative", padding: "0.4rem 0.75rem", display: "flex", justifyContent: "space-between", fontSize: "0.82rem" }}>
                                                 <span>{opt.text || opt}</span>
-                                                {voted && <span style={{ color: "#69f0ae", fontWeight: 700 }}>{pct}%</span>}
+                                                {voted && <span style={{ color: "#ffab00", fontWeight: 700 }}>{pct}%</span>}
                                             </div>
                                         </div>
                                     );
@@ -311,7 +311,7 @@ const FeedTab = ({ headers, myProfile }) => {
 
                         {/* Actions */}
                         <div style={{ display: "flex", gap: "0.5rem", paddingTop: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.07)", flexWrap: "wrap" }}>
-                            <button onClick={() => handleLike(post.id)} style={{ background: "transparent", border: "none", color: post.liked ? "#69f0ae" : "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: "0.78rem", padding: "0.25rem 0.5rem", borderRadius: 6, display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                            <button onClick={() => handleLike(post.id)} style={{ background: "transparent", border: "none", color: post.liked ? "#ffab00" : "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: "0.78rem", padding: "0.25rem 0.5rem", borderRadius: 6, display: "flex", alignItems: "center", gap: "0.3rem" }}>
                                 👍 {post.likes || 0}
                             </button>
                             <button onClick={() => setExpandedComments(prev => ({ ...prev, [post.id]: !prev[post.id] }))} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: "0.78rem", padding: "0.25rem 0.5rem", borderRadius: 6 }}>
@@ -327,7 +327,7 @@ const FeedTab = ({ headers, myProfile }) => {
                             <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                                 {(post.comments || []).map((c, ci) => (
                                     <div key={ci} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.6rem" }}>
-                                        <div style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: "rgba(105,240,174,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.72rem", fontWeight: 800, color: "#69f0ae" }}>
+                                        <div style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: "rgba(255,171,0,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.72rem", fontWeight: 800, color: "#ffab00" }}>
                                             {c.author_name?.[0] || "?"}
                                         </div>
                                         <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "0.4rem 0.75rem", flex: 1 }}>
@@ -337,15 +337,15 @@ const FeedTab = ({ headers, myProfile }) => {
                                     </div>
                                 ))}
                                 <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-                                    <div style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: "rgba(105,240,174,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.72rem", fontWeight: 800, color: "#69f0ae" }}>
+                                    <div style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: "rgba(255,171,0,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.72rem", fontWeight: 800, color: "#ffab00" }}>
                                         {myProfile?.first_name?.[0] || "?"}
                                     </div>
                                     <input style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: "0.35rem 0.85rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }}
                                         placeholder="Add a comment..." value={newComments[post.id] || ""}
                                         onChange={e => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
                                         onKeyDown={e => e.key === "Enter" && handleComment(post.id)}
-                                        onFocus={e => e.target.style.borderColor = "#69f0ae"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
-                                    <button onClick={() => handleComment(post.id)} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.35rem 0.75rem", borderRadius: 20, fontWeight: 700, fontSize: "0.75rem", cursor: "pointer" }}>Post</button>
+                                        onFocus={e => e.target.style.borderColor = "#ffab00"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
+                                    <button onClick={() => handleComment(post.id)} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.35rem 0.75rem", borderRadius: 20, fontWeight: 700, fontSize: "0.75rem", cursor: "pointer" }}>Post</button>
                                 </div>
                             </div>
                         )}
@@ -356,13 +356,13 @@ const FeedTab = ({ headers, myProfile }) => {
             {/* Right rail */}
             <div>
                 <div className="glass-panel" style={{ marginBottom: "1rem" }}>
-                    <h6 style={{ color: "#69f0ae", fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>🔥 Trending</h6>
+                    <h6 style={{ color: "#ffab00", fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>🔥 Trending</h6>
                     {["#CannabisCareers", "#MassCompliance", "#MasterGrowers", "#BudtenderLife", "#MetrcTips", "#CannabisHR", "#GrowFarm", "#LeafBridge"].map((tag, i) => (
-                        <div key={i} style={{ padding: "0.3rem 0", fontSize: "0.8rem", color: "#69f0ae", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{tag}</div>
+                        <div key={i} style={{ padding: "0.3rem 0", fontSize: "0.8rem", color: "#ffab00", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{tag}</div>
                     ))}
                 </div>
                 <div className="glass-panel">
-                    <h6 style={{ color: "#69f0ae", fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>📰 Cannabis News</h6>
+                    <h6 style={{ color: "#ffab00", fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>📰 Cannabis News</h6>
                     {[
                         "MA extends medical cannabis hours",
                         "New Metrc update for CO operators",
@@ -424,10 +424,10 @@ const MessagesTab = ({ headers, myProfile, setUnreadMessages }) => {
             {/* Conversation list */}
             <div style={{ borderRight: "1px solid rgba(255,255,255,0.08)", overflowY: "auto", background: "rgba(255,255,255,0.02)" }}>
                 <div style={{ padding: "1rem", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                    <h5 style={{ fontWeight: 700, color: "#69f0ae", marginBottom: "0.5rem", fontSize: "0.9rem" }}>💬 Messages</h5>
-                    <input style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "0.4rem 0.75rem", color: "#e4ede6", fontSize: "0.8rem", outline: "none" }} placeholder="Search messages..." onFocus={e => e.target.style.borderColor = "#69f0ae"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
+                    <h5 style={{ fontWeight: 700, color: "#ffab00", marginBottom: "0.5rem", fontSize: "0.9rem" }}>💬 Messages</h5>
+                    <input style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "0.4rem 0.75rem", color: "#e4ede6", fontSize: "0.8rem", outline: "none" }} placeholder="Search messages..." onFocus={e => e.target.style.borderColor = "#ffab00"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
                 </div>
-                {loading && <div className="text-center py-4"><div className="spinner-border spinner-border-sm" style={{ color: "#69f0ae" }} /></div>}
+                {loading && <div className="text-center py-4"><div className="spinner-border spinner-border-sm" style={{ color: "#ffab00" }} /></div>}
                 {conversations.length === 0 && !loading && (
                     <div style={{ padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: "0.82rem" }}>
                         <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>💬</div>
@@ -437,11 +437,11 @@ const MessagesTab = ({ headers, myProfile, setUnreadMessages }) => {
                 {conversations.map((convo, i) => (
                     <div key={i} onClick={() => loadMessages(convo)} style={{
                         padding: "0.85rem 1rem", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.05)",
-                        background: activeConvo?.id === convo.id ? "rgba(105,240,174,0.08)" : "transparent",
+                        background: activeConvo?.id === convo.id ? "rgba(255,171,0,0.08)" : "transparent",
                         display: "flex", gap: "0.65rem", alignItems: "flex-start",
                         transition: "background 0.15s",
                     }}>
-                        <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, background: "rgba(105,240,174,0.15)", border: `2px solid ${convo.unread ? "#69f0ae" : "rgba(105,240,174,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae", fontSize: "0.85rem" }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, background: "rgba(255,171,0,0.15)", border: `2px solid ${convo.unread ? "#ffab00" : "rgba(255,171,0,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#ffab00", fontSize: "0.85rem" }}>
                             {convo.other_name?.[0] || "?"}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -451,7 +451,7 @@ const MessagesTab = ({ headers, myProfile, setUnreadMessages }) => {
                             </div>
                             <div style={{ fontSize: "0.72rem", color: convo.unread ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.35)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.last_message}</div>
                         </div>
-                        {convo.unread && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#69f0ae", flexShrink: 0, marginTop: 4 }} />}
+                        {convo.unread && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ffab00", flexShrink: 0, marginTop: 4 }} />}
                     </div>
                 ))}
             </div>
@@ -460,12 +460,12 @@ const MessagesTab = ({ headers, myProfile, setUnreadMessages }) => {
             {activeConvo ? (
                 <div style={{ display: "flex", flexDirection: "column" }}>
                     <div style={{ padding: "0.85rem 1.25rem", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: "0.65rem" }}>
-                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(105,240,174,0.15)", border: "2px solid rgba(105,240,174,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae" }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,171,0,0.15)", border: "2px solid rgba(255,171,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#ffab00" }}>
                             {activeConvo.other_name?.[0] || "?"}
                         </div>
                         <div>
                             <div style={{ fontWeight: 700, fontSize: "0.875rem" }}>{activeConvo.other_name}</div>
-                            <div style={{ fontSize: "0.68rem", color: "#69f0ae" }}>{activeConvo.other_role}</div>
+                            <div style={{ fontSize: "0.68rem", color: "#ffab00" }}>{activeConvo.other_role}</div>
                         </div>
                     </div>
                     <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
@@ -473,9 +473,9 @@ const MessagesTab = ({ headers, myProfile, setUnreadMessages }) => {
                             const isMe = msg.sender_id === myProfile?.user_id;
                             return (
                                 <div key={i} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start" }}>
-                                    <div style={{ maxWidth: "70%", background: isMe ? "#69f0ae" : "rgba(255,255,255,0.08)", color: isMe ? "#080c10" : "#e4ede6", padding: "0.5rem 0.9rem", borderRadius: isMe ? "14px 14px 4px 14px" : "14px 14px 14px 4px", fontSize: "0.875rem", lineHeight: 1.5 }}>
+                                    <div style={{ maxWidth: "70%", background: isMe ? "#ffab00" : "rgba(255,255,255,0.08)", color: isMe ? "#0a0800" : "#e4ede6", padding: "0.5rem 0.9rem", borderRadius: isMe ? "14px 14px 4px 14px" : "14px 14px 14px 4px", fontSize: "0.875rem", lineHeight: 1.5 }}>
                                         {msg.content}
-                                        <div style={{ fontSize: "0.62rem", color: isMe ? "rgba(8,12,16,0.5)" : "rgba(255,255,255,0.3)", marginTop: "0.2rem", textAlign: isMe ? "right" : "left" }}>{msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</div>
+                                        <div style={{ fontSize: "0.62rem", color: isMe ? "rgba(10,8,0,0.5)" : "rgba(255,255,255,0.3)", marginTop: "0.2rem", textAlign: isMe ? "right" : "left" }}>{msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</div>
                                     </div>
                                 </div>
                             );
@@ -486,8 +486,8 @@ const MessagesTab = ({ headers, myProfile, setUnreadMessages }) => {
                         <input style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: "0.5rem 1rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none" }}
                             placeholder="Type a message..." value={newMessage} onChange={e => setNewMessage(e.target.value)}
                             onKeyDown={e => e.key === "Enter" && handleSend()}
-                            onFocus={e => e.target.style.borderColor = "#69f0ae"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
-                        <button onClick={handleSend} disabled={sending || !newMessage.trim()} style={{ background: newMessage.trim() ? "#69f0ae" : "rgba(105,240,174,0.2)", color: newMessage.trim() ? "#080c10" : "rgba(255,255,255,0.3)", border: "none", padding: "0.5rem 1.1rem", borderRadius: 20, fontWeight: 700, fontSize: "0.82rem", cursor: newMessage.trim() ? "pointer" : "not-allowed" }}>Send</button>
+                            onFocus={e => e.target.style.borderColor = "#ffab00"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
+                        <button onClick={handleSend} disabled={sending || !newMessage.trim()} style={{ background: newMessage.trim() ? "#ffab00" : "rgba(255,171,0,0.2)", color: newMessage.trim() ? "#0a0800" : "rgba(255,255,255,0.3)", border: "none", padding: "0.5rem 1.1rem", borderRadius: 20, fontWeight: 700, fontSize: "0.82rem", cursor: newMessage.trim() ? "pointer" : "not-allowed" }}>Send</button>
                     </div>
                 </div>
             ) : (
@@ -537,7 +537,7 @@ const NetworkTab = ({ headers }) => {
 
     const ROLES = ["All", "Budtender", "Lead Budtender", "Store Manager", "Master Grower", "Compliance Officer", "Dispensary Owner", "Extractor", "Lab Tech", "Supplier", "Investor", "Lawyer", "Accountant"];
     const STATES = ["All", "MA", "CA", "CO", "IL", "NY", "NV", "OR", "WA", "MI", "AZ", "NJ", "CT", "RI", "ME", "MN"];
-    const ROLE_COLORS = { "Budtender": "#69f0ae", "Lead Budtender": "#69f0ae", "Master Grower": "#a8ff78", "Compliance Officer": "#ffd740", "Dispensary Owner": "#4fc3f7", "Extractor": "#ce93d8", "Lab Tech": "#f48fb1", "Investor": "#fff176", "Supplier": "#ffb74d", "Lawyer": "#80deea", "Accountant": "#80deea", "Store Manager": "#4fc3f7" };
+    const ROLE_COLORS = { "Budtender": "#ffab00", "Lead Budtender": "#ffab00", "Master Grower": "#a8ff78", "Compliance Officer": "#ffd740", "Dispensary Owner": "#4fc3f7", "Extractor": "#ce93d8", "Lab Tech": "#f48fb1", "Investor": "#fff176", "Supplier": "#ffb74d", "Lawyer": "#80deea", "Accountant": "#80deea", "Store Manager": "#4fc3f7" };
 
     const filtered = profiles.filter(p => {
         const ms = !search || `${p.first_name} ${p.last_name} ${p.headline} ${p.position} ${p.location}`.toLowerCase().includes(search.toLowerCase());
@@ -548,46 +548,46 @@ const NetworkTab = ({ headers }) => {
 
     if (viewProfile) return (
         <div>
-            <button onClick={() => setViewProfile(null)} style={{ background: "transparent", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.4rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.25rem" }}>← Back to Network</button>
+            <button onClick={() => setViewProfile(null)} style={{ background: "transparent", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.4rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.25rem" }}>← Back to Network</button>
             <div className="glass-panel">
                 <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-                    <div style={{ width: 72, height: 72, borderRadius: "50%", background: `${ROLE_COLORS[viewProfile.position] || "#69f0ae"}22`, border: `3px solid ${ROLE_COLORS[viewProfile.position] || "#69f0ae"}50`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: ROLE_COLORS[viewProfile.position] || "#69f0ae", fontSize: "1.5rem", flexShrink: 0 }}>
+                    <div style={{ width: 72, height: 72, borderRadius: "50%", background: `${ROLE_COLORS[viewProfile.position] || "#ffab00"}22`, border: `3px solid ${ROLE_COLORS[viewProfile.position] || "#ffab00"}50`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: ROLE_COLORS[viewProfile.position] || "#ffab00", fontSize: "1.5rem", flexShrink: 0 }}>
                         {viewProfile.first_name?.[0] || "?"}
                     </div>
                     <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.25rem" }}>
                             <h3 style={{ fontWeight: 800, fontSize: "1.2rem" }}>{viewProfile.first_name} {viewProfile.last_name}</h3>
-                            {viewProfile.verified && <span style={{ background: "rgba(105,240,174,0.15)", color: "#69f0ae", fontSize: "0.7rem", padding: "2px 8px", borderRadius: 100, fontWeight: 700 }}>✓ Verified</span>}
-                            {viewProfile.available && <span style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", fontSize: "0.7rem", padding: "2px 8px", borderRadius: 100, fontWeight: 600 }}>● Open to Work</span>}
+                            {viewProfile.verified && <span style={{ background: "rgba(255,171,0,0.15)", color: "#ffab00", fontSize: "0.7rem", padding: "2px 8px", borderRadius: 100, fontWeight: 700 }}>✓ Verified</span>}
+                            {viewProfile.available && <span style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", fontSize: "0.7rem", padding: "2px 8px", borderRadius: 100, fontWeight: 600 }}>● Open to Work</span>}
                         </div>
-                        <p style={{ color: ROLE_COLORS[viewProfile.position] || "#69f0ae", marginBottom: "0.2rem", fontSize: "0.9rem" }}>{viewProfile.position}</p>
+                        <p style={{ color: ROLE_COLORS[viewProfile.position] || "#ffab00", marginBottom: "0.2rem", fontSize: "0.9rem" }}>{viewProfile.position}</p>
                         {viewProfile.location && <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>📍 {viewProfile.location}</p>}
                         {viewProfile.bio && <p style={{ color: "rgba(255,255,255,0.65)", marginTop: "0.75rem", fontSize: "0.875rem", lineHeight: 1.6 }}>{viewProfile.bio}</p>}
                     </div>
                     <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                         {viewProfile.connection_status !== "connected" ? (
-                            <button onClick={() => handleConnect(viewProfile.user_id)} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.5rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>+ Connect</button>
+                            <button onClick={() => handleConnect(viewProfile.user_id)} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.5rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>+ Connect</button>
                         ) : (
-                            <button onClick={() => handleMessage(viewProfile.user_id)} style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.5rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>💬 Message</button>
+                            <button onClick={() => handleMessage(viewProfile.user_id)} style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.5rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>💬 Message</button>
                         )}
                     </div>
                 </div>
                 {viewProfile.certifications?.length > 0 && (
                     <div style={{ marginBottom: "1.25rem" }}>
-                        <h5 style={{ fontWeight: 700, marginBottom: "0.75rem", color: "#69f0ae", fontSize: "0.875rem" }}>🏆 Certifications</h5>
+                        <h5 style={{ fontWeight: 700, marginBottom: "0.75rem", color: "#ffab00", fontSize: "0.875rem" }}>🏆 Certifications</h5>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
                             {viewProfile.certifications.map((c, i) => (
-                                <span key={i} style={{ background: "rgba(105,240,174,0.08)", border: "1px solid rgba(105,240,174,0.2)", color: "rgba(105,240,174,0.8)", padding: "4px 12px", borderRadius: 100, fontSize: "0.75rem" }}>{c.name || c}</span>
+                                <span key={i} style={{ background: "rgba(255,171,0,0.08)", border: "1px solid rgba(255,171,0,0.2)", color: "rgba(105,240,174,0.8)", padding: "4px 12px", borderRadius: 100, fontSize: "0.75rem" }}>{c.name || c}</span>
                             ))}
                         </div>
                     </div>
                 )}
                 <div>
-                    <h5 style={{ fontWeight: 700, marginBottom: "0.75rem", color: "#69f0ae", fontSize: "0.875rem" }}>👍 Endorse Skills</h5>
+                    <h5 style={{ fontWeight: 700, marginBottom: "0.75rem", color: "#ffab00", fontSize: "0.875rem" }}>👍 Endorse Skills</h5>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
                         {["Metrc", "Customer Service", "Compliance", "Inventory", "POS Systems", "Cannabis Knowledge", "Team Leadership"].map((skill, i) => (
                             <button key={i} onClick={() => handleEndorse(viewProfile.user_id, skill)} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", padding: "4px 12px", borderRadius: 100, fontSize: "0.75rem", cursor: "pointer", transition: "all 0.15s" }}
-                                onMouseEnter={e => { e.target.style.borderColor = "#69f0ae"; e.target.style.color = "#69f0ae"; }}
+                                onMouseEnter={e => { e.target.style.borderColor = "#ffab00"; e.target.style.color = "#ffab00"; }}
                                 onMouseLeave={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.color = "rgba(255,255,255,0.6)"; }}>
                                 + {skill}
                             </button>
@@ -602,41 +602,41 @@ const NetworkTab = ({ headers }) => {
         <div>
             <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
                 {[{ id: "discover", l: "Discover" }, { id: "connections", l: `My Connections (${connections.length})` }, { id: "pending", l: `Pending (${pending.length})` }].map(s => (
-                    <button key={s.id} onClick={() => setSection(s.id)} style={{ background: section === s.id ? "rgba(105,240,174,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${section === s.id ? "rgba(105,240,174,0.4)" : "rgba(255,255,255,0.1)"}`, color: section === s.id ? "#69f0ae" : "rgba(255,255,255,0.5)", padding: "0.45rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.82rem", fontWeight: section === s.id ? 700 : 400 }}>{s.l}</button>
+                    <button key={s.id} onClick={() => setSection(s.id)} style={{ background: section === s.id ? "rgba(255,171,0,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${section === s.id ? "rgba(255,171,0,0.4)" : "rgba(255,255,255,0.1)"}`, color: section === s.id ? "#ffab00" : "rgba(255,255,255,0.5)", padding: "0.45rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.82rem", fontWeight: section === s.id ? 700 : 400 }}>{s.l}</button>
                 ))}
             </div>
 
             {section === "discover" && (
                 <>
                     <div className="glass-panel" style={{ marginBottom: "1.25rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                        <input style={{ flex: 1, minWidth: 180, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.55rem 1rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none" }} placeholder="Search by name, role, company, location..." value={search} onChange={e => setSearch(e.target.value)} onFocus={e => e.target.style.borderColor = "#69f0ae"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
+                        <input style={{ flex: 1, minWidth: 180, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.55rem 1rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none" }} placeholder="Search by name, role, company, location..." value={search} onChange={e => setSearch(e.target.value)} onFocus={e => e.target.style.borderColor = "#ffab00"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
                         <select style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.55rem 0.85rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }} value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>{ROLES.map(r => <option key={r}>{r}</option>)}</select>
                         <select style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.55rem 0.85rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }} value={stateFilter} onChange={e => setStateFilter(e.target.value)}>{STATES.map(s => <option key={s}>{s}</option>)}</select>
                     </div>
-                    {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+                    {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "1rem" }}>
                         {filtered.map((p, i) => (
                             <div key={p.id || i} className="glass-panel" style={{ position: "relative", cursor: "pointer" }} onClick={() => setViewProfile(p)}>
-                                {p.available && <div style={{ position: "absolute", top: "0.75rem", right: "0.75rem", background: "rgba(105,240,174,0.15)", color: "#69f0ae", fontSize: "0.62rem", padding: "2px 8px", borderRadius: 100, fontWeight: 700 }}>● Open to Work</div>}
-                                {p.verified && <div style={{ position: "absolute", top: p.available ? "1.75rem" : "0.75rem", right: "0.75rem", background: "rgba(105,240,174,0.1)", color: "#69f0ae", fontSize: "0.6rem", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>✓ Verified</div>}
+                                {p.available && <div style={{ position: "absolute", top: "0.75rem", right: "0.75rem", background: "rgba(255,171,0,0.15)", color: "#ffab00", fontSize: "0.62rem", padding: "2px 8px", borderRadius: 100, fontWeight: 700 }}>● Open to Work</div>}
+                                {p.verified && <div style={{ position: "absolute", top: p.available ? "1.75rem" : "0.75rem", right: "0.75rem", background: "rgba(255,171,0,0.1)", color: "#ffab00", fontSize: "0.6rem", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>✓ Verified</div>}
                                 <div style={{ display: "flex", gap: "0.65rem", marginBottom: "0.65rem" }}>
-                                    <div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: `${ROLE_COLORS[p.position] || "#69f0ae"}22`, border: `2px solid ${ROLE_COLORS[p.position] || "#69f0ae"}50`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: ROLE_COLORS[p.position] || "#69f0ae", fontSize: "1rem" }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, background: `${ROLE_COLORS[p.position] || "#ffab00"}22`, border: `2px solid ${ROLE_COLORS[p.position] || "#ffab00"}50`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: ROLE_COLORS[p.position] || "#ffab00", fontSize: "1rem" }}>
                                         {p.first_name?.[0] || "?"}
                                     </div>
                                     <div>
                                         <div style={{ fontWeight: 700, fontSize: "0.875rem" }}>{p.first_name} {p.last_name}</div>
-                                        <div style={{ fontSize: "0.72rem", color: ROLE_COLORS[p.position] || "#69f0ae" }}>{p.position || "Cannabis Pro"}</div>
+                                        <div style={{ fontSize: "0.72rem", color: ROLE_COLORS[p.position] || "#ffab00" }}>{p.position || "Cannabis Pro"}</div>
                                         {p.location && <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.3)" }}>📍 {p.location}</div>}
                                     </div>
                                 </div>
                                 {p.bio && <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", marginBottom: "0.65rem", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{p.bio}</p>}
                                 <div style={{ display: "flex", gap: "0.4rem" }} onClick={e => e.stopPropagation()}>
                                     {p.connection_status === "connected" ? (
-                                        <button onClick={() => handleMessage(p.user_id)} style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.35rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", flex: 1 }}>💬 Message</button>
+                                        <button onClick={() => handleMessage(p.user_id)} style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.35rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", flex: 1 }}>💬 Message</button>
                                     ) : p.connection_status === "pending" ? (
                                         <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)", padding: "0.35rem 0" }}>Request Sent</span>
                                     ) : (
-                                        <button onClick={() => handleConnect(p.user_id)} style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.35rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", flex: 1 }}>+ Connect</button>
+                                        <button onClick={() => handleConnect(p.user_id)} style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.35rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", flex: 1 }}>+ Connect</button>
                                     )}
                                     <button onClick={() => setViewProfile(p)} style={{ background: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.35rem 0.6rem", borderRadius: 7, fontSize: "0.72rem", cursor: "pointer" }}>View</button>
                                 </div>
@@ -653,10 +653,10 @@ const NetworkTab = ({ headers }) => {
                     {connections.map((c, i) => (
                         <div key={i} className="glass-panel" style={{ display: "flex", gap: "0.65rem", alignItems: "center", justifyContent: "space-between" }}>
                             <div style={{ display: "flex", gap: "0.65rem", alignItems: "center" }}>
-                                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(105,240,174,0.15)", border: "2px solid rgba(105,240,174,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae" }}>{c.first_name?.[0] || "?"}</div>
-                                <div><div style={{ fontWeight: 700, fontSize: "0.875rem" }}>{c.first_name} {c.last_name}</div><div style={{ fontSize: "0.7rem", color: "#69f0ae" }}>{c.position}</div></div>
+                                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,171,0,0.15)", border: "2px solid rgba(255,171,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#ffab00" }}>{c.first_name?.[0] || "?"}</div>
+                                <div><div style={{ fontWeight: 700, fontSize: "0.875rem" }}>{c.first_name} {c.last_name}</div><div style={{ fontSize: "0.7rem", color: "#ffab00" }}>{c.position}</div></div>
                             </div>
-                            <button onClick={() => handleMessage(c.user_id)} style={{ background: "transparent", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.3rem 0.6rem", borderRadius: 7, fontSize: "0.72rem", cursor: "pointer" }}>💬</button>
+                            <button onClick={() => handleMessage(c.user_id)} style={{ background: "transparent", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.3rem 0.6rem", borderRadius: 7, fontSize: "0.72rem", cursor: "pointer" }}>💬</button>
                         </div>
                     ))}
                 </div>
@@ -668,11 +668,11 @@ const NetworkTab = ({ headers }) => {
                     {pending.map((req, i) => (
                         <div key={i} className="glass-panel" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
                             <div style={{ display: "flex", gap: "0.65rem", alignItems: "center" }}>
-                                <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(105,240,174,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae" }}>{req.first_name?.[0] || "?"}</div>
+                                <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(255,171,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#ffab00" }}>{req.first_name?.[0] || "?"}</div>
                                 <div><div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{req.first_name} {req.last_name}</div><div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)" }}>{req.position}</div></div>
                             </div>
                             <div style={{ display: "flex", gap: "0.4rem" }}>
-                                <button onClick={async () => { await fetch(`${process.env.BACKEND_URL}/api/leafbridge/connections/${req.id}/accept`, { method: "PUT", headers }); setPending(prev => prev.filter(r => r.id !== req.id)); }} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.35rem 0.85rem", borderRadius: 7, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>Accept</button>
+                                <button onClick={async () => { await fetch(`${process.env.BACKEND_URL}/api/leafbridge/connections/${req.id}/accept`, { method: "PUT", headers }); setPending(prev => prev.filter(r => r.id !== req.id)); }} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.35rem 0.85rem", borderRadius: 7, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>Accept</button>
                                 <button onClick={() => setPending(prev => prev.filter(r => r.id !== req.id))} style={{ background: "transparent", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.35rem 0.65rem", borderRadius: 7, fontSize: "0.78rem", cursor: "pointer" }}>Ignore</button>
                             </div>
                         </div>
@@ -717,12 +717,12 @@ const CompaniesTab = ({ headers }) => {
                     <h4 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.2rem" }}>🏢 Company Pages</h4>
                     <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Dispensaries, farms, labs, and vendors</p>
                 </div>
-                <button onClick={() => setShowCreate(!showCreate)} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>+ Create Company Page</button>
+                <button onClick={() => setShowCreate(!showCreate)} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>+ Create Company Page</button>
             </div>
 
             {showCreate && (
-                <div className="glass-panel" style={{ marginBottom: "1.25rem", border: "1px solid rgba(105,240,174,0.2)" }}>
-                    <h5 style={{ fontWeight: 700, marginBottom: "1rem", color: "#69f0ae", fontSize: "0.9rem" }}>Create Company Page</h5>
+                <div className="glass-panel" style={{ marginBottom: "1.25rem", border: "1px solid rgba(255,171,0,0.2)" }}>
+                    <h5 style={{ fontWeight: 700, marginBottom: "1rem", color: "#ffab00", fontSize: "0.9rem" }}>Create Company Page</h5>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "0.75rem" }}>
                         <div><label style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "0.3rem" }}>Company Name</label><input style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none" }} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                         <div><label style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "0.3rem" }}>Type</label><select style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none" }} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>{TYPES.map(t => <option key={t}>{t}</option>)}</select></div>
@@ -732,28 +732,28 @@ const CompaniesTab = ({ headers }) => {
                     </div>
                     <div style={{ display: "flex", gap: "0.5rem" }}>
                         <button onClick={() => setShowCreate(false)} style={{ background: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.15)", padding: "0.45rem 1rem", borderRadius: 8, cursor: "pointer", fontSize: "0.82rem" }}>Cancel</button>
-                        <button onClick={handleCreate} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.45rem 1.25rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>Create Page</button>
+                        <button onClick={handleCreate} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.45rem 1.25rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>Create Page</button>
                     </div>
                 </div>
             )}
 
-            <input style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.55rem 1rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none", marginBottom: "1.25rem" }} placeholder="Search companies..." value={search} onChange={e => setSearch(e.target.value)} onFocus={e => e.target.style.borderColor = "#69f0ae"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
+            <input style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.55rem 1rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none", marginBottom: "1.25rem" }} placeholder="Search companies..." value={search} onChange={e => setSearch(e.target.value)} onFocus={e => e.target.style.borderColor = "#ffab00"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
 
-            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
                 {filtered.map((c, i) => (
                     <div key={i} className="glass-panel">
                         <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem", alignItems: "flex-start" }}>
-                            <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(105,240,174,0.1)", border: "1px solid rgba(105,240,174,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", flexShrink: 0 }}>{TYPE_ICONS[c.type] || "🏢"}</div>
+                            <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(255,171,0,0.1)", border: "1px solid rgba(255,171,0,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", flexShrink: 0 }}>{TYPE_ICONS[c.type] || "🏢"}</div>
                             <div>
                                 <div style={{ fontWeight: 700, fontSize: "0.9rem", marginBottom: "0.15rem" }}>{c.name}</div>
-                                <div style={{ fontSize: "0.72rem", color: "#69f0ae", marginBottom: "0.15rem" }}>{c.type} · {c.state}</div>
-                                {c.verified && <span style={{ background: "rgba(105,240,174,0.12)", color: "#69f0ae", fontSize: "0.6rem", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>✓ Verified</span>}
+                                <div style={{ fontSize: "0.72rem", color: "#ffab00", marginBottom: "0.15rem" }}>{c.type} · {c.state}</div>
+                                {c.verified && <span style={{ background: "rgba(255,171,0,0.12)", color: "#ffab00", fontSize: "0.6rem", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>✓ Verified</span>}
                             </div>
                         </div>
                         {c.description && <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)", marginBottom: "0.75rem", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{c.description}</p>}
                         <div style={{ display: "flex", gap: "0.4rem" }}>
-                            <button style={{ background: "rgba(105,240,174,0.08)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.2)", padding: "0.35rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", cursor: "pointer", flex: 1 }}>Follow</button>
+                            <button style={{ background: "rgba(255,171,0,0.08)", color: "#ffab00", border: "1px solid rgba(255,171,0,0.2)", padding: "0.35rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", cursor: "pointer", flex: 1 }}>Follow</button>
                             {c.open_jobs > 0 && <button style={{ background: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.35rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", cursor: "pointer" }}>{c.open_jobs} Jobs</button>}
                         </div>
                     </div>
@@ -805,12 +805,12 @@ const GroupsTab = ({ headers }) => {
                     <h4 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.2rem" }}>👥 Industry Groups</h4>
                     <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Connect with professionals in your specialty</p>
                 </div>
-                <button onClick={() => setShowCreate(!showCreate)} style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>+ Create Group</button>
+                <button onClick={() => setShowCreate(!showCreate)} style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>+ Create Group</button>
             </div>
 
             {showCreate && (
-                <div className="glass-panel" style={{ marginBottom: "1.25rem", border: "1px solid rgba(105,240,174,0.2)" }}>
-                    <h5 style={{ color: "#69f0ae", fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.9rem" }}>Create a Group</h5>
+                <div className="glass-panel" style={{ marginBottom: "1.25rem", border: "1px solid rgba(255,171,0,0.2)" }}>
+                    <h5 style={{ color: "#ffab00", fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.9rem" }}>Create a Group</h5>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem", marginBottom: "0.65rem" }}>
                         <div><label style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "0.25rem" }}>Group Name</label><input style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.45rem 0.75rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
                         <div><label style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "0.25rem" }}>Category</label><select style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.45rem 0.75rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }} value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>{CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
@@ -818,24 +818,24 @@ const GroupsTab = ({ headers }) => {
                     </div>
                     <div style={{ display: "flex", gap: "0.5rem" }}>
                         <button onClick={() => setShowCreate(false)} style={{ background: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.15)", padding: "0.4rem 0.9rem", borderRadius: 8, cursor: "pointer", fontSize: "0.8rem" }}>Cancel</button>
-                        <button onClick={async () => { const r = await fetch(`${process.env.BACKEND_URL}/api/leafbridge/groups`, { method: "POST", headers, body: JSON.stringify(form) }); if (r.ok) { const g = await r.json(); setGroups(prev => [g, ...prev]); setShowCreate(false); } }} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.4rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>Create Group</button>
+                        <button onClick={async () => { const r = await fetch(`${process.env.BACKEND_URL}/api/leafbridge/groups`, { method: "POST", headers, body: JSON.stringify(form) }); if (r.ok) { const g = await r.json(); setGroups(prev => [g, ...prev]); setShowCreate(false); } }} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.4rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>Create Group</button>
                     </div>
                 </div>
             )}
 
-            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
                 {groups.map((g, i) => (
                     <div key={g.id || i} className="glass-panel">
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
                             <span style={{ fontSize: "1.8rem" }}>{CAT_ICONS[g.category] || "👥"}</span>
-                            <span style={{ background: "rgba(105,240,174,0.08)", color: "#69f0ae", fontSize: "0.65rem", padding: "2px 8px", borderRadius: 100, fontWeight: 600 }}>{g.category}</span>
+                            <span style={{ background: "rgba(255,171,0,0.08)", color: "#ffab00", fontSize: "0.65rem", padding: "2px 8px", borderRadius: 100, fontWeight: 600 }}>{g.category}</span>
                         </div>
                         <h5 style={{ fontWeight: 700, marginBottom: "0.25rem", fontSize: "0.9rem" }}>{g.name}</h5>
                         <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)", marginBottom: "0.65rem", lineHeight: 1.5 }}>{g.description}</p>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)" }}>👥 {g.members} members{g.state && ` · ${g.state}`}</span>
-                            <button onClick={() => handleJoin(g.id)} style={{ background: g.joined ? "rgba(105,240,174,0.08)" : "rgba(105,240,174,0.1)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.3rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", fontWeight: 700, cursor: "pointer" }}>{g.joined ? "✓ Joined" : "Join"}</button>
+                            <button onClick={() => handleJoin(g.id)} style={{ background: g.joined ? "rgba(255,171,0,0.08)" : "rgba(255,171,0,0.1)", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.3rem 0.75rem", borderRadius: 7, fontSize: "0.72rem", fontWeight: 700, cursor: "pointer" }}>{g.joined ? "✓ Joined" : "Join"}</button>
                         </div>
                     </div>
                 ))}
@@ -882,12 +882,12 @@ const EventsTab = ({ headers }) => {
                     <h4 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.2rem" }}>📅 Industry Events</h4>
                     <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Job fairs, conferences, workshops, networking</p>
                 </div>
-                <button onClick={() => setShowCreate(!showCreate)} style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>+ Create Event</button>
+                <button onClick={() => setShowCreate(!showCreate)} style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>+ Create Event</button>
             </div>
 
             {showCreate && (
-                <div className="glass-panel" style={{ marginBottom: "1.25rem", border: "1px solid rgba(105,240,174,0.2)" }}>
-                    <h5 style={{ color: "#69f0ae", fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.9rem" }}>Create Event</h5>
+                <div className="glass-panel" style={{ marginBottom: "1.25rem", border: "1px solid rgba(255,171,0,0.2)" }}>
+                    <h5 style={{ color: "#ffab00", fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.9rem" }}>Create Event</h5>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem", marginBottom: "0.65rem" }}>
                         <div style={{ gridColumn: "1/-1" }}><label style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "0.25rem" }}>Event Title</label><input style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.45rem 0.75rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
                         <div><label style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: "0.25rem" }}>Type</label><select style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.45rem 0.75rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>{TYPES.map(t => <option key={t}>{t}</option>)}</select></div>
@@ -897,17 +897,17 @@ const EventsTab = ({ headers }) => {
                     </div>
                     <div style={{ display: "flex", gap: "0.5rem" }}>
                         <button onClick={() => setShowCreate(false)} style={{ background: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.15)", padding: "0.4rem 0.9rem", borderRadius: 8, cursor: "pointer", fontSize: "0.8rem" }}>Cancel</button>
-                        <button onClick={async () => { const r = await fetch(`${process.env.BACKEND_URL}/api/leafbridge/events`, { method: "POST", headers, body: JSON.stringify(form) }); if (r.ok) { const e = await r.json(); setEvents(prev => [e, ...prev]); setShowCreate(false); } }} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.4rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>Create Event</button>
+                        <button onClick={async () => { const r = await fetch(`${process.env.BACKEND_URL}/api/leafbridge/events`, { method: "POST", headers, body: JSON.stringify(form) }); if (r.ok) { const e = await r.json(); setEvents(prev => [e, ...prev]); setShowCreate(false); } }} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.4rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>Create Event</button>
                     </div>
                 </div>
             )}
 
-            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 {events.map((event, i) => (
                     <div key={event.id || i} className="glass-panel" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
                         <div style={{ display: "flex", gap: "1rem", flex: 1 }}>
-                            <div style={{ width: 52, height: 52, borderRadius: 12, background: "rgba(105,240,174,0.1)", border: "1px solid rgba(105,240,174,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", flexShrink: 0 }}>{TYPE_ICONS[event.type] || "📅"}</div>
+                            <div style={{ width: 52, height: 52, borderRadius: 12, background: "rgba(255,171,0,0.1)", border: "1px solid rgba(255,171,0,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", flexShrink: 0 }}>{TYPE_ICONS[event.type] || "📅"}</div>
                             <div>
                                 <h5 style={{ fontWeight: 700, marginBottom: "0.2rem", fontSize: "0.9rem" }}>{event.title}</h5>
                                 <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)", display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "0.3rem" }}>
@@ -919,7 +919,7 @@ const EventsTab = ({ headers }) => {
                             </div>
                         </div>
                         <div style={{ display: "flex", gap: "0.4rem", flexShrink: 0, flexWrap: "wrap" }}>
-                            <button onClick={() => handleRSVP(event.id)} style={{ background: event.rsvped ? "rgba(105,240,174,0.1)" : "#69f0ae", color: event.rsvped ? "#69f0ae" : "#080c10", border: event.rsvped ? "1px solid rgba(105,240,174,0.3)" : "none", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>
+                            <button onClick={() => handleRSVP(event.id)} style={{ background: event.rsvped ? "rgba(255,171,0,0.1)" : "#ffab00", color: event.rsvped ? "#ffab00" : "#0a0800", border: event.rsvped ? "1px solid rgba(255,171,0,0.3)" : "none", padding: "0.45rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>
                                 {event.rsvped ? "✓ Going" : "RSVP"}
                             </button>
                             <label style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.45rem 0.75rem", borderRadius: 8, fontSize: "0.72rem", cursor: "pointer" }} title="Upload event photos">
@@ -1007,10 +1007,10 @@ const SalaryTab = ({ headers }) => {
                         {filtered.map((s, i) => (
                             <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", background: i % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent" }}>
                                 <td style={{ padding: "0.75rem 1rem", fontWeight: 600 }}>{s.role}</td>
-                                <td style={{ padding: "0.75rem 1rem" }}><span style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", padding: "2px 8px", borderRadius: 100, fontSize: "0.72rem", fontWeight: 700 }}>{s.state}</span></td>
+                                <td style={{ padding: "0.75rem 1rem" }}><span style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", padding: "2px 8px", borderRadius: 100, fontSize: "0.72rem", fontWeight: 700 }}>{s.state}</span></td>
                                 <td style={{ padding: "0.75rem 1rem", color: "rgba(255,255,255,0.5)" }}>{fmt(s.min, s.unit)}</td>
                                 <td style={{ padding: "0.75rem 1rem", color: "rgba(255,255,255,0.5)" }}>{fmt(s.max, s.unit)}</td>
-                                <td style={{ padding: "0.75rem 1rem", fontWeight: 700, color: "#69f0ae" }}>{fmt(s.avg, s.unit)}</td>
+                                <td style={{ padding: "0.75rem 1rem", fontWeight: 700, color: "#ffab00" }}>{fmt(s.avg, s.unit)}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -1052,7 +1052,7 @@ const NotificationsTab = ({ headers, notifications, setNotifications, setUnreadC
                     <h4 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.2rem" }}>🔔 Notifications</h4>
                     <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>{notifications.filter(n => !n.read).length} unread</p>
                 </div>
-                <button onClick={markAllRead} style={{ background: "transparent", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.4rem 0.9rem", borderRadius: 8, fontSize: "0.78rem", cursor: "pointer", fontWeight: 600 }}>Mark All Read</button>
+                <button onClick={markAllRead} style={{ background: "transparent", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.4rem 0.9rem", borderRadius: 8, fontSize: "0.78rem", cursor: "pointer", fontWeight: 600 }}>Mark All Read</button>
             </div>
             {notifications.length === 0 && (
                 <div className="glass-panel text-center py-5">
@@ -1068,18 +1068,18 @@ const NotificationsTab = ({ headers, notifications, setNotifications, setUnreadC
                 }} style={{
                     display: "flex", gap: "0.75rem", padding: "0.85rem 1rem",
                     background: notif.read ? "rgba(255,255,255,0.02)" : "rgba(105,240,174,0.05)",
-                    border: `1px solid ${notif.read ? "rgba(255,255,255,0.06)" : "rgba(105,240,174,0.15)"}`,
+                    border: `1px solid ${notif.read ? "rgba(255,255,255,0.06)" : "rgba(255,171,0,0.15)"}`,
                     borderRadius: 12, marginBottom: "0.5rem", cursor: "pointer",
                     transition: "background 0.15s",
                 }}>
-                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: notif.read ? "rgba(255,255,255,0.06)" : "rgba(105,240,174,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", flexShrink: 0 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: notif.read ? "rgba(255,255,255,0.06)" : "rgba(255,171,0,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", flexShrink: 0 }}>
                         {NOTIF_ICONS[notif.type] || "🔔"}
                     </div>
                     <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "0.85rem", color: notif.read ? "rgba(255,255,255,0.6)" : "#e4ede6", fontWeight: notif.read ? 400 : 600, lineHeight: 1.4 }}>{notif.message || "You have a new notification"}</div>
                         <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginTop: "0.2rem" }}>{notif.created_at ? new Date(notif.created_at).toLocaleDateString() : ""}</div>
                     </div>
-                    {!notif.read && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#69f0ae", flexShrink: 0, marginTop: 6 }} />}
+                    {!notif.read && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ffab00", flexShrink: 0, marginTop: 6 }} />}
                 </div>
             ))}
         </div>
@@ -1135,21 +1135,21 @@ const JobsTab = ({ headers, navigate }) => {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.75rem" }}>
                 <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
                     {[{ id: "browse", l: "Browse Jobs" }, { id: "saved", l: `Saved (${savedJobs.length})` }, { id: "applications", l: `Applications (${applications.length})` }].map(s => (
-                        <button key={s.id} onClick={() => setSection(s.id)} style={{ background: section === s.id ? "rgba(105,240,174,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${section === s.id ? "rgba(105,240,174,0.4)" : "rgba(255,255,255,0.1)"}`, color: section === s.id ? "#69f0ae" : "rgba(255,255,255,0.5)", padding: "0.4rem 0.85rem", borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: section === s.id ? 700 : 400 }}>{s.l}</button>
+                        <button key={s.id} onClick={() => setSection(s.id)} style={{ background: section === s.id ? "rgba(255,171,0,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${section === s.id ? "rgba(255,171,0,0.4)" : "rgba(255,255,255,0.1)"}`, color: section === s.id ? "#ffab00" : "rgba(255,255,255,0.5)", padding: "0.4rem 0.85rem", borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: section === s.id ? 700 : 400 }}>{s.l}</button>
                     ))}
                 </div>
-                <button onClick={() => navigate("/jobs/post")} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.4rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>+ Post a Job</button>
+                <button onClick={() => navigate("/jobs/post")} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.4rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>+ Post a Job</button>
             </div>
 
             {section === "browse" && (
                 <>
                     <div className="glass-panel" style={{ marginBottom: "1.25rem", display: "flex", gap: "0.65rem", flexWrap: "wrap" }}>
-                        <input style={{ flex: 1, minWidth: 160, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }} placeholder="Search jobs..." value={search} onChange={e => setSearch(e.target.value)} onFocus={e => e.target.style.borderColor = "#69f0ae"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
+                        <input style={{ flex: 1, minWidth: 160, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e4ede6", fontSize: "0.82rem", outline: "none" }} placeholder="Search jobs..." value={search} onChange={e => setSearch(e.target.value)} onFocus={e => e.target.style.borderColor = "#ffab00"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
                         {[{ v: roleFilter, s: setRoleFilter, opts: ROLES }, { v: stateFilter, s: setStateFilter, opts: STATES }, { v: typeFilter, s: setTypeFilter, opts: TYPES }].map((f, i) => (
                             <select key={i} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.5rem 0.75rem", color: "#e4ede6", fontSize: "0.78rem", outline: "none" }} value={f.v} onChange={e => f.s(e.target.value)}>{f.opts.map(o => <option key={o}>{o}</option>)}</select>
                         ))}
                     </div>
-                    {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+                    {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                         {filtered.map((job, i) => (
                             <div key={job.id || i} className="glass-panel" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
@@ -1158,7 +1158,7 @@ const JobsTab = ({ headers, navigate }) => {
                                         <h5 style={{ fontWeight: 700, fontSize: "0.9rem" }}>{job.title}</h5>
                                         {job.urgent && <span style={{ background: "rgba(245,54,92,0.15)", color: "#f5365c", fontSize: "0.62rem", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>Urgent</span>}
                                     </div>
-                                    <div style={{ fontSize: "0.8rem", color: "#69f0ae", marginBottom: "0.2rem" }}>{job.company}</div>
+                                    <div style={{ fontSize: "0.8rem", color: "#ffab00", marginBottom: "0.2rem" }}>{job.company}</div>
                                     <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                                         {job.location && <span>📍 {job.location}</span>}
                                         {job.salary && <span>💰 {job.salary}</span>}
@@ -1172,8 +1172,8 @@ const JobsTab = ({ headers, navigate }) => {
                                     )}
                                 </div>
                                 <div style={{ display: "flex", gap: "0.4rem", flexShrink: 0 }}>
-                                    <button onClick={() => handleSave(job.id)} style={{ background: job.saved ? "rgba(105,240,174,0.1)" : "transparent", color: job.saved ? "#69f0ae" : "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.35rem 0.6rem", borderRadius: 7, cursor: "pointer", fontSize: "0.75rem" }}>{job.saved ? "★" : "☆"}</button>
-                                    <button onClick={() => handleApply(job.id)} disabled={job.applied} style={{ background: job.applied ? "rgba(105,240,174,0.1)" : "#69f0ae", color: job.applied ? "#69f0ae" : "#080c10", border: job.applied ? "1px solid rgba(105,240,174,0.3)" : "none", padding: "0.35rem 0.85rem", borderRadius: 7, fontWeight: 700, fontSize: "0.75rem", cursor: job.applied ? "default" : "pointer" }}>{job.applied ? "✓ Applied" : "Apply"}</button>
+                                    <button onClick={() => handleSave(job.id)} style={{ background: job.saved ? "rgba(255,171,0,0.1)" : "transparent", color: job.saved ? "#ffab00" : "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.35rem 0.6rem", borderRadius: 7, cursor: "pointer", fontSize: "0.75rem" }}>{job.saved ? "★" : "☆"}</button>
+                                    <button onClick={() => handleApply(job.id)} disabled={job.applied} style={{ background: job.applied ? "rgba(255,171,0,0.1)" : "#ffab00", color: job.applied ? "#ffab00" : "#0a0800", border: job.applied ? "1px solid rgba(255,171,0,0.3)" : "none", padding: "0.35rem 0.85rem", borderRadius: 7, fontWeight: 700, fontSize: "0.75rem", cursor: job.applied ? "default" : "pointer" }}>{job.applied ? "✓ Applied" : "Apply"}</button>
                                 </div>
                             </div>
                         ))}
@@ -1185,7 +1185,7 @@ const JobsTab = ({ headers, navigate }) => {
             {section === "saved" && (
                 <div>
                     {savedJobs.length === 0 ? <div className="glass-panel text-center py-4"><p style={{ color: "rgba(255,255,255,0.4)" }}>No saved jobs yet.</p></div>
-                        : savedJobs.map((j, i) => <div key={i} className="glass-panel" style={{ marginBottom: "0.6rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}><div><div style={{ fontWeight: 700, fontSize: "0.875rem" }}>{j.title}</div><div style={{ fontSize: "0.78rem", color: "#69f0ae" }}>{j.company}</div></div><button onClick={() => handleApply(j.id)} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.35rem 0.85rem", borderRadius: 7, fontWeight: 700, fontSize: "0.75rem", cursor: "pointer" }}>Apply</button></div>)}
+                        : savedJobs.map((j, i) => <div key={i} className="glass-panel" style={{ marginBottom: "0.6rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}><div><div style={{ fontWeight: 700, fontSize: "0.875rem" }}>{j.title}</div><div style={{ fontSize: "0.78rem", color: "#ffab00" }}>{j.company}</div></div><button onClick={() => handleApply(j.id)} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.35rem 0.85rem", borderRadius: 7, fontWeight: 700, fontSize: "0.75rem", cursor: "pointer" }}>Apply</button></div>)}
                 </div>
             )}
 
@@ -1194,8 +1194,8 @@ const JobsTab = ({ headers, navigate }) => {
                     {applications.length === 0 ? <div className="glass-panel text-center py-4"><p style={{ color: "rgba(255,255,255,0.4)" }}>No applications yet.</p></div>
                         : applications.map((app, i) => (
                             <div key={i} className="glass-panel" style={{ marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div><div style={{ fontWeight: 700, fontSize: "0.875rem" }}>{app.job_title}</div><div style={{ fontSize: "0.78rem", color: "#69f0ae" }}>{app.company}</div><div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)" }}>Applied {app.applied_at ? new Date(app.applied_at).toLocaleDateString() : ""}</div></div>
-                                <span style={{ background: app.status === "reviewing" ? "rgba(255,215,64,0.15)" : app.status === "rejected" ? "rgba(245,54,92,0.15)" : app.status === "accepted" ? "rgba(105,240,174,0.15)" : "rgba(255,255,255,0.08)", color: app.status === "reviewing" ? "#ffd740" : app.status === "rejected" ? "#f5365c" : app.status === "accepted" ? "#69f0ae" : "rgba(255,255,255,0.4)", padding: "3px 10px", borderRadius: 100, fontSize: "0.72rem", fontWeight: 700, textTransform: "capitalize" }}>{app.status || "Submitted"}</span>
+                                <div><div style={{ fontWeight: 700, fontSize: "0.875rem" }}>{app.job_title}</div><div style={{ fontSize: "0.78rem", color: "#ffab00" }}>{app.company}</div><div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)" }}>Applied {app.applied_at ? new Date(app.applied_at).toLocaleDateString() : ""}</div></div>
+                                <span style={{ background: app.status === "reviewing" ? "rgba(255,215,64,0.15)" : app.status === "rejected" ? "rgba(245,54,92,0.15)" : app.status === "accepted" ? "rgba(255,171,0,0.15)" : "rgba(255,255,255,0.08)", color: app.status === "reviewing" ? "#ffd740" : app.status === "rejected" ? "#f5365c" : app.status === "accepted" ? "#ffab00" : "rgba(255,255,255,0.4)", padding: "3px 10px", borderRadius: 100, fontSize: "0.72rem", fontWeight: 700, textTransform: "capitalize" }}>{app.status || "Submitted"}</span>
                             </div>
                         ))}
                 </div>
@@ -1222,9 +1222,9 @@ const TrainingTab = ({ headers, navigate }) => {
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
                 <div><h4 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.2rem" }}>🎓 Training Center</h4><p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Courses assigned to you by your manager</p></div>
-                <button onClick={() => navigate("/training/create")} style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.3)", padding: "0.4rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>+ Create Training</button>
+                <button onClick={() => navigate("/training/create")} style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", border: "1px solid rgba(255,171,0,0.3)", padding: "0.4rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>+ Create Training</button>
             </div>
-            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
             {!loading && courses.length === 0 && <div className="glass-panel text-center py-5"><div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>🎓</div><h5>No Training Assigned Yet</h5><p style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.875rem", marginTop: "0.5rem" }}>Your manager assigns training here. You only see what they assign you — nothing else.</p></div>}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
                 {courses.map((c, i) => {
@@ -1233,7 +1233,7 @@ const TrainingTab = ({ headers, navigate }) => {
                         <div key={c.id || i} className="glass-panel">
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.6rem" }}>
                                 <span style={{ fontSize: "1.6rem" }}>{c.category === "compliance" ? "⚖️" : c.category === "product" ? "🌿" : c.category === "safety" ? "🦺" : c.category === "customer_service" ? "🤝" : "📚"}</span>
-                                <span style={{ fontSize: "0.68rem", fontWeight: 700, background: pct === 100 ? "rgba(105,240,174,0.15)" : pct > 0 ? "rgba(255,215,64,0.15)" : "rgba(255,255,255,0.07)", color: pct === 100 ? "#69f0ae" : pct > 0 ? "#ffd740" : "rgba(255,255,255,0.35)", padding: "2px 8px", borderRadius: 100 }}>
+                                <span style={{ fontSize: "0.68rem", fontWeight: 700, background: pct === 100 ? "rgba(255,171,0,0.15)" : pct > 0 ? "rgba(255,215,64,0.15)" : "rgba(255,255,255,0.07)", color: pct === 100 ? "#ffab00" : pct > 0 ? "#ffd740" : "rgba(255,255,255,0.35)", padding: "2px 8px", borderRadius: 100 }}>
                                     {pct === 100 ? "✓ Complete" : pct > 0 ? `${pct}%` : "Not Started"}
                                 </span>
                             </div>
@@ -1241,9 +1241,9 @@ const TrainingTab = ({ headers, navigate }) => {
                             <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)", marginBottom: "0.65rem", lineHeight: 1.5 }}>{c.description}</p>
                             {c.duration && <p style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.3)", marginBottom: "0.65rem" }}>⏱ {c.duration} mins</p>}
                             <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, marginBottom: "0.65rem" }}>
-                                <div style={{ height: "100%", width: `${pct}%`, background: "#69f0ae", borderRadius: 2, transition: "width 0.5s" }} />
+                                <div style={{ height: "100%", width: `${pct}%`, background: "#ffab00", borderRadius: 2, transition: "width 0.5s" }} />
                             </div>
-                            <button onClick={() => navigate(`/training/${c.id}`)} style={{ width: "100%", background: pct === 100 ? "rgba(105,240,174,0.08)" : "#69f0ae", color: pct === 100 ? "#69f0ae" : "#080c10", border: pct === 100 ? "1px solid rgba(105,240,174,0.25)" : "none", padding: "0.45rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>
+                            <button onClick={() => navigate(`/training/${c.id}`)} style={{ width: "100%", background: pct === 100 ? "rgba(255,171,0,0.08)" : "#ffab00", color: pct === 100 ? "#ffab00" : "#0a0800", border: pct === 100 ? "1px solid rgba(105,240,174,0.25)" : "none", padding: "0.45rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>
                                 {pct === 100 ? "Review" : pct > 0 ? "Continue" : "Start"}
                             </button>
                         </div>
@@ -1276,7 +1276,7 @@ const OnboardingTab = ({ headers }) => {
     return (
         <div>
             <div style={{ marginBottom: "1.25rem" }}><h4 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.2rem" }}>📋 Onboarding</h4><p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Complete your checklist to get fully set up</p></div>
-            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
             {!loading && checklists.length === 0 && <div className="glass-panel text-center py-5"><div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>📋</div><p style={{ color: "rgba(255,255,255,0.45)" }}>No onboarding checklist assigned yet.</p></div>}
             {checklists.map((cl, i) => {
                 const total = cl.tasks?.length || 0;
@@ -1285,15 +1285,15 @@ const OnboardingTab = ({ headers }) => {
                     <div key={i} className="glass-panel" style={{ marginBottom: "1rem" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.65rem" }}>
                             <h5 style={{ fontWeight: 700, fontSize: "0.9rem" }}>{cl.title || cl.role}</h5>
-                            <span style={{ color: done === total && total > 0 ? "#69f0ae" : "#ffd740", fontWeight: 700, fontSize: "0.8rem" }}>{done}/{total}</span>
+                            <span style={{ color: done === total && total > 0 ? "#ffab00" : "#ffd740", fontWeight: 700, fontSize: "0.8rem" }}>{done}/{total}</span>
                         </div>
                         <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, marginBottom: "0.65rem" }}>
-                            <div style={{ height: "100%", width: `${total ? (done / total) * 100 : 0}%`, background: "#69f0ae", borderRadius: 2 }} />
+                            <div style={{ height: "100%", width: `${total ? (done / total) * 100 : 0}%`, background: "#ffab00", borderRadius: 2 }} />
                         </div>
                         {cl.tasks?.map((task, j) => (
                             <div key={j} onClick={() => !task.completed && handleComplete(task.id)} style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", padding: "0.45rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: task.completed ? "default" : "pointer" }}>
-                                <div style={{ width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 2, background: task.completed ? "#69f0ae" : "transparent", border: `2px solid ${task.completed ? "#69f0ae" : "rgba(255,255,255,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }}>
-                                    {task.completed && <span style={{ color: "#080c10", fontSize: "0.6rem", fontWeight: 800 }}>✓</span>}
+                                <div style={{ width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 2, background: task.completed ? "#ffab00" : "transparent", border: `2px solid ${task.completed ? "#ffab00" : "rgba(255,255,255,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }}>
+                                    {task.completed && <span style={{ color: "#0a0800", fontSize: "0.6rem", fontWeight: 800 }}>✓</span>}
                                 </div>
                                 <div>
                                     <div style={{ fontSize: "0.82rem", fontWeight: task.completed ? 400 : 600, textDecoration: task.completed ? "line-through" : "none", color: task.completed ? "rgba(255,255,255,0.25)" : "#e4ede6" }}>{task.title}</div>
@@ -1314,7 +1314,7 @@ const OnboardingTab = ({ headers }) => {
 const ReviewsTab = ({ headers }) => {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
-    const RCOLORS = { 5: "#69f0ae", 4: "#a8ff78", 3: "#ffd740", 2: "#ffb74d", 1: "#f5365c" };
+    const RCOLORS = { 5: "#ffab00", 4: "#a8ff78", 3: "#ffd740", 2: "#ffb74d", 1: "#f5365c" };
 
     useEffect(() => {
         fetch(`${process.env.BACKEND_URL}/api/performance-reviews`, { headers })
@@ -1326,21 +1326,21 @@ const ReviewsTab = ({ headers }) => {
     return (
         <div>
             <div style={{ marginBottom: "1.25rem" }}><h4 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.2rem" }}>⭐ Performance Reviews</h4><p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Stored permanently in your LeafBridge profile</p></div>
-            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#69f0ae" }} /></div>}
+            {loading && <div className="text-center py-4"><div className="spinner-border" style={{ color: "#ffab00" }} /></div>}
             {!loading && reviews.length === 0 && <div className="glass-panel text-center py-5"><div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>⭐</div><p style={{ color: "rgba(255,255,255,0.45)" }}>No reviews yet.</p></div>}
             {reviews.map((r, i) => (
-                <div key={r.id || i} className="glass-panel" style={{ marginBottom: "1rem", borderColor: r.acknowledged ? "rgba(255,255,255,0.08)" : "rgba(105,240,174,0.3)" }}>
+                <div key={r.id || i} className="glass-panel" style={{ marginBottom: "1rem", borderColor: r.acknowledged ? "rgba(255,255,255,0.08)" : "rgba(255,171,0,0.3)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.65rem", flexWrap: "wrap", gap: "0.5rem" }}>
                         <div><div style={{ fontWeight: 700, fontSize: "0.875rem" }}>Review — {r.review_period || r.created_at?.split("T")[0]}</div><div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)" }}>by {r.reviewer_name || "Manager"}</div></div>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                             {r.rating && <div style={{ display: "flex", gap: "1px" }}>{[1,2,3,4,5].map(n => <span key={n} style={{ color: n <= r.rating ? RCOLORS[r.rating] : "rgba(255,255,255,0.12)", fontSize: "0.9rem" }}>★</span>)}</div>}
-                            {!r.acknowledged && <span style={{ background: "rgba(105,240,174,0.15)", color: "#69f0ae", fontSize: "0.65rem", padding: "2px 8px", borderRadius: 100, fontWeight: 700 }}>New</span>}
+                            {!r.acknowledged && <span style={{ background: "rgba(255,171,0,0.15)", color: "#ffab00", fontSize: "0.65rem", padding: "2px 8px", borderRadius: 100, fontWeight: 700 }}>New</span>}
                         </div>
                     </div>
                     {r.feedback && <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: "0.65rem" }}>{r.feedback}</p>}
                     {r.goals && <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "0.6rem 0.85rem", marginBottom: "0.65rem" }}><div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.35)", marginBottom: "0.2rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>Goals</div><p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.6)" }}>{r.goals}</p></div>}
                     {!r.acknowledged && (
-                        <button onClick={() => fetch(`${process.env.BACKEND_URL}/api/performance-reviews/${r.id}/acknowledge`, { method: "PUT", headers }).then(() => setReviews(prev => prev.map(rv => rv.id === r.id ? { ...rv, acknowledged: true } : rv)))} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.4rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>✓ Acknowledge</button>
+                        <button onClick={() => fetch(`${process.env.BACKEND_URL}/api/performance-reviews/${r.id}/acknowledge`, { method: "PUT", headers }).then(() => setReviews(prev => prev.map(rv => rv.id === r.id ? { ...rv, acknowledged: true } : rv)))} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.4rem 1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}>✓ Acknowledge</button>
                     )}
                 </div>
             ))}
@@ -1420,7 +1420,7 @@ const ProfileTab = ({ headers, navigate, myProfile, setMyProfile }) => {
             {type === "textarea" ? (
                 <textarea rows={3} disabled={!edit} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none", resize: "vertical" }} value={form[field] || ""} onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))} />
             ) : (
-                <input type={type} disabled={!edit} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none" }} value={form[field] || ""} onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))} onFocus={e => e.target.style.borderColor = "#69f0ae"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
+                <input type={type} disabled={!edit} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e4ede6", fontSize: "0.875rem", outline: "none" }} value={form[field] || ""} onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))} onFocus={e => e.target.style.borderColor = "#ffab00"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
             )}
         </div>
     );
@@ -1433,10 +1433,10 @@ const ProfileTab = ({ headers, navigate, myProfile, setMyProfile }) => {
                     {edit ? (
                         <>
                             <button onClick={() => setEdit(false)} style={{ background: "transparent", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.15)", padding: "0.4rem 0.85rem", borderRadius: 8, cursor: "pointer", fontSize: "0.8rem" }}>Cancel</button>
-                            <button onClick={handleSave} disabled={saving} style={{ background: "#69f0ae", color: "#080c10", border: "none", padding: "0.4rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>{saving ? "Saving..." : "Save Profile"}</button>
+                            <button onClick={handleSave} disabled={saving} style={{ background: "#ffab00", color: "#0a0800", border: "none", padding: "0.4rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>{saving ? "Saving..." : "Save Profile"}</button>
                         </>
                     ) : (
-                        <button onClick={() => setEdit(true)} style={{ background: "rgba(105,240,174,0.1)", color: "#69f0ae", border: "1px solid rgba(105,240,174,0.35)", padding: "0.4rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>Edit Profile</button>
+                        <button onClick={() => setEdit(true)} style={{ background: "rgba(255,171,0,0.1)", color: "#ffab00", border: "1px solid rgba(105,240,174,0.35)", padding: "0.4rem 1.1rem", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }}>Edit Profile</button>
                     )}
                 </div>
             </div>
@@ -1444,31 +1444,31 @@ const ProfileTab = ({ headers, navigate, myProfile, setMyProfile }) => {
             {/* Profile photo */}
             <div className="glass-panel" style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "1.25rem" }}>
                 <div style={{ position: "relative" }}>
-                    <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(105,240,174,0.15)", border: "3px solid rgba(105,240,174,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#69f0ae", fontSize: "1.5rem", overflow: "hidden" }}>
+                    <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(255,171,0,0.15)", border: "3px solid rgba(255,171,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#ffab00", fontSize: "1.5rem", overflow: "hidden" }}>
                         {profilePhoto ? <img src={profilePhoto} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (form.first_name?.[0] || "?")}
                     </div>
-                    <label style={{ position: "absolute", bottom: 0, right: 0, width: 26, height: 26, borderRadius: "50%", background: "#69f0ae", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.5)" }} title="Upload profile photo">
+                    <label style={{ position: "absolute", bottom: 0, right: 0, width: 26, height: 26, borderRadius: "50%", background: "#ffab00", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "0.75rem", boxShadow: "0 2px 8px rgba(0,0,0,0.5)" }} title="Upload profile photo">
                         &#128247;
                         <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files[0] && handlePhotoUpload(e.target.files[0])} />
                     </label>
                 </div>
                 <div>
                     <div style={{ fontWeight: 800, fontSize: "1.1rem" }}>{form.first_name} {form.last_name}</div>
-                    <div style={{ color: "#69f0ae", fontSize: "0.85rem" }}>{form.position || form.headline || "Cannabis Professional"}</div>
+                    <div style={{ color: "#ffab00", fontSize: "0.85rem" }}>{form.position || form.headline || "Cannabis Professional"}</div>
                     <div style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.75rem" }}>📍 {form.location || "Location not set"}</div>
                 </div>
                 <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer", fontSize: "0.78rem" }}>
-                        <div onClick={() => setForm(f => ({ ...f, available: !f.available }))} style={{ width: 36, height: 20, borderRadius: 10, background: form.available ? "#69f0ae" : "rgba(255,255,255,0.12)", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+                        <div onClick={() => setForm(f => ({ ...f, available: !f.available }))} style={{ width: 36, height: 20, borderRadius: 10, background: form.available ? "#ffab00" : "rgba(255,255,255,0.12)", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
                             <div style={{ position: "absolute", top: 2, left: form.available ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
                         </div>
-                        <span style={{ color: form.available ? "#69f0ae" : "rgba(255,255,255,0.35)", fontWeight: 600 }}>Open to Work</span>
+                        <span style={{ color: form.available ? "#ffab00" : "rgba(255,255,255,0.35)", fontWeight: 600 }}>Open to Work</span>
                     </label>
                 </div>
             </div>
 
             <div className="glass-panel" style={{ marginBottom: "1rem" }}>
-                <h5 style={{ color: "#69f0ae", fontWeight: 700, marginBottom: "0.85rem", fontSize: "0.875rem" }}>Basic Information</h5>
+                <h5 style={{ color: "#ffab00", fontWeight: 700, marginBottom: "0.85rem", fontSize: "0.875rem" }}>Basic Information</h5>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "0.75rem" }}>
                     {inp("first_name", "First Name")}
                     {inp("last_name", "Last Name")}
@@ -1485,7 +1485,7 @@ const ProfileTab = ({ headers, navigate, myProfile, setMyProfile }) => {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.65rem" }}>
                 {[
                     { label: "Build Resume", icon: "📄", path: "/resume-builder", color: "#4fc3f7" },
-                    { label: "Work History", icon: "💼", path: "/resume-builder", color: "#69f0ae" },
+                    { label: "Work History", icon: "💼", path: "/resume-builder", color: "#ffab00" },
                     { label: "Certifications", icon: "🏆", path: "/resume-builder", color: "#ffd740" },
                     { label: "Cannabis Licenses", icon: "🪪", path: "/resume-builder", color: "#a8ff78" },
                     { label: "Job Preferences", icon: "🎯", path: "/resume-builder", color: "#ffb74d" },

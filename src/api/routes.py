@@ -4902,7 +4902,7 @@ def create_training_assignments():
 @api.route('/leafbridge/posts/upload-image', methods=['POST'])
 @jwt_required()
 @handle_errors
-def upload_post_image():
+def upload_post_image_legacy():
     if 'file' not in request.files:
         return jsonify({"error": "No file"}), 400
     file = request.files['file']
