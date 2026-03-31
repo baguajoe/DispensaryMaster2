@@ -9,6 +9,7 @@ import AgeVerification from "./pages/AgeVerification";
 
 // Core Pages
 import Home from "./pages/Home";
+import CustomerDashboard from "./pages/CustomerDashboard";
 import ManagerShifts from "./pages/ManagerShifts";
 import InventoryPage from "./pages/InventoryPage";
 import PersonalizedRecommendations from "./pages/PersonalizedRecommendations";
