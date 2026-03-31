@@ -56,7 +56,7 @@ const LeafBridgeHub = () => {
 
             {/* Brand Header */}
             <div style={{ background: "linear-gradient(135deg, rgba(105,240,174,0.1) 0%, rgba(105,240,174,0.03) 100%)", borderBottom: "1px solid rgba(105,240,174,0.15)", padding: "1rem 2rem" }}>
-                <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
+                <div style={{ maxWidth: "100%", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                         <span style={{ fontSize: "1.5rem" }}>🌿</span>
                         <div>
@@ -94,7 +94,7 @@ const LeafBridgeHub = () => {
 
             {/* Tab Bar */}
             <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", overflowX: "auto", background: "rgba(0,0,0,0.2)" }}>
-                <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", padding: "0 1rem" }}>
+                <div style={{ maxWidth: "100%", margin: "0 auto", display: "flex", padding: "0 1rem" }}>
                     {TABS.map(tab => (
                         <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
                             background: "transparent", border: "none",
@@ -116,7 +116,7 @@ const LeafBridgeHub = () => {
             </div>
 
             {/* Tab Content */}
-            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1.5rem" }}>
+            <div style={{ maxWidth: "100%", margin: "0 auto", padding: "1.5rem 1.5rem" }}>
                 {activeTab === "feed"         && <FeedTab headers={headers} myProfile={myProfile} />}
                 {activeTab === "network"      && <NetworkTab headers={headers} />}
                 {activeTab === "messages"     && <MessagesTab headers={headers} myProfile={myProfile} setUnreadMessages={setUnreadMessages} />}
