@@ -14,21 +14,21 @@ const Home = () => {
     }, []);
 
     const FEATURES = [
-        { icon: "🏪", title: "Point of Sale", desc: "Full POS with receipts, returns, offline mode, and reconciliation. No hardware required." },
-        { icon: "📦", title: "Inventory", desc: "Real-time stock tracking, batch numbers, reorder alerts, and Metrc sync built in." },
-        { icon: "⚖️", title: "Compliance", desc: "State-specific templates for MA, CA, CO, IL, NY. Automatic Metrc reporting." },
-        { icon: "🌿", title: "Grow Farms", desc: "Full cultivation management — plant batches, harvest logs, environment monitoring." },
-        { icon: "💊", title: "Medical Module", desc: "Patient records, prescriptions, appointments, insurance billing. HIPAA-aware." },
-        { icon: "🌐", title: "LeafBridge Connect", desc: "Cannabis professional network. Hire, train, onboard, and review your team." },
+        { icon: "🏪", title: "Point of Sale", desc: "Full POS with receipts, returns, offline mode, and reconciliation. No hardware required. Replaces Dutchie at half the price.", saving: "Save $500+/mo vs Dutchie" },
+        { icon: "📦", title: "Inventory Management", desc: "Real-time stock tracking, batch numbers, Metrc sync, reorder alerts, warehouse management, and demand forecasting built in.", saving: "Save $200+/mo vs separate tools" },
+        { icon: "👔", title: "HR & Payroll", desc: "Full employee management, payroll calculations, shift tracking, clock in/out, and time reports. Replaces Wurk and BambooHR completely.", saving: "Save $700+/mo vs Wurk + BambooHR" },
+        { icon: "⚖️", title: "Compliance", desc: "State-specific templates for MA, CA, CO, IL, NY. Automatic Metrc reporting, document upload, license tracking, and gram limit checks.", saving: "Save $300+/mo vs compliance tools" },
+        { icon: "💊", title: "Medical Module", desc: "Patient records, prescriptions, appointments, insurance billing, card expiry alerts. Full HIPAA-aware medical dispensary management.", saving: "Included — competitors charge extra" },
+        { icon: "🌐", title: "LeafBridge Connect", desc: "Cannabis professional network built in. Post jobs free, assign training, manage onboarding, run performance reviews — LinkedIn for cannabis.", saving: "Save $150–600/job post vs LinkedIn" },
     ];
 
     const COMPETITORS = [
-        { name: "Dutchie", price: "$500–1,000/mo", what: "POS only" },
-        { name: "Flowhub", price: "$499+/mo", what: "POS only" },
-        { name: "Wurk", price: "$300–400/mo", what: "HR only" },
-        { name: "BambooHR", price: "$250–500/mo", what: "HR only" },
-        { name: "Trainual", price: "$149+/mo", what: "Training only" },
-        { name: "BudphoriaPro", price: "$249–799/mo", what: "ALL OF THE ABOVE", highlight: true },
+        { name: "Dutchie", price: "$500–1,000/mo", what: "POS only — no HR, no Payroll, no Inventory forecasting" },
+        { name: "Flowhub", price: "$499+/mo", what: "POS only — no HR, no compliance, no medical" },
+        { name: "Wurk", price: "$300–400/mo", what: "HR & Payroll only — no POS, no inventory" },
+        { name: "BambooHR", price: "$250–500/mo", what: "HR only — no cannabis features" },
+        { name: "Trainual", price: "$149+/mo", what: "Training only — no POS, no HR, no inventory" },
+        { name: "BudphoriaPro", price: "$249–799/mo", what: "POS + Inventory + HR + Payroll + Compliance + Medical + Training + Grow + LeafBridge", highlight: true },
     ];
 
     const STATS = [
@@ -184,6 +184,83 @@ const Home = () => {
                                 <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>{f.desc}</p>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </section>
+
+
+            {/* HR + PAYROLL + INVENTORY CALLOUT */}
+            <section style={{ padding: "5rem 2rem", background: "linear-gradient(135deg, rgba(105,240,174,0.04) 0%, rgba(79,195,247,0.04) 100%)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+                    <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+                        <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", marginBottom: "0.75rem" }}>
+                            Built-In <span style={{ color: "#69f0ae" }}>HR, Payroll & Inventory</span><br />No Extra Software Needed
+                        </h2>
+                        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "1rem" }}>Most dispensaries pay 3 separate vendors for these. BudphoriaPro includes all three.</p>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
+                        {/* HR & Payroll */}
+                        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(105,240,174,0.2)", borderRadius: 20, padding: "2rem" }}>
+                            <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>👔</div>
+                            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "1.2rem", color: "#69f0ae", marginBottom: "0.5rem" }}>HR & Payroll</h3>
+                            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.82rem", marginBottom: "1.25rem", lineHeight: 1.6 }}>
+                                Replaces Wurk ($300–400/mo) and BambooHR ($250/mo). Full HR suite built for cannabis operations.
+                            </p>
+                            {["Employee records & profiles", "Payroll calculations", "Clock in / clock out", "Shift scheduling", "Overtime tracking", "Pay period reports", "Department management", "Role-based access control"].map((f, i) => (
+                                <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.35rem", fontSize: "0.8rem", color: "rgba(255,255,255,0.6)" }}>
+                                    <span style={{ color: "#69f0ae", fontWeight: 700, flexShrink: 0 }}>✓</span> {f}
+                                </div>
+                            ))}
+                            <div style={{ marginTop: "1.25rem", background: "rgba(105,240,174,0.08)", border: "1px solid rgba(105,240,174,0.2)", borderRadius: 10, padding: "0.65rem 1rem", fontSize: "0.78rem", color: "#69f0ae", fontWeight: 700 }}>
+                                💰 Save $550–650/mo vs Wurk + BambooHR
+                            </div>
+                        </div>
+
+                        {/* Inventory */}
+                        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(79,195,247,0.2)", borderRadius: 20, padding: "2rem" }}>
+                            <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>📦</div>
+                            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "1.2rem", color: "#4fc3f7", marginBottom: "0.5rem" }}>Inventory Management</h3>
+                            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.82rem", marginBottom: "1.25rem", lineHeight: 1.6 }}>
+                                Real-time inventory across all locations. Auto-syncs with Metrc. No manual entry ever.
+                            </p>
+                            {["Real-time stock levels", "Batch number tracking", "Automatic reorder alerts", "Metrc sync built in", "Multi-location support", "Warehouse management", "Demand forecasting (AI)", "Stock transfer between stores", "Import from Excel/PDF", "THC/CBD content tracking"].map((f, i) => (
+                                <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.35rem", fontSize: "0.8rem", color: "rgba(255,255,255,0.6)" }}>
+                                    <span style={{ color: "#4fc3f7", fontWeight: 700, flexShrink: 0 }}>✓</span> {f}
+                                </div>
+                            ))}
+                            <div style={{ marginTop: "1.25rem", background: "rgba(79,195,247,0.08)", border: "1px solid rgba(79,195,247,0.2)", borderRadius: 10, padding: "0.65rem 1rem", fontSize: "0.78rem", color: "#4fc3f7", fontWeight: 700 }}>
+                                💰 Included — competitors charge $200+/mo extra
+                            </div>
+                        </div>
+
+                        {/* Training LMS */}
+                        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,215,64,0.2)", borderRadius: 20, padding: "2rem" }}>
+                            <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>🎓</div>
+                            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "1.2rem", color: "#ffd740", marginBottom: "0.5rem" }}>Training LMS</h3>
+                            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.82rem", marginBottom: "1.25rem", lineHeight: 1.6 }}>
+                                Replaces Trainual ($149/mo). Upload videos, assign courses, track completions — all inside BudphoriaPro.
+                            </p>
+                            {["Video training upload (R2)", "Manager-assigned courses only", "Compliance training templates", "ID verification training", "Cash handling training", "State law training", "Quiz with 70% pass score", "Completion certificates", "Overdue alerts for managers", "Per-employee progress dashboard"].map((f, i) => (
+                                <div key={i} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.35rem", fontSize: "0.8rem", color: "rgba(255,255,255,0.6)" }}>
+                                    <span style={{ color: "#ffd740", fontWeight: 700, flexShrink: 0 }}>✓</span> {f}
+                                </div>
+                            ))}
+                            <div style={{ marginTop: "1.25rem", background: "rgba(255,215,64,0.08)", border: "1px solid rgba(255,215,64,0.2)", borderRadius: 10, padding: "0.65rem 1rem", fontSize: "0.78rem", color: "#ffd740", fontWeight: 700 }}>
+                                💰 Save $149/mo vs Trainual
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Total savings callout */}
+                    <div style={{ marginTop: "2rem", background: "rgba(105,240,174,0.06)", border: "1px solid rgba(105,240,174,0.25)", borderRadius: 16, padding: "1.5rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+                        <div>
+                            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "1.1rem", marginBottom: "0.25rem" }}>Total savings vs buying separately:</div>
+                            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.82rem" }}>Dutchie + Wurk + BambooHR + Trainual + inventory tools = $1,200–2,100/mo</div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: "2rem", color: "#69f0ae" }}>Save $950–1,850/mo</div>
+                            <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)" }}>with BudphoriaPro Professional at $449/mo</div>
+                        </div>
                     </div>
                 </div>
             </section>
