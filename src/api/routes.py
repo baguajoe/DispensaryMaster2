@@ -4671,3 +4671,88 @@ def get_compliance_documents():
         return jsonify(files), 200
     except Exception as e:
         return jsonify({"documents": [], "error": str(e)}), 200
+
+# ==================== INVOICES + TRANSACTIONS + PLANS CRUD ====================
+@api.route('/invoices', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_invoices():
+    invoices = Invoice.query.order_by(Invoice.id.desc()).all()
+    return jsonify([i.serialize() for i in invoices]), 200
+
+@api.route('/invoices/<int:id>', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_invoice(id):
+    invoice = Invoice.query.get_or_404(id)
+    return jsonify(invoice.serialize()), 200
+
+@api.route('/invoices', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_invoice():
+    data = request.json
+    invoice = Invoice(**{k: v for k, v in data.items() if hasattr(Invoice, k)})
+    db.session.add(invoice)
+    db.session.commit()
+    return jsonify(invoice.serialize()), 201
+
+@api.route('/invoices/<int:id>', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def update_invoice(id):
+    invoice = Invoice.query.get_or_404(id)
+    data = request.json
+    for k, v in data.items():
+        if hasattr(invoice, k): setattr(invoice, k, v)
+    db.session.commit()
+    return jsonify(invoice.serialize()), 200
+
+@api.route('/invoices/<int:id>', methods=['DELETE'])
+@jwt_required()
+@handle_errors
+def delete_invoice(id):
+    invoice = Invoice.query.get_or_404(id)
+    db.session.delete(invoice)
+    db.session.commit()
+    return jsonify({"message": "Invoice deleted"}), 200
+
+@api.route('/transactions', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_transactions():
+    transactions = Transaction.query.order_by(Transaction.id.desc()).limit(100).all()
+    return jsonify([{"id":t.id,"order_id":t.order_id,"customer_name":t.customer_name,"payment_method":t.payment_method,"amount":t.amount,"date":t.date.isoformat() if t.date else None} for t in transactions]), 200
+
+@api.route('/transactions/<int:id>', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_transaction(id):
+    t = Transaction.query.get_or_404(id)
+    return jsonify({"id":t.id,"order_id":t.order_id,"amount":t.amount,"date":t.date.isoformat() if t.date else None}), 200
+
+@api.route('/plans', methods=['GET'])
+@handle_errors
+def get_plans():
+    plans = Plan.query.all()
+    return jsonify([p.serialize() for p in plans]), 200
+
+@api.route('/plans/<int:id>', methods=['GET'])
+@handle_errors
+def get_plan(id):
+    plan = Plan.query.get_or_404(id)
+    return jsonify(plan.serialize()), 200
+
+@api.route('/warehouse', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_warehouses():
+    warehouses = Warehouse.query.all()
+    return jsonify([{"id":w.id,"name":getattr(w,"name",""),"location":getattr(w,"location",""),"capacity":getattr(w,"capacity",0)} for w in warehouses]), 200
+
+@api.route('/stores/<int:id>', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_store_by_id(id):
+    store = Store.query.get_or_404(id)
+    return jsonify(store.serialize()), 200
