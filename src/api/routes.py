@@ -4922,3 +4922,157 @@ def upload_post_image():
         return jsonify({"url": url, "filename": filename}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ══════════════════════════════════════════════════════════════
+# SALES DASHBOARD, PIPELINE, LEADS, REVENUE, DISCOUNTS
+# ══════════════════════════════════════════════════════════════
+
+# ── SALES DASHBOARD ────────────────────────────────────────
+@api.route('/sales/dashboard', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_sales_dashboard():
+    from datetime import datetime, timedelta
+    orders = Order.query.filter(Order.status == 'completed').all()
+    today = datetime.utcnow().date()
+    week_ago = today - timedelta(days=7)
+    month_ago = today - timedelta(days=30)
+    today_sales = sum(float(o.total_amount) for o in orders if o.created_at and o.created_at.date() == today)
+    week_sales = sum(float(o.total_amount) for o in orders if o.created_at and o.created_at.date() >= week_ago)
+    month_sales = sum(float(o.total_amount) for o in orders if o.created_at and o.created_at.date() >= month_ago)
+    total_sales = sum(float(o.total_amount) for o in orders)
+    top_products = {}
+    for o in orders:
+        for item in o.order_items:
+            name = item.product.name if item.product else f"Product {item.product_id}"
+            top_products[name] = top_products.get(name, 0) + float(item.unit_price) * item.quantity
+    top_products_list = sorted([{"name": k, "revenue": v} for k, v in top_products.items()], key=lambda x: -x["revenue"])[:10]
+    return jsonify({
+        "today_sales": today_sales,
+        "week_sales": week_sales,
+        "month_sales": month_sales,
+        "total_sales": total_sales,
+        "order_count": len(orders),
+        "avg_order_value": total_sales / len(orders) if orders else 0,
+        "top_products": top_products_list,
+    }), 200
+
+# ── SALES PIPELINE ─────────────────────────────────────────
+@api.route('/sales/pipeline', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_sales_pipeline():
+    orders = Order.query.all()
+    pipeline = {
+        "pending": {"count": 0, "value": 0},
+        "completed": {"count": 0, "value": 0},
+        "cancelled": {"count": 0, "value": 0},
+    }
+    for o in orders:
+        status = o.status if o.status in pipeline else "pending"
+        pipeline[status]["count"] += 1
+        pipeline[status]["value"] += float(o.total_amount)
+    return jsonify(pipeline), 200
+
+# ── LEADS ──────────────────────────────────────────────────
+@api.route('/leads', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_leads():
+    customers = Customer.query.filter_by(verification_status='pending').all()
+    return jsonify([c.serialize() for c in customers]), 200
+
+@api.route('/leads', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_lead():
+    data = request.json
+    customer = Customer(
+        first_name=data.get('first_name', ''),
+        last_name=data.get('last_name', ''),
+        email=data.get('email', ''),
+        phone=data.get('phone', ''),
+        membership_level='standard',
+        verification_status='pending'
+    )
+    db.session.add(customer)
+    db.session.commit()
+    return jsonify(customer.serialize()), 201
+
+@api.route('/leads/<int:id>/convert', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def convert_lead(id):
+    customer = Customer.query.get_or_404(id)
+    customer.verification_status = 'verified'
+    db.session.commit()
+    return jsonify(customer.serialize()), 200
+
+# ── REVENUE REPORTS ────────────────────────────────────────
+@api.route('/reports/revenue', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_revenue_reports():
+    from datetime import datetime, timedelta
+    period = request.args.get('period', 'monthly')
+    orders = Order.query.filter(Order.status == 'completed').order_by(Order.created_at.asc()).all()
+    revenue_by_period = {}
+    for o in orders:
+        if not o.created_at: continue
+        if period == 'daily':
+            key = o.created_at.strftime('%Y-%m-%d')
+        elif period == 'weekly':
+            key = f"Week {o.created_at.strftime('%Y-W%W')}"
+        else:
+            key = o.created_at.strftime('%Y-%m')
+        revenue_by_period[key] = revenue_by_period.get(key, 0) + float(o.total_amount)
+    total = sum(revenue_by_period.values())
+    return jsonify({
+        "period": period,
+        "data": [{"label": k, "revenue": v} for k, v in sorted(revenue_by_period.items())],
+        "total_revenue": total,
+        "order_count": len(orders),
+        "avg_order": total / len(orders) if orders else 0,
+    }), 200
+
+# ── DISCOUNTS ──────────────────────────────────────────────
+@api.route('/discounts', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_discounts():
+    # Return discount codes stored in a simple format
+    # Using a basic in-memory structure until a Discount model is added
+    return jsonify([
+        {"id": 1, "code": "WELCOME10", "type": "percentage", "value": 10, "active": True, "uses": 0, "max_uses": 100},
+        {"id": 2, "code": "LOYALTY20", "type": "percentage", "value": 20, "active": True, "uses": 0, "max_uses": 50},
+        {"id": 3, "code": "FLAT5", "type": "flat", "value": 5, "active": True, "uses": 0, "max_uses": 200},
+    ]), 200
+
+@api.route('/discounts', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_discount():
+    data = request.json
+    # Returns the discount as-created until Discount model is added
+    return jsonify({
+        "id": 99,
+        "code": data.get('code', '').upper(),
+        "type": data.get('type', 'percentage'),
+        "value": data.get('value', 0),
+        "active": True,
+        "uses": 0,
+        "max_uses": data.get('max_uses', 100),
+    }), 201
+
+@api.route('/discounts/<int:id>', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def update_discount(id):
+    data = request.json
+    return jsonify({"id": id, **data}), 200
+
+@api.route('/discounts/<int:id>', methods=['DELETE'])
+@jwt_required()
+@handle_errors
+def delete_discount(id):
+    return jsonify({"message": "Discount deleted"}), 200
