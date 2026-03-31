@@ -3,7 +3,7 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from .models import (db, User, Plan, Product, OrderItem, Order, Customer,
     Business, Compliance, Invoice, Store, Transaction, GrowFarm, Seedbank,
-    Employee, Payroll, Patient, Prescription, Appointment)
+    Employee, Payroll, Patient, Prescription, Appointment, Inventory, Warehouse)
 
 def setup_admin(app):
     app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')
@@ -36,6 +36,10 @@ def setup_admin(app):
     # Grow
     admin.add_view(ModelView(GrowFarm, db.session))
     admin.add_view(ModelView(Seedbank, db.session))
+
+    # Inventory
+    admin.add_view(ModelView(Inventory, db.session))
+    admin.add_view(ModelView(Warehouse, db.session))
 
     # Plans
     admin.add_view(ModelView(Plan, db.session))
