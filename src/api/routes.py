@@ -5391,3 +5391,11 @@ def delete_category(name):
     if name in _custom_categories:
         _custom_categories.remove(name)
     return jsonify({"categories": DISPENSARY_CATEGORIES + _custom_categories}), 200
+
+# ── PUBLIC SHOP ROUTE (no auth required) ──────────────────
+@api.route('/shop/products', methods=['GET'])
+@handle_errors
+def get_shop_products():
+    """Public endpoint — returns only available products for the shop"""
+    products = Product.query.filter(Product.stock > 0).all()
+    return jsonify([p.serialize() for p in products]), 200

@@ -25,9 +25,7 @@ const Shop = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch(`${process.env.BACKEND_URL}/api/products`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        })
+        fetch(`${process.env.BACKEND_URL}/api/shop/products`)
             .then(r => r.ok ? r.json() : [])
             .then(data => {
                 const available = Array.isArray(data) ? data.filter(p => (p.stock || p.current_stock || 0) > 0) : [];
