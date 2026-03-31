@@ -9,6 +9,25 @@ import AgeVerification from "./pages/AgeVerification";
 
 // Core Pages
 import Home from "./pages/Home";
+import ManagerShifts from "./pages/ManagerShifts";
+import InventoryPage from "./pages/InventoryPage";
+import PersonalizedRecommendations from "./pages/PersonalizedRecommendations";
+import HelpCenter from "./pages/HelpCenter";
+import RevenueReports from "./pages/RevenueReports";
+import DiscountManagement from "./pages/DiscountManagement";
+import StockAlerts from "./pages/StockAlerts";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
+import InventoryDashboardPage from "./pages/InventoryDashboardPage";
+import PayrollPage from "./pages/PayrollPage";
+import ProductsDetail from "./pages/ProductsDetail";
+import SalesPipeline from "./pages/SalesPipeline";
+import EmployeeShifts from "./pages/EmployeeShifts";
+import StrainInfoPage from "./pages/StrainInfoPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import ChatPage from "./pages/ChatPage";
+import PublicDeals from "./pages/PublicDeals";
+import Leads from "./pages/Leads";
+import SalesDashboard from "./pages/SalesDashboard";
 import Pricing from "./pages/Pricing";
 import AboutUs from "./pages/AboutUs";
 import Shop from "./pages/Shop";
@@ -236,6 +255,26 @@ const Layout = () => {
                             <Route path="/customer/loyalty-program" element={<RequireAuth><LoyaltyProgram /></RequireAuth>} />
                             <Route path="/customer/analytics" element={<RequireAuth><CustomerAnalytics /></RequireAuth>} />
 
+                            <Route path="/sales-dashboard" element={<RequireAuth><SalesDashboard /></RequireAuth>} />
+<Route path="/leads" element={<RequireAuth><Leads /></RequireAuth>} />
+<Route path="/public-deals" element={<PublicDeals />} />
+<Route path="/chat" element={<RequireAuth><ChatPage /></RequireAuth>} />
+<Route path="/checkout" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
+<Route path="/strain/:id" element={<StrainInfoPage />} />
+<Route path="/employee-shifts" element={<RequireAuth><EmployeeShifts /></RequireAuth>} />
+<Route path="/sales-pipeline" element={<RequireAuth><SalesPipeline /></RequireAuth>} />
+<Route path="/products/:id" element={<RequireAuth><ProductsDetail /></RequireAuth>} />
+<Route path="/payroll" element={<RequireAuth><PayrollPage /></RequireAuth>} />
+<Route path="/inventory-dashboard" element={<RequireAuth><InventoryDashboardPage /></RequireAuth>} />
+<Route path="/employee-dashboard" element={<RequireAuth><EmployeeDashboard /></RequireAuth>} />
+<Route path="/stock-alerts" element={<RequireAuth><StockAlerts /></RequireAuth>} />
+<Route path="/discount-management" element={<RequireAuth><DiscountManagement /></RequireAuth>} />
+<Route path="/revenue-reports" element={<RequireAuth><RevenueReports /></RequireAuth>} />
+<Route path="/help" element={<HelpCenter />} />
+<Route path="/recommendations" element={<RequireAuth><PersonalizedRecommendations /></RequireAuth>} />
+<Route path="/inventory-page" element={<RequireAuth><InventoryPage /></RequireAuth>} />
+<Route path="/manager-shifts" element={<RequireAuth><ManagerShifts /></RequireAuth>} />
+<Route path="/customer-dashboard" element={<RequireAuth><CustomerDashboard /></RequireAuth>} />
                             <Route path="*" element={<h1>Page Not Found</h1>} />
                         </Routes>
                     </div>

@@ -13,7 +13,7 @@ const PLANS = [
     },
     {
         id: "pro", name: "Pro", price: "$49", period: "/mo",
-        color: "#0d6efd", badge: "Most Popular",
+        color: "#ffab00", badge: "Most Popular",
         features: ["10 active listings","Featured badge","60 day listing","Applicant tracking","Email + SMS alerts","Company profile page"],
         cta: "Start Pro"
     },

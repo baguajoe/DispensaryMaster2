@@ -163,7 +163,7 @@ const TrainingHome = () => {
             </div>
 
             <div className="row g-3 mb-4">
-                {[{label:"Total Modules",value:resources.length,icon:"📚",color:"#4dabf7"},{label:"Required",value:resources.filter(r=>r.is_required).length,icon:"⚠️",color:"#ff6b6b"},{label:"You Completed",value:totalCompleted,icon:"✅",color:"#51cf66"},{label:"Progress",value:`${pct}%`,icon:"📈",color:"#74c0fc"},{label:"Employees",value:employees.length,icon:"👥",color:"#ffd740"},{label:"Assignments",value:assignments.length,icon:"📋",color:"#ce93d8"}].map((s,i)=>(
+                {[{label:"Total Modules",value:resources.length,icon:"📚",color:"#ffab00"},{label:"Required",value:resources.filter(r=>r.is_required).length,icon:"⚠️",color:"#ff6b6b"},{label:"You Completed",value:totalCompleted,icon:"✅",color:"#51cf66"},{label:"Progress",value:`${pct}%`,icon:"📈",color:"#74c0fc"},{label:"Employees",value:employees.length,icon:"👥",color:"#ffd740"},{label:"Assignments",value:assignments.length,icon:"📋",color:"#ce93d8"}].map((s,i)=>(
                     <div key={i} className="col-6 col-md-2">
                         <div className="rounded p-3 d-flex justify-content-between align-items-center" style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)"}}>
                             <div><div className="small mb-1" style={{color:"rgba(255,255,255,0.6)"}}>{s.label}</div><div className="fw-bold fs-5" style={{color:s.color}}>{s.value}</div></div>
