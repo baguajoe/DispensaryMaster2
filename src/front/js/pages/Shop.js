@@ -82,27 +82,40 @@ const Shop = () => {
 
             {/* Filters */}
             <div className="glass-panel mb-4">
-                <div className="row g-2 align-items-center">
-                    <div className="col-md-4">
-                        <input className="form-control" placeholder="Search products, strains..."
-                            value={search} onChange={e => setSearch(e.target.value)} />
-                    </div>
-                    <div className="col-md-4">
-                        <div style={{ display: "flex", gap: "0.4rem", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "2px" }}>
-                            {(categories.length > 1 ? categories : DEFAULT_CATEGORIES).map(c => (
-                                <button key={c} className={`btn btn-sm ${category===c?"btn-success":"btn-outline-success"}`}
-                                    onClick={() => setCategory(c)}>{c}</button>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <select className="form-select" value={sort} onChange={e => setSort(e.target.value)}>
-                            <option value="name">Sort: Name</option>
+                {/* Row 1: Search + Sort */}
+                <div style={{ display: "flex", gap: "1rem", marginBottom: "0.75rem", alignItems: "center" }}>
+                    <input className="form-control" placeholder="Search products, strains..."
+                        value={search} onChange={e => setSearch(e.target.value)}
+                        style={{ maxWidth: 320 }} />
+                    <select className="form-select" value={sort} onChange={e => setSort(e.target.value)}
+                        style={{ maxWidth: 180 }}>
+                        <option value="name">Sort: Name</option>
                             <option value="price_asc">Sort: Price Low-High</option>
                             <option value="price_desc">Sort: Price High-Low</option>
                             <option value="thc">Sort: THC %</option>
-                        </select>
-                    </div>
+                    </select>
+                </div>
+                {/* Row 2: Category tabs — full width */}
+                <div style={{ display: "flex", gap: "0.4rem", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "4px" }}>
+                    {(categories.length > 1 ? categories : DEFAULT_CATEGORIES).map(c => (
+                        <button key={c}
+                            onClick={() => setCategory(c)}
+                            style={{
+                                background: category === c ? "#ffab00" : "transparent",
+                                color: category === c ? "#0a0800" : "rgba(255,248,225,0.6)",
+                                border: `1px solid ${category === c ? "#ffab00" : "rgba(255,171,0,0.25)"}`,
+                                padding: "0.3rem 0.85rem",
+                                borderRadius: 100,
+                                fontSize: "0.78rem",
+                                fontWeight: category === c ? 700 : 400,
+                                cursor: "pointer",
+                                whiteSpace: "nowrap",
+                                transition: "all 0.15s",
+                                flexShrink: 0,
+                            }}>
+                            {c}
+                        </button>
+                    ))}
                 </div>
             </div>
 
