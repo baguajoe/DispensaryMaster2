@@ -21,8 +21,8 @@
 }
 
 .cart-count {
-  background: #6c757d;
-  color: white;
+  background: rgba(255,248,225,0.45);
+  color: #0a0800;
   padding: 5px 12px;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -72,7 +72,7 @@
 .empty-cart {
   text-align: center;
   padding: 50px 20px;
-  background: #f8f9fa;
+  background: #0f0e00;
   border-radius: 8px;
 }
 
@@ -101,7 +101,7 @@
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: 15px;
   align-items: center;
-  background: #fff;
+  background: #0a0800;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -151,7 +151,7 @@
 
 .stock-warning {
   display: inline-block;
-  background: #fff3cd;
+  background: #0a08003cd;
   color: #856404;
   padding: 2px 8px;
   border-radius: 4px;
@@ -170,7 +170,7 @@
   width: 32px;
   height: 32px;
   border: 1px solid #ced4da;
-  background: #fff;
+  background: #0a0800;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1.1rem;
@@ -178,7 +178,7 @@
 }
 
 .qty-btn:hover {
-  background: #e9ecef;
+  background: #1a1500;
 }
 
 .qty-value {
@@ -211,11 +211,11 @@
 }
 
 .save-btn {
-  color: #007bff;
+  color: #ffab00;
 }
 
 .save-btn:hover {
-  color: #0056b3;
+  color: #cc8800;
   text-decoration: underline;
 }
 
@@ -251,7 +251,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
+  background: #0f0e00;
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 10px;
@@ -264,7 +264,7 @@
 
 /* Order Summary Sidebar */
 .order-summary {
-  background: #fff;
+  background: #0a0800;
   padding: 25px;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -382,8 +382,8 @@
 }
 
 .btn-primary {
-  background: #007bff;
-  color: white;
+  background: #ffab00;
+  color: #0a0800;
 }
 
 .btn-primary:hover {
@@ -391,8 +391,8 @@
 }
 
 .btn-secondary {
-  background: #6c757d;
-  color: white;
+  background: rgba(255,248,225,0.45);
+  color: #0a0800;
 }
 
 .btn-secondary:hover {
@@ -401,7 +401,7 @@
 
 .btn-danger {
   background: #dc3545;
-  color: white;
+  color: #0a0800;
 }
 
 .btn-danger:hover {
@@ -410,13 +410,13 @@
 
 .btn-outline-secondary {
   background: transparent;
-  color: #6c757d;
-  border: 1px solid #6c757d;
+  color: rgba(255,248,225,0.45);
+  border: 1px solid rgba(255,248,225,0.45);
 }
 
 .btn-outline-secondary:hover {
-  background: #6c757d;
-  color: white;
+  background: rgba(255,248,225,0.45);
+  color: #0a0800;
 }
 
 .btn-sm {

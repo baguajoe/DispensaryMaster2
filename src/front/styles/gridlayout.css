@@ -2,8 +2,8 @@
 
 /* Grid layout container */
 .grid-layout {
-    background: #f8f9fa; /* Light gray background */
-    border: 1px solid #e9ecef; /* Subtle border */
+    background: #0f0e00; /* Light gray background */
+    border: 1px solid #1a1500; /* Subtle border */
     border-radius: 8px; /* Rounded corners */
     padding: 10px; /* Inner spacing */
     overflow: hidden; /* Prevent overflow issues */
@@ -11,8 +11,8 @@
   
   /* Individual grid items (widgets) */
   .widget {
-    background: #ffffff; /* White background for widgets */
-    border: 1px solid #dee2e6; /* Light border around each widget */
+    background: #0a0800fff; /* White background for widgets */
+    border: 1px solid rgba(255,171,0,0.15); /* Light border around each widget */
     border-radius: 8px; /* Rounded corners */
     display: flex; /* Center the widget's content */
     justify-content: center; /* Center horizontally */

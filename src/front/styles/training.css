@@ -2,14 +2,14 @@
 .training-form .card-header {
     background: rgba(255,255,255,0.08) !important;
     border-color: rgba(255,255,255,0.15) !important;
-    color: white !important;
+    color: #0a0800 !important;
 }
 
 .training-form .form-control,
 .training-form .form-select {
     background: rgba(255,255,255,0.1) !important;
     border-color: rgba(255,255,255,0.2) !important;
-    color: white !important;
+    color: #0a0800 !important;
 }
 
 .training-form .form-control::placeholder {
@@ -20,13 +20,13 @@
 .training-form .form-select:focus {
     background: rgba(255,255,255,0.15) !important;
     border-color: rgba(255,255,255,0.4) !important;
-    color: white !important;
+    color: #0a0800 !important;
     box-shadow: none !important;
 }
 
 .training-form .form-select option {
     background: #1a2a3a;
-    color: white;
+    color: #0a0800;
 }
 
 .training-form .form-label {
@@ -38,7 +38,7 @@
 }
 
 .training-form .form-check-label {
-    color: white !important;
+    color: #0a0800 !important;
 }
 
 .training-form .text-muted {
@@ -63,8 +63,8 @@
 }
 
 .training-form .btn-outline-primary {
-    color: #74c0fc !important;
-    border-color: #74c0fc !important;
+    color: #ffd740 !important;
+    border-color: #ffd740 !important;
 }
 
 .training-form h4, 
@@ -73,13 +73,13 @@
 .training-form p,
 .training-form small,
 .training-form label {
-    color: white !important;
+    color: #0a0800 !important;
 }
 
 .training-form .upload-zone {
     background: rgba(255,255,255,0.05) !important;
     border: 2px dashed rgba(255,255,255,0.2) !important;
-    color: white !important;
+    color: #0a0800 !important;
     transition: all 0.2s;
 }
 

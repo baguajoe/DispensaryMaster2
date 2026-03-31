@@ -3,20 +3,20 @@
     padding: 24px;
     min-height: calc(100vh - 90px);
     background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
-    color: white; /* Set default text color to white for contrast */
+    color: #0a0800; /* Set default text color to #0a0800 for contrast */
   }
   
   .invoice-header h2 {
-    color: white; /* Ensure the header text is visible */
+    color: #0a0800; /* Ensure the header text is visible */
   }
   
   .invoice-actions button,
   .invoice-actions label {
-    color: white; /* Set text color for buttons */
+    color: #0a0800; /* Set text color for buttons */
   }
   
   .table-container {
-    background: white; /* Set table container background to white for readability */
+    background: #0a0800; /* Set table container background to #0a0800 for readability */
     color: black; /* Set table text to black */
     border-radius: 8px;
     padding: 16px;

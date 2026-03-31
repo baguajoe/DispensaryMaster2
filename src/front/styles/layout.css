@@ -35,12 +35,12 @@
   
   .sidebar .nav-item:hover {
     background-color: #4a5568; /* hover:bg-gray-700 */
-    color: #ffffff; /* hover:text-white */
+    color: #0a0800fff; /* hover:text-#0a0800 */
   }
   
   .sidebar .nav-item.active {
     background-color: #1a202c; /* bg-gray-900 */
-    color: #ffffff; /* text-white */
+    color: #0a0800fff; /* text-#0a0800 */
   }
   
   /* Logout Section */
@@ -55,7 +55,7 @@
   }
   
   .sidebar .logout:hover {
-    color: #ffffff;
+    color: #0a0800fff;
   }
   
   /* Main Content */
@@ -67,7 +67,7 @@
   }
   
   .main-content .header {
-    background-color: #ffffff; /* bg-white */
+    background-color: #0a0800fff; /* bg-#0a0800 */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* shadow */
     height: 4rem; /* h-16 */
     display: flex;

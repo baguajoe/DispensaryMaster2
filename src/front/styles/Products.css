@@ -3,7 +3,7 @@
     padding: 24px;
     min-height: calc(100vh - 90px);
     background: linear-gradient(to right, #2a4365, #285e61);
-    color: white;
+    color: #0a0800;
     overflow-x: auto;
     transition: margin-left 0.3s ease;
 }
@@ -15,7 +15,7 @@
 .products-page {
     padding: 24px;
     background: linear-gradient(to right, #2a4365, #285e61);
-    color: white;
+    color: #0a0800;
 }
 
 .products-header {
@@ -26,7 +26,7 @@
 .products-header h1 {
     font-size: 2rem;
     font-weight: bold;
-    color: white;
+    color: #0a0800;
     margin: 0;
 }
 
@@ -48,7 +48,7 @@
     }
 
     .dropdown-item {
-        color: white;
+        color: #0a0800;
         border-radius: 5px;
     }
 
@@ -60,7 +60,7 @@
 /* Table Customization */
 .products-page {
     .table {
-        color: white !important;
+        color: #0a0800 !important;
         margin-bottom: 0;
     }
 
@@ -90,7 +90,7 @@
 
     .modal-content {
         background-color: #2a4365;
-        color: white;
+        color: #0a0800;
     }
 
     .modal-header {
@@ -105,15 +105,15 @@
     .form-select {
         background-color: rgba(255, 255, 255, 0.1);
         /* border: 1px solid rgba(255, 255, 255, 0.2); */
-        border: 1px solid white;
-        color: white;
+        border: 1px solid #0a0800;
+        color: #0a0800;
     }
 
     .form-control:focus,
     .form-select:focus {
         background-color: rgba(255, 255, 255, 0.15);
         border-color: rgba(255, 255, 255, 0.3);
-        color: white;
+        color: #0a0800;
         box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
     }
 
@@ -127,7 +127,7 @@
 
     .form-select option {
         background-color: #2a4365;
-        color: white;
+        color: #0a0800;
     }
 
     .btn-close {
@@ -159,7 +159,7 @@
 .products-page {
     .form-control:valid {
         background-color: rgba(25, 135, 84, 0.1) !important;
-        border-color: white !important;
+        border-color: #0a0800 !important;
     }
 
     .form-control:invalid {

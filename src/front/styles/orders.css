@@ -6,7 +6,7 @@
     /* Adjust for navbar height */
     background: linear-gradient(to right, #2a4365, #285e61);
     /* Blue to Teal Gradient */
-    color: white;
+    color: #0a0800;
     /* Matches sidebar color */
     overflow-x: auto;
     /* Prevent horizontal scroll if sidebar collapses */
@@ -17,7 +17,7 @@
 .orders-page {
     padding: 24px;
     background: linear-gradient(to right, #2a4365, #285e61);
-    color: white;
+    color: #0a0800;
     min-height: calc(100vh - 90px);
 }
 
@@ -28,7 +28,7 @@
     }
 
     .dropdown-item {
-        color: white;
+        color: #0a0800;
         border-radius: 5px;
     }
 
@@ -60,7 +60,7 @@
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        color: white;
+        color: #0a0800;
     }
 
     .orders-table th {
@@ -120,7 +120,7 @@
     /* Modal Styles */
     .modal-content {
         background: #2d3748;
-        color: white;
+        color: #0a0800;
     }
 
     .modal-header {
@@ -135,14 +135,14 @@
     .form-select {
         background: rgba(255, 255, 255, 0.1);
         border-color: rgba(255, 255, 255, 0.2);
-        color: white;
+        color: #0a0800;
     }
 
     .form-control:focus,
     .form-select:focus {
         background: rgba(255, 255, 255, 0.15);
         border-color: rgba(255, 255, 255, 0.3);
-        color: white;
+        color: #0a0800;
         box-shadow: none;
     }
 
@@ -156,7 +156,7 @@
 
     /* Table in Modal */
     .modal-body .table {
-        color: white;
+        color: #0a0800;
     }
 
     .modal-body .table thead th {
