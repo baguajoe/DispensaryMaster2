@@ -28,6 +28,7 @@ import Stores from "./pages/Stores";
 import Suppliers from "./pages/Suppliers";
 import Users from "./pages/Users";
 import BarcodeScanner from "./pages/BarcodeScanner";
+import LeafBridgeHub from "./pages/LeafBridge/LeafBridgeHub";
 import ComplianceReportsPage from "./pages/ComplianceReportsPage";
 import ComplianceMonitoringPage from "./pages/ComplianceMonitoringPage";
 import HealthAnalytics from "./pages/Medical/HealthAnalytics";
@@ -171,6 +172,7 @@ const Layout = () => {
                             <Route path="/customers" element={<RequireAuth><Customers /></RequireAuth>} />
 
                             {/* Job Board */}
+                            <Route path="/leafbridge" element={<LeafBridgeHub />} />
                             <Route path="/jobs" element={<JobBoard />} />
                             <Route path="/jobs/post" element={<RequireAuth><JobPost /></RequireAuth>} />
                             <Route path="/companies" element={<Companies />} />

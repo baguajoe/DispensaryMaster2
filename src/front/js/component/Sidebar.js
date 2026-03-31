@@ -29,15 +29,8 @@ export const Sidebar = () => {
             { name: "Campaigns", path: "/campaigns" },
             { name: "Customers", path: "/customers" },
         ],
-        jobBoard: [
-            { name: "Job Listings", path: "/jobs" },
-            { name: "Post a Job", path: "/jobs/post" },
-            { name: "Companies", path: "/companies" },
-            { name: "My Applications", path: "/jobs/applications" },
-        ],
-        training: [
-            { name: "Training Center", path: "/training" },
-            { name: "Add Training", path: "/training/create" },
+        leafBridge: [
+            { name: "🌿 LeafBridge Connect", path: "/leafbridge" },
         ],
         posSystem: [
             { name: "Main POS", path: "/pos" },
@@ -111,7 +104,7 @@ export const Sidebar = () => {
 
     const sectionLabels = {
         nonMedical: "Non Medical",
-        jobBoard: "Job Board",
+        leafBridge: "LeafBridge Connect",
         posSystem: "POS System",
         medical: "Medical",
         growFarms: "Grow Farms",

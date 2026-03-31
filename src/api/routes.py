@@ -4718,3 +4718,155 @@ def get_warehouses():
 def get_store_by_id(id):
     store = Store.query.get_or_404(id)
     return jsonify(store.serialize()), 200
+
+# ══════════════════════════════════════════════════════
+# LEAFBRIDGE CONNECT — NETWORKING ROUTES
+# ══════════════════════════════════════════════════════
+
+@api.route('/leafbridge/stats', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_leafbridge_stats():
+    user_id = get_jwt_identity()
+    try:
+        from api.models import LeafBridgeConnection
+        connections = LeafBridgeConnection.query.filter(
+            db.or_(LeafBridgeConnection.user_id == user_id, LeafBridgeConnection.target_user_id == user_id),
+            LeafBridgeConnection.status == 'accepted'
+        ).count()
+    except: connections = 0
+    return jsonify({"connections": connections, "applications": 0, "training_complete": 0, "profile_views": 0}), 200
+
+@api.route('/leafbridge/posts', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_leafbridge_posts():
+    from api.models import LeafBridgePost, Resume
+    posts = LeafBridgePost.query.order_by(LeafBridgePost.created_at.desc()).limit(50).all()
+    result = []
+    for post in posts:
+        resume = Resume.query.filter_by(user_id=post.user_id).first()
+        d = post.serialize()
+        d['author_name'] = f"{resume.first_name} {resume.last_name}" if resume and resume.first_name else "Cannabis Pro"
+        d['author_role'] = resume.position if resume else None
+        result.append(d)
+    return jsonify(result), 200
+
+@api.route('/leafbridge/posts', methods=['POST'])
+@jwt_required()
+@handle_errors
+def create_leafbridge_post():
+    from api.models import LeafBridgePost
+    user_id = get_jwt_identity()
+    data = request.json
+    if not data.get('content', '').strip():
+        return jsonify({"error": "Content required"}), 400
+    post = LeafBridgePost(user_id=user_id, content=data['content'], post_type=data.get('post_type', 'update'), likes=0)
+    db.session.add(post)
+    db.session.commit()
+    d = post.serialize()
+    d['author_name'] = "You"
+    return jsonify(d), 201
+
+@api.route('/leafbridge/posts/<int:post_id>/like', methods=['POST'])
+@jwt_required()
+@handle_errors
+def like_leafbridge_post(post_id):
+    from api.models import LeafBridgePost
+    post = LeafBridgePost.query.get_or_404(post_id)
+    post.likes = (post.likes or 0) + 1
+    db.session.commit()
+    return jsonify({"likes": post.likes}), 200
+
+@api.route('/leafbridge/profiles', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_leafbridge_profiles():
+    from api.models import Resume, LeafBridgeConnection
+    user_id = get_jwt_identity()
+    resumes = Resume.query.filter(Resume.user_id != user_id).all()
+    result = []
+    for r in resumes:
+        try:
+            conn = LeafBridgeConnection.query.filter(
+                db.or_(
+                    db.and_(LeafBridgeConnection.user_id == user_id, LeafBridgeConnection.target_user_id == r.user_id),
+                    db.and_(LeafBridgeConnection.user_id == r.user_id, LeafBridgeConnection.target_user_id == user_id)
+                )
+            ).first()
+            conn_status = conn.status if conn else None
+        except: conn_status = None
+        result.append({
+            "id": r.id, "user_id": r.user_id,
+            "first_name": r.first_name, "last_name": r.last_name,
+            "headline": r.headline if hasattr(r, 'headline') else None,
+            "position": r.position if hasattr(r, 'position') else None,
+            "location": r.location if hasattr(r, 'location') else None,
+            "bio": r.bio if hasattr(r, 'bio') else None,
+            "available": r.available if hasattr(r, 'available') else False,
+            "certifications": [],
+            "connection_status": conn_status,
+        })
+    return jsonify(result), 200
+
+@api.route('/leafbridge/connections', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_leafbridge_connections():
+    from api.models import LeafBridgeConnection, Resume
+    user_id = get_jwt_identity()
+    conns = LeafBridgeConnection.query.filter(
+        db.or_(LeafBridgeConnection.user_id == user_id, LeafBridgeConnection.target_user_id == user_id),
+        LeafBridgeConnection.status == 'accepted'
+    ).all()
+    result = []
+    for c in conns:
+        other_id = c.target_user_id if c.user_id == user_id else c.user_id
+        r = Resume.query.filter_by(user_id=other_id).first()
+        if r:
+            result.append({"id": c.id, "first_name": r.first_name, "last_name": r.last_name, "position": getattr(r, 'position', None)})
+    return jsonify(result), 200
+
+@api.route('/leafbridge/connections', methods=['POST'])
+@jwt_required()
+@handle_errors
+def send_connection_request():
+    from api.models import LeafBridgeConnection
+    user_id = get_jwt_identity()
+    target_id = request.json.get('target_user_id')
+    existing = LeafBridgeConnection.query.filter(
+        db.or_(
+            db.and_(LeafBridgeConnection.user_id == user_id, LeafBridgeConnection.target_user_id == target_id),
+            db.and_(LeafBridgeConnection.user_id == target_id, LeafBridgeConnection.target_user_id == user_id)
+        )
+    ).first()
+    if existing:
+        return jsonify({"status": existing.status}), 200
+    conn = LeafBridgeConnection(user_id=user_id, target_user_id=target_id, status='pending')
+    db.session.add(conn)
+    db.session.commit()
+    return jsonify({"id": conn.id, "status": "pending"}), 201
+
+@api.route('/leafbridge/connections/pending', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_pending_connections():
+    from api.models import LeafBridgeConnection, Resume
+    user_id = get_jwt_identity()
+    pending = LeafBridgeConnection.query.filter_by(target_user_id=user_id, status='pending').all()
+    result = []
+    for c in pending:
+        r = Resume.query.filter_by(user_id=c.user_id).first()
+        if r:
+            result.append({"id": c.id, "first_name": r.first_name, "last_name": r.last_name, "position": getattr(r, 'position', None)})
+    return jsonify(result), 200
+
+@api.route('/leafbridge/connections/<int:conn_id>/accept', methods=['PUT'])
+@jwt_required()
+@handle_errors
+def accept_connection(conn_id):
+    from api.models import LeafBridgeConnection
+    conn = LeafBridgeConnection.query.get_or_404(conn_id)
+    conn.status = 'accepted'
+    db.session.commit()
+    return jsonify({"status": "accepted"}), 200

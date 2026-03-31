@@ -2479,3 +2479,33 @@ class StripePayment(db.Model):
                 "amount": self.amount, "currency": self.currency,
                 "status": self.status, "payment_method": self.payment_method,
                 "created_at": self.created_at.isoformat() if self.created_at else None}
+
+# ──────────────────────────────────────────────────
+# LeafBridge Connect — Networking Models
+# ──────────────────────────────────────────────────
+class LeafBridgePost(db.Model):
+    __tablename__ = 'leafbridge_post'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    post_type = db.Column(db.String(30), default='update')
+    likes = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='leafbridge_posts', lazy=True)
+    def serialize(self):
+        return {"id": self.id, "user_id": self.user_id, "content": self.content,
+                "post_type": self.post_type, "likes": self.likes or 0,
+                "created_at": self.created_at.isoformat() if self.created_at else None}
+
+class LeafBridgeConnection(db.Model):
+    __tablename__ = 'leafbridge_connection'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    target_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(20), default='pending')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', foreign_keys=[user_id], backref='sent_connections', lazy=True)
+    target = db.relationship('User', foreign_keys=[target_user_id], backref='received_connections', lazy=True)
+    def serialize(self):
+        return {"id": self.id, "user_id": self.user_id,
+                "target_user_id": self.target_user_id, "status": self.status}
