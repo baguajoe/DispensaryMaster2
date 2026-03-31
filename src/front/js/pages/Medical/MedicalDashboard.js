@@ -3,51 +3,57 @@ import { useNavigate } from "react-router-dom";
 
 const MedicalDashboard = () => {
     const navigate = useNavigate();
-    const [stats, setStats] = useState({ patients:0, today_appts:0, expired:0 });
+    const [summary, setSummary] = useState(null);
+    const [loading, setLoading] = useState(true);
     const token = localStorage.getItem("token");
+    const headers = { Authorization:`Bearer ${token}` };
 
     useEffect(() => {
-        const headers = { Authorization: `Bearer ${token}` };
-        Promise.all([
-            fetch(`${process.env.BACKEND_URL}/api/medical/patients`, { headers }).then(r => r.ok ? r.json() : []),
-            fetch(`${process.env.BACKEND_URL}/api/appointments`, { headers }).then(r => r.ok ? r.json() : []),
-        ]).then(([patients, appts]) => {
-            const today = new Date().toDateString();
-            setStats({
-                patients: Array.isArray(patients) ? patients.length : 0,
-                today_appts: Array.isArray(appts) ? appts.filter(a => a.date && new Date(a.date).toDateString()===today).length : 0,
-                expired: Array.isArray(patients) ? patients.filter(p => p.expiration_date && new Date(p.expiration_date)<new Date()).length : 0,
-            });
-        }).catch(console.error);
+        fetch(`${process.env.BACKEND_URL}/api/medical/analytics/summary`, { headers })
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { setSummary(data); setLoading(false); })
+            .catch(() => setLoading(false));
     }, []);
 
-    const MODULES = [
-        {l:"Compliance Dashboard",p:"/medical/compliance-dashboard",i:"\u{1F4CB}",c:"#11cdef"},
-        {l:"Compliance Reports",p:"/medical/compliance-reports",i:"\u{1F4CA}",c:"#2dce89"},
-        {l:"Patient List",p:"/medical/patient-list",i:"\u{1F465}",c:"#fb6340"},
-        {l:"Register Patient",p:"/medical/patient-registration",i:"\u2795",c:"#2dce89"},
-        {l:"Appointments",p:"/medical/appointment-management",i:"\u{1F4C5}",c:"#ffd600"},
-        {l:"Prescriptions",p:"/medical/prescription-management",i:"\u{1F48A}",c:"#11cdef"},
-        {l:"Medical Analytics",p:"/medical/medical-analytics",i:"\u{1F4C8}",c:"#f5365c"},
+    const QUICK_LINKS = [
+        {label:"Patient List", path:"/medical/patients", icon:"👥", color:"#11cdef"},
+        {label:"Register Patient", path:"/medical/register", icon:"➕", color:"#2dce89"},
+        {label:"Appointments", path:"/medical/appointments", icon:"📅", color:"#ffd600"},
+        {label:"Prescriptions", path:"/medical/prescriptions", icon:"💊", color:"#fb6340"},
+        {label:"Billing & Insurance", path:"/medical/billing", icon:"💳", color:"#f5365c"},
+        {label:"Compliance", path:"/medical/compliance", icon:"⚖️", color:"#2dce89"},
     ];
+
+    if (loading) return <div className="main-content d-flex justify-content-center align-items-center" style={{minHeight:"60vh"}}><div className="spinner-border text-light"/></div>;
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>\u{1F3E5} Medical Dashboard</h2></div>
+            <div className="page-header mb-4"><h2>🏥 Medical Dashboard</h2><p>Patient care and compliance overview</p></div>
+
             <div className="row g-3 mb-4">
-                {[{l:"Total Patients",v:stats.patients,c:"#11cdef"},{l:"Today Appts",v:stats.today_appts,c:"#2dce89"},{l:"Expired Cards",v:stats.expired,c:"#f5365c"}].map((k,i)=>(
-                    <div key={i} className="col-4"><div className="glass-panel text-center">
-                        <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.5)",textTransform:"uppercase"}}>{k.l}</div>
-                        <div style={{fontSize:"2rem",fontWeight:700,color:k.c}}>{k.v}</div>
+                {[
+                    {l:"Total Patients", v:summary?.total_patients||0, c:"#11cdef"},
+                    {l:"Active Prescriptions", v:summary?.active_prescriptions||0, c:"#2dce89"},
+                    {l:"Today's Appointments", v:summary?.today_appointments||0, c:"#ffd600"},
+                    {l:"Pending Insurance", v:summary?.pending_insurance_claims||0, c:"#f5365c"},
+                ].map((s,i) => (
+                    <div key={i} className="col-6 col-md-3"><div className="glass-panel text-center">
+                        <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.5)",textTransform:"uppercase"}}>{s.l}</div>
+                        <div style={{fontSize:"2rem",fontWeight:700,color:s.c,marginTop:"4px"}}>{s.v}</div>
                     </div></div>
                 ))}
             </div>
+
+            <h5 className="mb-3">Quick Access</h5>
             <div className="row g-3">
-                {MODULES.map((m,i)=>(
-                    <div key={i} className="col-md-4 col-lg-3">
-                        <div className="glass-panel" style={{cursor:"pointer",borderColor:`${m.c}33`}} onClick={()=>navigate(m.p)}>
-                            <div style={{fontSize:"2rem"}}>{m.i}</div>
-                            <h6 style={{color:m.c,marginTop:"0.5rem"}}>{m.l}</h6>
+                {QUICK_LINKS.map((link, i) => (
+                    <div key={i} className="col-6 col-md-4">
+                        <div className="glass-panel text-center py-4" style={{cursor:"pointer",borderColor:`${link.color}33`,transition:"all 0.2s"}}
+                            onClick={() => navigate(link.path)}
+                            onMouseEnter={e=>e.currentTarget.style.borderColor=link.color}
+                            onMouseLeave={e=>e.currentTarget.style.borderColor=`${link.color}33`}>
+                            <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}>{link.icon}</div>
+                            <div style={{fontWeight:600,color:link.color}}>{link.label}</div>
                         </div>
                     </div>
                 ))}

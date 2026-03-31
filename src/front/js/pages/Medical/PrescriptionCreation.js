@@ -1,14 +1,4 @@
-import React from 'react';
-import PrescriptionCreationComponent from '../../component/MedicalComponent/PrescriptionCreationComponent';
-import '../../../styles/medical/PrescriptionCreation.css';
-
-const PrescriptionCreation = () => {
-    return (
-        <div className="prescription-creation-container">
-            <h1 className="prescription-title">Create Prescription</h1>
-            <PrescriptionCreationComponent />
-        </div>
-    );
-};
-
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+const PrescriptionCreation = () => { const navigate = useNavigate(); useEffect(() => { navigate("/medical/prescriptions"); }, []); return null; };
 export default PrescriptionCreation;

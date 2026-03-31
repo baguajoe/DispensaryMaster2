@@ -4617,3 +4617,57 @@ def create_license():
     db.session.add(license)
     db.session.commit()
     return jsonify({"id": license.id}), 201
+
+# ==================== COMPLIANCE DOCUMENT UPLOAD ====================
+
+@api.route('/compliance/upload-document', methods=['POST'])
+@jwt_required()
+@handle_errors
+def upload_compliance_document():
+    """Upload compliance documents to R2 storage"""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    doc_type = request.form.get('doc_type', 'compliance_doc')
+    allowed = {'pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'}
+    ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+    if ext not in allowed:
+        return jsonify({"error": f"File type .{ext} not allowed"}), 400
+    try:
+        import uuid, boto3
+        filename = f"compliance/{doc_type}/{uuid.uuid4()}.{ext}"
+        r2 = boto3.client(
+            's3',
+            endpoint_url=os.getenv('R2_ENDPOINT_URL'),
+            aws_access_key_id=os.getenv('R2_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('R2_SECRET_ACCESS_KEY'),
+        )
+        r2.upload_fileobj(
+            file,
+            os.getenv('R2_BUCKET_NAME', ''),
+            filename,
+            ExtraArgs={'ContentType': file.content_type}
+        )
+        public_url = f"{os.getenv('R2_ENDPOINT_URL')}/{os.getenv('R2_BUCKET_NAME')}/{filename}"
+        return jsonify({"url": public_url, "filename": filename, "doc_type": doc_type}), 200
+    except Exception as e:
+        return jsonify({"error": f"Upload failed: {str(e)}"}), 500
+
+@api.route('/compliance/documents', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_compliance_documents():
+    """List uploaded compliance documents"""
+    try:
+        import boto3
+        r2 = boto3.client(
+            's3',
+            endpoint_url=os.getenv('R2_ENDPOINT_URL'),
+            aws_access_key_id=os.getenv('R2_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('R2_SECRET_ACCESS_KEY'),
+        )
+        response = r2.list_objects_v2(Bucket=os.getenv('R2_BUCKET_NAME', ''), Prefix='compliance/')
+        files = [{"key": obj['Key'], "size": obj['Size'], "last_modified": obj['LastModified'].isoformat()} for obj in response.get('Contents', [])]
+        return jsonify(files), 200
+    except Exception as e:
+        return jsonify({"documents": [], "error": str(e)}), 200

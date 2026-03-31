@@ -1402,14 +1402,14 @@ class Employee(db.Model):
 
 class Shift(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
     clock_in_time = db.Column(db.DateTime, nullable=True)
     clock_out_time = db.Column(db.DateTime, nullable=True)
     total_hours = db.Column(db.Float, nullable=True, default=0.0)  # Hours worked in this shift
     shift_status = db.Column(db.String(20), default="clocked_out")  # clocked_in, clocked_out
 
     # Relationships
-    employee = db.relationship('User', backref='shifts')
+    employee = db.relationship('Employee', backref='shifts')
 
     def calculate_hours(self):
         if self.clock_in_time and self.clock_out_time:

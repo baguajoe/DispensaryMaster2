@@ -28,6 +28,9 @@ import Stores from "./pages/Stores";
 import Suppliers from "./pages/Suppliers";
 import Users from "./pages/Users";
 import BarcodeScanner from "./pages/BarcodeScanner";
+import ComplianceReportsPage from "./pages/ComplianceReportsPage";
+import ComplianceMonitoringPage from "./pages/ComplianceMonitoringPage";
+import HealthAnalytics from "./pages/Medical/HealthAnalytics";
 import CartManagement from "./pages/CartManagement";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import Reports from "./pages/ReportsPage";
@@ -152,6 +155,13 @@ const Layout = () => {
                             <Route path="/stores" element={<RequireAuth><Stores /></RequireAuth>} />
                             <Route path="/suppliers" element={<RequireAuth><Suppliers /></RequireAuth>} />
                             <Route path="/users" element={<RequireAuth><Users /></RequireAuth>} />
+                            <Route path="/medical/patients" element={<PatientList />} />
+                            <Route path="/medical/register" element={<PatientRegistration />} />
+                            <Route path="/medical/appointments" element={<AppointmentManagement />} />
+                            <Route path="/medical/prescriptions" element={<PrescriptionManagement />} />
+                            <Route path="/medical/health-analytics" element={<HealthAnalytics />} />
+                            <Route path="/compliance-monitoring" element={<ComplianceMonitoringPage />} />
+                            <Route path="/compliance-reports" element={<ComplianceReportsPage />} />
                             <Route path="/barcode-scanner" element={<RequireAuth><BarcodeScanner /></RequireAuth>} />
                             <Route path="/cart-management" element={<RequireAuth><CartManagement /></RequireAuth>} />
                             <Route path="/analytics-dashboard" element={<RequireAuth><AnalyticsDashboard /></RequireAuth>} />
