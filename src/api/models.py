@@ -2509,3 +2509,117 @@ class LeafBridgeConnection(db.Model):
     def serialize(self):
         return {"id": self.id, "user_id": self.user_id,
                 "target_user_id": self.target_user_id, "status": self.status}
+
+# ──────────────────────────────────────────────────
+# LeafBridge Complete — Additional Models
+# ──────────────────────────────────────────────────
+
+class LeafBridgeMessage(db.Model):
+    __tablename__ = 'leafbridge_message'
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('leafbridge_conversation.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    sender = db.relationship('User', backref='sent_messages', lazy=True)
+    def serialize(self):
+        return {"id": self.id, "conversation_id": self.conversation_id, "sender_id": self.sender_id,
+                "content": self.content, "read": self.read, "created_at": self.created_at.isoformat() if self.created_at else None}
+
+class LeafBridgeConversation(db.Model):
+    __tablename__ = 'leafbridge_conversation'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    other_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    messages = db.relationship('LeafBridgeMessage', backref='conversation', lazy=True)
+    def serialize(self):
+        return {"id": self.id, "user_id": self.user_id, "other_user_id": self.other_user_id}
+
+class LeafBridgeComment(db.Model):
+    __tablename__ = 'leafbridge_comment'
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('leafbridge_post.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='leafbridge_comments', lazy=True)
+    def serialize(self):
+        return {"id": self.id, "post_id": self.post_id, "user_id": self.user_id,
+                "content": self.content, "created_at": self.created_at.isoformat() if self.created_at else None}
+
+class LeafBridgeNotification(db.Model):
+    __tablename__ = 'leafbridge_notification'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    read = db.Column(db.Boolean, default=False)
+    related_id = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='notifications', lazy=True)
+    def serialize(self):
+        return {"id": self.id, "user_id": self.user_id, "type": self.type,
+                "message": self.message, "read": self.read,
+                "created_at": self.created_at.isoformat() if self.created_at else None}
+
+class LeafBridgeCompany(db.Model):
+    __tablename__ = 'leafbridge_company'
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    state = db.Column(db.String(10), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    website = db.Column(db.String(200), nullable=True)
+    verified = db.Column(db.Boolean, default=False)
+    followers = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def serialize(self):
+        return {"id": self.id, "name": self.name, "type": self.type, "state": self.state,
+                "description": self.description, "website": self.website,
+                "verified": self.verified, "followers": self.followers}
+
+class LeafBridgeGroup(db.Model):
+    __tablename__ = 'leafbridge_group'
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    state = db.Column(db.String(10), nullable=True)
+    members = db.Column(db.Integer, default=1)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def serialize(self):
+        return {"id": self.id, "name": self.name, "category": self.category,
+                "description": self.description, "state": self.state, "members": self.members}
+
+class LeafBridgeEvent(db.Model):
+    __tablename__ = 'leafbridge_event'
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.String(50), nullable=True)
+    location = db.Column(db.String(200), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    virtual = db.Column(db.Boolean, default=False)
+    attendees = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def serialize(self):
+        return {"id": self.id, "title": self.title, "type": self.type, "date": self.date,
+                "location": self.location, "description": self.description,
+                "virtual": self.virtual, "attendees": self.attendees}
+
+class LeafBridgeEndorsement(db.Model):
+    __tablename__ = 'leafbridge_endorsement'
+    id = db.Column(db.Integer, primary_key=True)
+    from_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    to_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    skill = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def serialize(self):
+        return {"id": self.id, "from_user_id": self.from_user_id,
+                "to_user_id": self.to_user_id, "skill": self.skill}
