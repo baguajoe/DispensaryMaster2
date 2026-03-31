@@ -2,13 +2,22 @@ import React, { useState, useEffect, useContext } from "react";
 import { Context } from "../store/appContext";
 import { useNavigate } from "react-router-dom";
 
-const CATEGORIES = ["All","Flower","Edibles","Concentrates","Vapes","Tinctures","Pre-Rolls","Accessories"];
+const DEFAULT_CATEGORIES = [
+    "All","Flower","Edibles","Concentrates","Vapes","Tinctures",
+    "Pre-Rolls","Accessories","Topicals","Capsules","Beverages",
+    "Sublingual","Seeds","Clones","Shake","Kief","Hash",
+    "CBD Products","High-CBD","Sativa","Indica","Hybrid",
+    "Infused","Patches","Suppositories"
+];
 
 const Shop = () => {
     const { store, actions } = useContext(Context);
     const [products, setProducts] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [category, setCategory] = useState("All");
+    const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+    const [showCatManager, setShowCatManager] = useState(false);
+    const [newCat, setNewCat] = useState("");
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState("name");
     const [loading, setLoading] = useState(true);
@@ -80,7 +89,7 @@ const Shop = () => {
                     </div>
                     <div className="col-md-4">
                         <div style={{ display: "flex", gap: "0.4rem", overflowX: "auto", flexWrap: "nowrap", paddingBottom: "2px" }}>
-                            {CATEGORIES.map(c => (
+                            {(categories.length > 1 ? categories : DEFAULT_CATEGORIES).map(c => (
                                 <button key={c} className={`btn btn-sm ${category===c?"btn-success":"btn-outline-success"}`}
                                     onClick={() => setCategory(c)}>{c}</button>
                             ))}

@@ -5355,3 +5355,39 @@ def bulk_upload():
             uploaded.append({"error": str(e), "filename": file.filename})
     db.session.commit()
     return jsonify({"uploaded": uploaded, "count": len([u for u in uploaded if 'url' in u])}), 201
+
+# ── PRODUCT CATEGORIES (dynamic) ──────────────────────────
+DISPENSARY_CATEGORIES = [
+    "Flower","Edibles","Concentrates","Vapes","Tinctures",
+    "Pre-Rolls","Accessories","Topicals","Capsules","Beverages",
+    "Sublingual","Seeds","Clones","Shake","Kief","Hash",
+    "CBD Products","High-CBD","Sativa","Indica","Hybrid",
+    "Infused","Patches","Suppositories"
+]
+
+_custom_categories = []
+
+@api.route('/categories', methods=['GET'])
+@handle_errors
+def get_categories():
+    all_cats = DISPENSARY_CATEGORIES + _custom_categories
+    return jsonify({"categories": all_cats}), 200
+
+@api.route('/categories', methods=['POST'])
+@jwt_required()
+@handle_errors
+def add_category():
+    name = request.json.get('name', '').strip()
+    if not name:
+        return jsonify({"error": "Name required"}), 400
+    if name not in DISPENSARY_CATEGORIES and name not in _custom_categories:
+        _custom_categories.append(name)
+    return jsonify({"categories": DISPENSARY_CATEGORIES + _custom_categories}), 201
+
+@api.route('/categories/<string:name>', methods=['DELETE'])
+@jwt_required()
+@handle_errors
+def delete_category(name):
+    if name in _custom_categories:
+        _custom_categories.remove(name)
+    return jsonify({"categories": DISPENSARY_CATEGORIES + _custom_categories}), 200
