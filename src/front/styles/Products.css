@@ -89,7 +89,7 @@
 .products-page {
 
     .modal-content {
-        background-color: #2a4365;
+        background: #0a0800;
         color: #0a0800;
     }
 
@@ -126,7 +126,7 @@
     }
 
     .form-select option {
-        background-color: #2a4365;
+        background: #0a0800;
         color: #0a0800;
     }
 
