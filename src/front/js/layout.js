@@ -111,6 +111,23 @@ import GrowTaskList from "./pages/GrowFarms/GrowTaskList";
 import PlantBatchList from "./pages/GrowFarms/PlantBatchList";
 import YieldPrediction from "./pages/GrowFarms/YieldPrediction";
 import GrowFarmDashboard from "./pages/GrowFarms/GrowFarmDashboard";
+import SeedCalendarView from "./pages/SeedBanks/SeedCalendarView";
+import SeedBankSettings from "./pages/SeedBanks/SeedBankSettings";
+import SeedNotifications from "./pages/SeedBanks/SeedNotifications";
+import SeedResourceManagement from "./pages/SeedBanks/SeedResourceManagement";
+import SeedBatchDetails from "./pages/SeedBanks/SeedBatchDetails";
+import SeedAnalytics from "./pages/SeedBanks/SeedAnalytics";
+import GrowFarmOverview from "./pages/GrowFarms/GrowFarmOverview";
+import BatchPage from "./pages/GrowFarms/BatchPage";
+import ResourceManagement from "./pages/GrowFarms/ResourceManagement";
+import GrowCalendarView from "./pages/GrowFarms/CalendarView";
+import PlantBatchDetails from "./pages/GrowFarms/PlantBatchDetails";
+import EnvironmentData from "./pages/GrowFarms/EnvironmentData";
+import GrowFarmNotifications from "./pages/GrowFarms/Notifications";
+import AlertThresholdPage from "./pages/GrowFarms/AlertThresholdPage";
+import GrowFarmSettings from "./pages/GrowFarms/Settings";
+import StrainCatalog from "./pages/GrowFarms/StrainCatalog";
+import AssignGrowTask from "./pages/GrowFarms/AssignGrowTask";
 import StorageConditions from "./pages/SeedBanks/StorageConditions";
 import GrowReports from "./pages/GrowFarms/GrowReports";
 import PestDiseaseTracker from "./pages/GrowFarms/PestDiseaseTracker";
@@ -235,10 +252,29 @@ const Layout = () => {
                             <Route path="/growfarms/pest-disease" element={<RequireAuth><PestDiseaseTracker /></RequireAuth>} />
                             <Route path="/growfarms/reports" element={<RequireAuth><GrowReports /></RequireAuth>} />
                             <Route path="/seedbanks/storage-conditions" element={<RequireAuth><StorageConditions /></RequireAuth>} />
+                            
+                            <Route path="/growfarms/assign-task" element={<RequireAuth><AssignGrowTask /></RequireAuth>} />
+                            <Route path="/growfarms/strain-catalog" element={<RequireAuth><StrainCatalog /></RequireAuth>} />
+                            <Route path="/growfarms/settings" element={<RequireAuth><GrowFarmSettings /></RequireAuth>} />
+                            <Route path="/growfarms/alerts" element={<RequireAuth><AlertThresholdPage /></RequireAuth>} />
+                            <Route path="/growfarms/notifications" element={<RequireAuth><GrowFarmNotifications /></RequireAuth>} />
+                            <Route path="/growfarms/environment" element={<RequireAuth><EnvironmentData /></RequireAuth>} />
+                            <Route path="/growfarms/plant-batch/:id" element={<RequireAuth><PlantBatchDetails /></RequireAuth>} />
+                            <Route path="/growfarms/calendar" element={<RequireAuth><GrowCalendarView /></RequireAuth>} />
+                            <Route path="/growfarms/resources" element={<RequireAuth><ResourceManagement /></RequireAuth>} />
+                            <Route path="/growfarms/batch" element={<RequireAuth><BatchPage /></RequireAuth>} />
+                            <Route path="/growfarms/overview" element={<RequireAuth><GrowFarmOverview /></RequireAuth>} />
                             <Route path="/growfarms/yield-prediction" element={<RequireAuth><YieldPrediction /></RequireAuth>} />
 
                             {/* SeedBanks */}
                             <Route path="/seedbanks/dashboard" element={<RequireAuth><SeedBankDashboard /></RequireAuth>} />
+                            
+                            <Route path="/seedbanks/analytics" element={<RequireAuth><SeedAnalytics /></RequireAuth>} />
+                            <Route path="/seedbanks/batch/:id" element={<RequireAuth><SeedBatchDetails /></RequireAuth>} />
+                            <Route path="/seedbanks/resources" element={<RequireAuth><SeedResourceManagement /></RequireAuth>} />
+                            <Route path="/seedbanks/notifications" element={<RequireAuth><SeedNotifications /></RequireAuth>} />
+                            <Route path="/seedbanks/settings" element={<RequireAuth><SeedBankSettings /></RequireAuth>} />
+                            <Route path="/seedbanks/calendar" element={<RequireAuth><SeedCalendarView /></RequireAuth>} />
                             <Route path="/seedbanks/add-seed-batch" element={<RequireAuth><AddSeedBatch /></RequireAuth>} />
                             <Route path="/seedbanks/batch-list" element={<RequireAuth><SeedBatchList /></RequireAuth>} />
                             <Route path="/seedbanks/inventory" element={<RequireAuth><SeedInventory /></RequireAuth>} />

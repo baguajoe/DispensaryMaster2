@@ -5399,3 +5399,155 @@ def get_shop_products():
     """Public endpoint — returns only available products for the shop"""
     products = Product.query.filter(Product.stock > 0).all()
     return jsonify([p.serialize() for p in products]), 200
+
+# ══════════════════════════════════════════════════════════════
+# GROWFARM — MISSING ROUTES
+# ══════════════════════════════════════════════════════════════
+
+@api.route('/plant_batches', methods=['GET', 'POST'])
+@jwt_required()
+@handle_errors
+def manage_plant_batches():
+    from api.models import PlantBatch
+    if request.method == 'GET':
+        farm_id = request.args.get('farm_id')
+        q = PlantBatch.query
+        if farm_id:
+            q = q.filter_by(grow_farm_id=int(farm_id))
+        return jsonify([b.serialize() for b in q.all()]), 200
+    data = request.json
+    batch = PlantBatch(**{k: v for k, v in data.items() if hasattr(PlantBatch, k)})
+    db.session.add(batch)
+    db.session.commit()
+    return jsonify(batch.serialize()), 201
+
+@api.route('/plant_batches/<int:batch_id>', methods=['GET', 'PUT', 'DELETE'])
+@jwt_required()
+@handle_errors
+def manage_single_plant_batch(batch_id):
+    from api.models import PlantBatch
+    batch = PlantBatch.query.get_or_404(batch_id)
+    if request.method == 'GET':
+        return jsonify(batch.serialize()), 200
+    if request.method == 'PUT':
+        for k, v in request.json.items():
+            if hasattr(batch, k):
+                setattr(batch, k, v)
+        db.session.commit()
+        return jsonify(batch.serialize()), 200
+    db.session.delete(batch)
+    db.session.commit()
+    return jsonify({"message": "Deleted"}), 200
+
+@api.route('/harvest_logs', methods=['GET', 'POST'])
+@jwt_required()
+@handle_errors
+def manage_harvest_logs():
+    from api.models import HarvestLog
+    if request.method == 'GET':
+        logs = HarvestLog.query.order_by(HarvestLog.id.desc()).all()
+        return jsonify([l.serialize() for l in logs]), 200
+    data = request.json
+    log = HarvestLog(**{k: v for k, v in data.items() if hasattr(HarvestLog, k)})
+    db.session.add(log)
+    db.session.commit()
+    return jsonify(log.serialize()), 201
+
+@api.route('/harvest_logs/<int:log_id>', methods=['GET', 'PUT', 'DELETE'])
+@jwt_required()
+@handle_errors
+def manage_single_harvest_log(log_id):
+    from api.models import HarvestLog
+    log = HarvestLog.query.get_or_404(log_id)
+    if request.method == 'GET':
+        return jsonify(log.serialize()), 200
+    if request.method == 'PUT':
+        for k, v in request.json.items():
+            if hasattr(log, k):
+                setattr(log, k, v)
+        db.session.commit()
+        return jsonify(log.serialize()), 200
+    db.session.delete(log)
+    db.session.commit()
+    return jsonify({"message": "Deleted"}), 200
+
+@api.route('/pest_disease', methods=['GET', 'POST'])
+@jwt_required()
+@handle_errors
+def manage_pest_disease():
+    from api.models import PestDiseaseIssue
+    if request.method == 'GET':
+        issues = PestDiseaseIssue.query.order_by(PestDiseaseIssue.id.desc()).all()
+        return jsonify([i.serialize() for i in issues]), 200
+    data = request.json
+    issue = PestDiseaseIssue(**{k: v for k, v in data.items() if hasattr(PestDiseaseIssue, k)})
+    db.session.add(issue)
+    db.session.commit()
+    return jsonify(issue.serialize()), 201
+
+@api.route('/pest_disease/<int:issue_id>', methods=['GET', 'PUT', 'DELETE'])
+@jwt_required()
+@handle_errors
+def manage_single_pest_disease(issue_id):
+    from api.models import PestDiseaseIssue
+    issue = PestDiseaseIssue.query.get_or_404(issue_id)
+    if request.method == 'GET':
+        return jsonify(issue.serialize()), 200
+    if request.method == 'PUT':
+        for k, v in request.json.items():
+            if hasattr(issue, k):
+                setattr(issue, k, v)
+        db.session.commit()
+        return jsonify(issue.serialize()), 200
+    db.session.delete(issue)
+    db.session.commit()
+    return jsonify({"message": "Deleted"}), 200
+
+@api.route('/growfarms/analytics', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_growfarm_analytics():
+    from api.models import GrowFarm, PlantBatch, HarvestLog, YieldPrediction
+    farms = GrowFarm.query.count()
+    batches = PlantBatch.query.count()
+    harvests = HarvestLog.query.count()
+    return jsonify({
+        "total_farms": farms,
+        "active_batches": batches,
+        "total_harvests": harvests,
+    }), 200
+
+# ══════════════════════════════════════════════════════════════
+# SEEDBANK — MISSING ROUTES
+# ══════════════════════════════════════════════════════════════
+
+@api.route('/seedbanks/analytics', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_seedbank_analytics():
+    from api.models import Seedbank, SeedBatch, SeedReport
+    banks = Seedbank.query.count()
+    batches = SeedBatch.query.count()
+    reports = SeedReport.query.count()
+    return jsonify({
+        "total_seedbanks": banks,
+        "total_batches": batches,
+        "total_reports": reports,
+    }), 200
+
+@api.route('/seedbanks/calendar', methods=['GET'])
+@jwt_required()
+@handle_errors
+def get_seedbank_calendar():
+    from api.models import SeedBatch
+    batches = SeedBatch.query.all()
+    events = []
+    for b in batches:
+        if hasattr(b, 'planting_date') and b.planting_date:
+            events.append({
+                "id": b.id,
+                "title": getattr(b, 'strain_name', f'Batch {b.id}'),
+                "date": b.planting_date.isoformat() if b.planting_date else None,
+                "type": "planting"
+            })
+    return jsonify(events), 200
