@@ -443,3 +443,35 @@ nav, .navbar {
 .d-flex { display: flex !important; }
 .flex-grow-1 { flex: 1 1 auto !important; min-width: 0 !important; overflow: auto !important; }
 .p-3 { padding: 1rem !important; }
+
+/* ══════════════════════════════════════════
+   GLOBAL TEXT CONTRAST FIX — CRITICAL
+   Forces all text to be readable on dark bg
+   ══════════════════════════════════════════ */
+body, body * {
+  color: inherit;
+}
+h1, h2, h3, h4, h5, h6 {
+  color: #fff8e1 !important;
+}
+p, span, div, td, th, li, label, small {
+  color: inherit;
+}
+.card, .card-body, .card-header, .card-footer {
+  color: #fff8e1 !important;
+  background: rgba(255,171,0,0.05) !important;
+  border-color: rgba(255,171,0,0.15) !important;
+}
+/* Bootstrap text utilities override */
+.text-dark { color: #fff8e1 !important; }
+.text-body { color: #fff8e1 !important; }
+.text-black { color: #fff8e1 !important; }
+.text-secondary { color: rgba(255,248,225,0.55) !important; }
+.text-muted { color: rgba(255,248,225,0.45) !important; }
+/* Main content area */
+.main-content, .main-content * {
+  color: #fff8e1;
+}
+/* Fix any remaining white/light backgrounds */
+.bg-white { background: rgba(255,171,0,0.05) !important; }
+.bg-light { background: rgba(255,171,0,0.05) !important; }
