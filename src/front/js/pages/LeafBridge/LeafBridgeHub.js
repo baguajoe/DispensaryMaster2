@@ -8,6 +8,57 @@ import { useNavigate, useLocation } from "react-router-dom";
 //       Salary | Notifications | My Profile
 // ─────────────────────────────────────────────────────────────
 
+
+const LaborMarketTab = () => (
+    <div style={{ padding: "1.5rem" }}>
+        <h3 style={{ color: "#ffab00", fontWeight: 800, marginBottom: "1.5rem" }}>📊 Labor Market Intelligence</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
+            {[
+                { label: "Open Positions", value: "2,847", icon: "💼", color: "#ffab00" },
+                { label: "Avg Budtender Salary", value: "$38,500", icon: "💰", color: "#4caf50" },
+                { label: "States Hiring", value: "38", icon: "🗺️", color: "#ffd740" },
+                { label: "YoY Growth", value: "+18%", icon: "📈", color: "#ce93d8" },
+                { label: "Compliance Roles", value: "412", icon: "⚖️", color: "#4fc3f7" },
+                { label: "Remote Positions", value: "234", icon: "🏠", color: "#ff8a65" },
+            ].map((m, i) => (
+                <div key={i} style={{ background: "rgba(255,171,0,0.06)", border: "1px solid rgba(255,171,0,0.15)", borderRadius: 12, padding: "1.25rem" }}>
+                    <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>{m.icon}</div>
+                    <div style={{ color: "rgba(255,248,225,0.45)", fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{m.label}</div>
+                    <div style={{ color: m.color, fontSize: "1.5rem", fontWeight: 900 }}>{m.value}</div>
+                </div>
+            ))}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div style={{ background: "rgba(255,171,0,0.06)", border: "1px solid rgba(255,171,0,0.15)", borderRadius: 12, padding: "1.25rem" }}>
+                <h5 style={{ color: "#ffab00", fontWeight: 700, marginBottom: "1rem" }}>🔥 Most In-Demand Roles</h5>
+                {[["Budtender", 1240, "#ffab00"],["Dispensary Manager", 389, "#4caf50"],["Compliance Officer", 312, "#4fc3f7"],["Master Grower", 287, "#ce93d8"],["Delivery Driver", 445, "#ffd740"],["Extraction Tech", 198, "#ff8a65"]].map(([role, count, color]) => (
+                    <div key={role} style={{ marginBottom: "0.75rem" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
+                            <span style={{ color: "#fff8e1", fontSize: "0.82rem" }}>{role}</span>
+                            <span style={{ color, fontWeight: 700, fontSize: "0.82rem" }}>{count} jobs</span>
+                        </div>
+                        <div style={{ background: "rgba(255,171,0,0.1)", borderRadius: 100, height: 5 }}>
+                            <div style={{ background: color, borderRadius: 100, height: 5, width: `${Math.min(100, count/14)}%` }} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div style={{ background: "rgba(255,171,0,0.06)", border: "1px solid rgba(255,171,0,0.15)", borderRadius: 12, padding: "1.25rem" }}>
+                <h5 style={{ color: "#ffab00", fontWeight: 700, marginBottom: "1rem" }}>📍 Top Hiring States</h5>
+                {[["California", "$45K avg", 520],["Colorado", "$42K avg", 389],["Massachusetts", "$44K avg", 312],["Michigan", "$38K avg", 287],["Nevada", "$40K avg", 245],["Illinois", "$41K avg", 198]].map(([state, salary, jobs]) => (
+                    <div key={state} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid rgba(255,171,0,0.08)" }}>
+                        <span style={{ color: "#fff8e1", fontSize: "0.82rem" }}>{state}</span>
+                        <div style={{ textAlign: "right" }}>
+                            <div style={{ color: "#ffab00", fontWeight: 700, fontSize: "0.78rem" }}>{jobs} jobs</div>
+                            <div style={{ color: "rgba(255,248,225,0.4)", fontSize: "0.7rem" }}>{salary}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
+
 const LeafBridgeHub = () => {
     const navigate = useNavigate();
     const location = useLocation();
