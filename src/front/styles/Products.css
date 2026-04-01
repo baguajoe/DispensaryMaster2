@@ -3,7 +3,7 @@
     padding: 24px;
     min-height: calc(100vh - 90px);
     background: linear-gradient(to right, #0a0800, #141200);
-    color: #0a0800;
+    color: #fff8e1;
     overflow-x: auto;
     transition: margin-left 0.3s ease;
 }
@@ -15,7 +15,7 @@
 .products-page {
     padding: 24px;
     background: linear-gradient(to right, #0a0800, #141200);
-    color: #0a0800;
+    color: #fff8e1;
 }
 
 .products-header {
@@ -26,7 +26,7 @@
 .products-header h1 {
     font-size: 2rem;
     font-weight: bold;
-    color: #0a0800;
+    color: #fff8e1;
     margin: 0;
 }
 
@@ -48,7 +48,7 @@
     }
 
     .dropdown-item {
-        color: #0a0800;
+        color: #fff8e1;
         border-radius: 5px;
     }
 
@@ -60,14 +60,14 @@
 /* Table Customization */
 .products-page {
     .table {
-        color: #0a0800 !important;
+        color: #fff8e1 !important;
         margin-bottom: 0;
     }
 
     .table thead th {
         border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         background-color: rgba(0, 0, 0, 0.2);
-        color: #cbd5e0;
+        color: #fff8e1;
         padding: 12px;
     }
 
@@ -80,7 +80,7 @@
         background-color: rgba(255, 255, 255, 0.05);
 
         td {
-            color: #fc8d32;
+            color: #ffab00;
         }
     }
 }
@@ -90,7 +90,7 @@
 
     .modal-content {
         background: #0a0800;
-        color: #0a0800;
+        color: #fff8e1;
     }
 
     .modal-header {
@@ -106,14 +106,14 @@
         background-color: rgba(255, 255, 255, 0.1);
         /* border: 1px solid rgba(255, 255, 255, 0.2); */
         border: 1px solid #0a0800;
-        color: #0a0800;
+        color: #fff8e1;
     }
 
     .form-control:focus,
     .form-select:focus {
         background-color: rgba(255, 255, 255, 0.15);
         border-color: rgba(255, 255, 255, 0.3);
-        color: #0a0800;
+        color: #fff8e1;
         box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
     }
 
@@ -127,7 +127,7 @@
 
     .form-select option {
         background: #0a0800;
-        color: #0a0800;
+        color: #fff8e1;
     }
 
     .btn-close {
@@ -159,7 +159,7 @@
 .products-page {
     .form-control:valid {
         background-color: rgba(25, 135, 84, 0.1) !important;
-        border-color: #0a0800 !important;
+        border-color: #fff8e1 !important;
     }
 
     .form-control:invalid {
@@ -173,3 +173,9 @@
         height: 3rem;
     }
 }
+/* Products table text fix */
+.products-table td, .products-table th { color: #fff8e1 !important; }
+table td { color: #fff8e1 !important; }
+table th { color: rgba(255,248,225,0.6) !important; }
+.product-name { color: #fff8e1 !important; font-weight: 600 !important; }
+.text-muted { color: rgba(255,248,225,0.5) !important; }
