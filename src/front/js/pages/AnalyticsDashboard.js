@@ -35,7 +35,15 @@ const AnalyticsDashboard = () => {
         setLoading(false);
     };
 
-    useEffect(() => { fetchData(); }, []);
+    const [products, setProducts] = useState([]);
+
+    useEffect(() => {
+        fetchData();
+        fetch(`${process.env.BACKEND_URL}/api/shop/products`)
+            .then(r => r.ok ? r.json() : [])
+            .then(d => setProducts(Array.isArray(d) ? d : []))
+            .catch(() => {});
+    }, []);
 
     const METRICS = [
         { label: "Total Sales", value: `$${parseFloat(data.total_sales || 0).toFixed(2)}`, icon: "💰", color: "#ffab00" },
@@ -43,7 +51,7 @@ const AnalyticsDashboard = () => {
         { label: "Low Stock Items", value: data.low_stock, icon: "⚠️", color: "#ff5252" },
         { label: "Avg Order Value", value: `$${data.avg_order}`, icon: "📊", color: "#ffd740" },
         { label: "Top Category", value: data.top_category, icon: "🌿", color: "#ffab00" },
-        { label: "Products", value: store.products?.length || 0, icon: "🏷️", color: "#4caf50" },
+        { label: "Products", value: products.length || 0, icon: "🏷️", color: "#4caf50" },
     ];
 
     return (
@@ -60,9 +68,9 @@ const AnalyticsDashboard = () => {
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                     <input type="date" value={start} onChange={e => setStart(e.target.value)}
-                        className="form-control" style={{ maxWidth: 150, fontSize: "0.8rem" }} />
+                        style={{ maxWidth: 150, fontSize: "0.8rem", background: "rgba(255,171,0,0.08)", border: "1px solid rgba(255,171,0,0.3)", borderRadius: 8, color: "#fff8e1", padding: "0.4rem 0.75rem" }} />
                     <input type="date" value={end} onChange={e => setEnd(e.target.value)}
-                        className="form-control" style={{ maxWidth: 150, fontSize: "0.8rem" }} />
+                        style={{ maxWidth: 150, fontSize: "0.8rem", background: "rgba(255,171,0,0.08)", border: "1px solid rgba(255,171,0,0.3)", borderRadius: 8, color: "#fff8e1", padding: "0.4rem 0.75rem" }} />
                     <button onClick={() => fetchData(start, end)} style={{
                         background: "#ffab00", color: "#0a0800", border: "none",
                         padding: "0.45rem 1.25rem", borderRadius: 8, fontWeight: 700,
@@ -121,7 +129,7 @@ const AnalyticsDashboard = () => {
 
                 <div style={{ background: "rgba(255,171,0,0.06)", border: "1px solid rgba(255,171,0,0.15)", borderRadius: 12, padding: "1.5rem" }}>
                     <h5 style={{ color: "#ffab00", fontWeight: 700, marginBottom: "1rem" }}>🏆 Top Products</h5>
-                    {(store.products || []).slice(0, 5).map((p, i) => (
+                    {products.slice(0, 5).map((p, i) => (
                         <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 0", borderBottom: "1px solid rgba(255,171,0,0.06)" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                                 <span style={{ color: "#ffab00", fontWeight: 900, fontSize: "0.8rem", width: 20 }}>#{i+1}</span>
@@ -130,7 +138,7 @@ const AnalyticsDashboard = () => {
                             <span style={{ color: "#4caf50", fontWeight: 700, fontSize: "0.82rem" }}>${p.price}</span>
                         </div>
                     ))}
-                    {(!store.products || store.products.length === 0) && (
+                    {products.length === 0 && (
                         <p style={{ color: "rgba(255,248,225,0.3)", fontSize: "0.82rem", textAlign: "center", marginTop: "1rem" }}>No products yet</p>
                     )}
                 </div>
