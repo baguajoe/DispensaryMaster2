@@ -135,7 +135,7 @@ export const Sidebar = () => {
     };
 
     return (
-        <div className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""}`}>
+        <div className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""}`} style={{ width: isCollapsed ? "60px" : "240px", minWidth: isCollapsed ? "60px" : "240px", maxWidth: isCollapsed ? "60px" : "240px", flexShrink: 0, transition: "width 0.25s ease" }}>
             <button
                 className="sidebar-toggle"
                 onClick={() => setIsCollapsed((prev) => !prev)}
