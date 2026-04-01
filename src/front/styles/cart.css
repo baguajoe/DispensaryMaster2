@@ -17,7 +17,7 @@
 
 .cart-header h1 {
   margin: 0;
-  color: #333;
+  color: #fff8e1;
 }
 
 .cart-count {
@@ -127,7 +127,7 @@
 /* Item Info */
 .item-info h3 {
   margin: 0 0 5px 0;
-  color: #333;
+  color: #fff8e1;
   font-size: 1.1rem;
 }
 
@@ -144,7 +144,7 @@
 }
 
 .item-price {
-  color: #333;
+  color: #fff8e1;
   font-weight: 500;
   margin: 0;
 }
@@ -191,7 +191,7 @@
 .item-total {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #333;
+  color: #fff8e1;
   text-align: right;
 }
 
@@ -289,7 +289,7 @@
   display: block;
   font-weight: 500;
   margin-bottom: 8px;
-  color: #333;
+  color: #fff8e1;
 }
 
 .form-select {
@@ -309,7 +309,7 @@
   display: block;
   font-weight: 500;
   margin-bottom: 8px;
-  color: #333;
+  color: #fff8e1;
 }
 
 .discount-input-group {

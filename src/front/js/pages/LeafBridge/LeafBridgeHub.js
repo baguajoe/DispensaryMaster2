@@ -1460,7 +1460,7 @@ const ProfileTab = ({ headers, navigate, myProfile, setMyProfile }) => {
                 <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer", fontSize: "0.78rem" }}>
                         <div onClick={() => setForm(f => ({ ...f, available: !f.available }))} style={{ width: 36, height: 20, borderRadius: 10, background: form.available ? "#ffab00" : "rgba(255,255,255,0.12)", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-                            <div style={{ position: "absolute", top: 2, left: form.available ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "white", transition: "left 0.2s" }} />
+                            <div style={{ position: "absolute", top: 2, left: form.available ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "rgba(255,171,0,0.08)", transition: "left 0.2s" }} />
                         </div>
                         <span style={{ color: form.available ? "#ffab00" : "rgba(255,255,255,0.35)", fontWeight: 600 }}>Open to Work</span>
                     </label>

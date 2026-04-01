@@ -17,7 +17,7 @@
   
   .table-container {
     background: #0a0800; /* Set table container background to #0a0800 for readability */
-    color: black; /* Set table text to black */
+    color: #fff8e1; /* Set table text to black */
     border-radius: 8px;
     padding: 16px;
   }
@@ -28,6 +28,6 @@
   }
   
   .table-container td {
-    color: black; /* Set table cell text to black */
+    color: #fff8e1; /* Set table cell text to black */
   }
   

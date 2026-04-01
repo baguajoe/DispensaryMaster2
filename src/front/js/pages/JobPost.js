@@ -8,7 +8,7 @@ const JOB_CATEGORIES = ["Budtender","Manager","Delivery Driver","Security","Cult
 const PLANS = [
     {
         id: "free", name: "Free", price: "$0", period: "",
-        color: "#6c757d", features: ["1 active listing","Basic placement","30 day listing","Email applications"],
+        color: "rgba(255,248,225,0.5)", features: ["1 active listing","Basic placement","30 day listing","Email applications"],
         cta: "Get Started Free"
     },
     {
