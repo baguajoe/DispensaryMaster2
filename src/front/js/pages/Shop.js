@@ -144,7 +144,18 @@ const Shop = () => {
                 <div className="row g-3">
                     {filtered.map(p => (
                         <div key={p.id} className="col-6 col-md-4 col-lg-3">
-                            <div className="glass-panel h-100 d-flex flex-column">
+                            <div className="glass-panel h-100 d-flex flex-column" style={{ padding: 0, overflow: "hidden" }}>
+                                <div style={{ height: 160, position: "relative", flexShrink: 0 }}>
+                                    <img
+                                        src={CATEGORY_IMAGES[p.category] || CATEGORY_IMAGES.default}
+                                        alt={p.name}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                        onError={e => { e.target.src = CATEGORY_IMAGES.default; }}
+                                    />
+                                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(10,8,0,0.85) 100%)" }} />
+                                    <span style={{ position: "absolute", bottom: 8, left: 10, color: "#ffab00", fontWeight: 800, fontSize: "0.9rem", textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>{p.name}</span>
+                                </div>
+                                <div style={{ padding: "0.75rem" }} className="d-flex flex-column flex-grow-1">
                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                     <span className={`badge ${p.strain==="Sativa"?"bg-warning text-dark":p.strain==="Indica"?"bg-primary":"bg-success"}`}>
                                         {p.strain || p.category}
@@ -167,6 +178,7 @@ const Shop = () => {
                                     Add to Cart
                                 </button>
                             </div>
+                        </div>
                         </div>
                     ))}
                 </div>
