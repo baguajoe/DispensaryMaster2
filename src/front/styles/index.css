@@ -475,3 +475,57 @@ p, span, div, td, th, li, label, small {
 /* Fix any remaining white/light backgrounds */
 .bg-white { background: rgba(255,171,0,0.05) !important; }
 .bg-light { background: rgba(255,171,0,0.05) !important; }
+
+/* ═══════════════════════════════════════════
+   NUCLEAR TEXT FIX — no white text on dark bg
+   ═══════════════════════════════════════════ */
+* { box-sizing: border-box; }
+
+/* Override Bootstrap defaults */
+body { color: #fff8e1 !important; background: #0a0800 !important; }
+.text-dark, .text-black, .text-body { color: #fff8e1 !important; }
+.text-white { color: #fff8e1 !important; }
+.text-muted, .text-secondary { color: rgba(255,248,225,0.5) !important; }
+.text-primary { color: #ffab00 !important; }
+.text-success { color: #4caf50 !important; }
+.text-danger { color: #ff5252 !important; }
+.text-warning { color: #ffd740 !important; }
+.text-info { color: #4fc3f7 !important; }
+
+/* All headings amber */
+h1, h2, h3, h4, h5, h6 { color: #ffab00 !important; }
+
+/* Table text */
+table, td, th, tr { color: #fff8e1 !important; }
+thead th { color: rgba(255,248,225,0.5) !important; background: rgba(255,171,0,0.06) !important; }
+
+/* Cards */
+.card { background: rgba(255,171,0,0.05) !important; border-color: rgba(255,171,0,0.15) !important; color: #fff8e1 !important; }
+.card-header, .card-body, .card-footer { background: transparent !important; color: #fff8e1 !important; }
+
+/* Buttons keep their colors */
+.btn-primary { background: #ffab00 !important; color: #0a0800 !important; border-color: #ffab00 !important; }
+.btn-success { background: #4caf50 !important; color: #0a0800 !important; border-color: #4caf50 !important; }
+.btn-danger { background: #ff5252 !important; color: #0a0800 !important; }
+
+/* Form controls */
+.form-control, .form-select {
+    background: rgba(255,171,0,0.06) !important;
+    border-color: rgba(255,171,0,0.2) !important;
+    color: #fff8e1 !important;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #ffab00 !important;
+    box-shadow: 0 0 0 2px rgba(255,171,0,0.15) !important;
+}
+
+/* White backgrounds → dark */
+.bg-white, .bg-light { background: rgba(255,171,0,0.05) !important; }
+.bg-dark { background: #0f0e00 !important; }
+
+/* Badges */
+.badge.bg-primary { background: rgba(255,171,0,0.15) !important; color: #ffab00 !important; }
+.badge.bg-success { background: rgba(76,175,80,0.15) !important; color: #4caf50 !important; }
+.badge.bg-danger { background: rgba(255,82,82,0.15) !important; color: #ff5252 !important; }
+.badge.bg-warning { background: rgba(255,215,64,0.15) !important; color: #ffd740 !important; }
+.badge.bg-secondary { background: rgba(255,171,0,0.08) !important; color: rgba(255,248,225,0.5) !important; }

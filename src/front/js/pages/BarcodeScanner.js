@@ -47,7 +47,7 @@ const BarcodeScanner = () => {
                         <h5 className="mb-3">Scan or Enter Barcode</h5>
                         <form onSubmit={handleSubmit}>
                             <div className="input-group mb-3">
-                                <span className="input-group-text" style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"white"}}>📷</span>
+                                <span className="input-group-text" style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff8e1"}}>📷</span>
                                 <input ref={inputRef} className="form-control" placeholder="Scan barcode or enter SKU/batch number..."
                                     value={barcode} onChange={e => setBarcode(e.target.value)}
                                     autoFocus />

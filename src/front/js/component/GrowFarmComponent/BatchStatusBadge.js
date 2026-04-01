@@ -20,7 +20,7 @@ const BatchStatusBadge = ({ status }) => {
       style={{
         padding: '5px 10px',
         borderRadius: '5px',
-        color: 'white',
+        color: '#fff8e1',
         backgroundColor: getBadgeColor(status),
       }}
     >

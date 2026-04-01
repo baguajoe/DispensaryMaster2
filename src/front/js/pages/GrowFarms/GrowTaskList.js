@@ -75,7 +75,7 @@ const GrowTaskList = () => {
                                     </td>
                                     <td>
                                         <select className="form-select form-select-sm"
-                                            style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"white",width:"130px"}}
+                                            style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff8e1",width:"130px"}}
                                             value={t.status} onChange={e => updateStatus(t.id, e.target.value)}>
                                             {["Pending","In Progress","Completed","Skipped"].map(s => <option key={s} style={{background:"#1a2f3a"}}>{s}</option>)}
                                         </select>

@@ -160,7 +160,7 @@ const LeafBridgeHub = () => {
                         }}>
                             {tab.icon} {tab.label}
                             {tab.badge > 0 && (
-                                <span style={{ position: "absolute", top: 6, right: 2, background: "#f5365c", color: "white", width: 16, height: 16, borderRadius: "50%", fontSize: "0.6rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>{tab.badge}</span>
+                                <span style={{ position: "absolute", top: 6, right: 2, background: "#f5365c", color: "#fff8e1", width: 16, height: 16, borderRadius: "50%", fontSize: "0.6rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>{tab.badge}</span>
                             )}
                         </button>
                     ))}

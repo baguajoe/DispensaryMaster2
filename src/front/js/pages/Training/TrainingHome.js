@@ -121,7 +121,7 @@ const TrainingHome = () => {
         const stats=getResStats(r.id);
         return(
             <div className="col-md-4 mb-3">
-                <div className="card h-100" style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"white"}}>
+                <div className="card h-100" style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff8e1"}}>
                     {r.is_required&&<div className="card-header py-1 text-center bg-danger text-white small fw-bold">REQUIRED</div>}
                     <div className="card-body d-flex flex-column">
                         <div className="d-flex justify-content-between mb-2">
@@ -136,7 +136,7 @@ const TrainingHome = () => {
                         <p className="small mb-2 flex-grow-1" style={{color:"rgba(255,255,255,0.6)",display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{r.content}</p>
                         {stats.assigned>0&&<div className="small mb-2" style={{color:"rgba(255,255,255,0.5)"}}>👥 {stats.completed}/{stats.assigned} assigned completed</div>}
                         <div className="d-flex gap-2">
-                            <button className="btn btn-sm flex-grow-1" style={{background:"rgba(255,255,255,0.15)",color:"white",border:"1px solid rgba(255,255,255,0.2)"}} onClick={()=>setSelected(r)}>
+                            <button className="btn btn-sm flex-grow-1" style={{background:"rgba(255,255,255,0.15)",color:"#fff8e1",border:"1px solid rgba(255,255,255,0.2)"}} onClick={()=>setSelected(r)}>
                                 {r.resource_type==="video"?"▶ Watch":"📖 Open"}
                             </button>
                             <button className="btn btn-sm btn-outline-info" onClick={()=>{setAssignModal(r);setSelectedEmployees([]);}} title="Assign">👥</button>
@@ -248,7 +248,7 @@ const TrainingHome = () => {
             {view==="library"&&(
                 <>
                     <div className="d-flex gap-2 mb-4 flex-wrap">
-                        <input className="form-control flex-grow-1" placeholder="Search training..." style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"white",maxWidth:"320px"}} value={search} onChange={e=>setSearch(e.target.value)} />
+                        <input className="form-control flex-grow-1" placeholder="Search training..." style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff8e1",maxWidth:"320px"}} value={search} onChange={e=>setSearch(e.target.value)} />
                         {types.map(t=><button key={t} className={`btn btn-sm ${typeFilter===t?"btn-light":"btn-outline-light"}`} onClick={()=>setTypeFilter(t)}>{t}</button>)}
                     </div>
                     {loading?<div className="text-center py-5"><div className="spinner-border text-light"/></div>
@@ -264,7 +264,7 @@ const TrainingHome = () => {
                 <>
                     <div className="modal fade show d-block" tabIndex="-1">
                         <div className="modal-dialog modal-md">
-                            <div className="modal-content" style={{background:"#0a0800",color:"white",border:"1px solid rgba(255,255,255,0.2)"}}>
+                            <div className="modal-content" style={{background:"#0a0800",color:"#fff8e1",border:"1px solid rgba(255,255,255,0.2)"}}>
                                 <div className="modal-header" style={{borderBottom:"1px solid rgba(255,255,255,0.15)"}}>
                                     <h5 className="modal-title">Assign Training</h5>
                                     <button className="btn-close btn-close-white" onClick={()=>setAssignModal(null)}/>
@@ -314,7 +314,7 @@ const TrainingHome = () => {
                 <>
                     <div className="modal fade show d-block" tabIndex="-1">
                         <div className="modal-dialog modal-lg modal-dialog-scrollable">
-                            <div className="modal-content" style={{background:"#0a0800",color:"white",border:"1px solid rgba(255,255,255,0.2)"}}>
+                            <div className="modal-content" style={{background:"#0a0800",color:"#fff8e1",border:"1px solid rgba(255,255,255,0.2)"}}>
                                 <div className="modal-header" style={{borderBottom:"1px solid rgba(255,255,255,0.15)"}}>
                                     <div>
                                         <h5 className="modal-title fw-bold">{ICONS[selected.resource_type]} {selected.title}</h5>

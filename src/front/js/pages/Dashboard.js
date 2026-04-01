@@ -7,7 +7,7 @@ const StatCard = ({ title, value, icon, trend, color }) => (
         <div style={{fontSize:"2rem"}}>{icon}</div>
         <div>
             <p style={{fontSize:"0.75rem", color:"rgba(255,255,255,0.55)", textTransform:"uppercase", letterSpacing:"0.5px", margin:0}}>{title}</p>
-            <p style={{fontSize:"1.6rem", fontWeight:700, color:"white", margin:0}}>{value}</p>
+            <p style={{fontSize:"1.6rem", fontWeight:700, color:"#fff8e1", margin:0}}>{value}</p>
             {trend !== undefined && (
                 <p style={{fontSize:"0.75rem", color: trend >= 0 ? "#2dce89" : "#f5365c", margin:0}}>
                     {trend >= 0 ? "▲" : "▼"} {Math.abs(trend)}%

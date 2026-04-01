@@ -49,7 +49,7 @@ const JobApplications = () => {
                 </div>
             ) : (
                 <div className="rounded-3 overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.12)"}}>
-                    <table className="table mb-0" style={{color:"white"}}>
+                    <table className="table mb-0" style={{color:"#fff8e1"}}>
                         <thead style={{background:"rgba(255,255,255,0.08)"}}>
                             <tr>
                                 <th className="border-0 py-3">Position</th>

@@ -78,13 +78,13 @@ const JobPost = () => {
         background: "rgba(255,255,255,0.06)",
         border: "1px solid rgba(255,255,255,0.12)",
         borderRadius: "12px",
-        color: "white"
+        color: "#fff8e1"
     };
 
     const inputStyle = {
         background: "rgba(255,255,255,0.08)",
         border: "1px solid rgba(255,255,255,0.2)",
-        color: "white",
+        color: "#fff8e1",
         borderRadius: "8px"
     };
 
@@ -131,7 +131,7 @@ const JobPost = () => {
                                         border: plan===p.id ? `2px solid ${p.color}` : "1px solid rgba(255,255,255,0.12)",
                                         cursor:"pointer",
                                         transition:"all 0.2s",
-                                        color:"white"
+                                        color:"#fff8e1"
                                     }}
                                     onClick={() => setPlan(p.id)}>
                                     {p.badge && (
