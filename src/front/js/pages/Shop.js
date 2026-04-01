@@ -10,6 +10,22 @@ const DEFAULT_CATEGORIES = [
     "Infused","Patches","Suppositories"
 ];
 
+
+const CATEGORY_IMAGES = {
+    "Flower": "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=400&q=80",
+    "Edibles": "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400&q=80",
+    "Concentrates": "https://images.unsplash.com/photo-1604506007998-0dc565cd7b47?w=400&q=80",
+    "Vapes": "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400&q=80",
+    "Tinctures": "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&q=80",
+    "Pre-Rolls": "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=400&q=80",
+    "Accessories": "https://images.unsplash.com/photo-1603478638054-63ea0c99b82e?w=400&q=80",
+    "Topicals": "https://images.unsplash.com/photo-1612197795006-9f3e9e76e35f?w=400&q=80",
+    "CBD Products": "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&q=80",
+    "Capsules": "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&q=80",
+    "Beverages": "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&q=80",
+    "default": "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=400&q=80"
+};
+
 const Shop = () => {
     const { store, actions } = useContext(Context);
     const [products, setProducts] = useState([]);
