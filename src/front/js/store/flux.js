@@ -105,7 +105,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                         headers: getActions().getAuthHeaders(),
                     });
                     const data = await resp.json();
-                    setStore({ products: data });
+                    setStore({ products: Array.isArray(data) ? data : (data.products || []) });
                     return { success: true };
                 } catch (error) {
                     return { success: false, error: error.message };
