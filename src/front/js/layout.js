@@ -171,7 +171,7 @@ const Layout = () => {
                 <Navbar />
                 <div className="d-flex">
                     {token && <Sidebar />}
-                    <div className="flex-grow-1" style={{ padding: "1.5rem", minWidth: 0, overflowX: "hidden" }}>
+                    <div className="flex-grow-1" style={{ minWidth: 0, overflowX: "hidden", flex: 1 }}>
                         <Routes>
                             {/* Public */}
                             <Route path="/" element={<AgeVerification />} />
