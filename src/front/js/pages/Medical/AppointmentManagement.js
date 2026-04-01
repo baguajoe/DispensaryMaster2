@@ -53,7 +53,7 @@ const AppointmentManagement = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📅 Appointment Management</h2><p>{appointments.length} total · {today.length} today</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📅 Appointment Management</h2><p>{appointments.length} total · {today.length} today</p></div>
                 <button className="btn btn-success" onClick={() => setShowForm(!showForm)}>+ Schedule Appointment</button>
             </div>
 

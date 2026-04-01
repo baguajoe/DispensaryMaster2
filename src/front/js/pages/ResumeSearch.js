@@ -23,7 +23,7 @@ const ResumeSearch = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>🔍 Resume Database</h2><p>Find qualified cannabis professionals</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🔍 Resume Database</h2><p>Find qualified cannabis professionals</p></div>
 
             {/* Search Filters */}
             <div className="glass-panel mb-4">

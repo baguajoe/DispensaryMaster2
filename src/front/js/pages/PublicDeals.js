@@ -26,12 +26,12 @@ const PublicDeals = () => {
 
   return (
     <div className="public-deals">
-      <h1>Current Promotions</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Current Promotions</h1>
       <div className="deal-list">
         {deals.length === 0 && <p>No active deals right now.</p>}
         {deals.map((deal) => (
           <div key={deal.id} className="deal-card">
-            <h3>{deal.name}</h3>
+            <h3 style={{ color: "#ffab00", fontWeight: 700 }}>{deal.name}</h3>
             <p><strong>Amount:</strong> ${deal.amount}</p>
             <p><strong>Details:</strong> {deal.description || "No description"}</p>
           </div>

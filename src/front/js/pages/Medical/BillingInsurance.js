@@ -42,7 +42,7 @@ const BillingInsurance = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>🏥 Billing & Insurance</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>🏥 Billing & Insurance</h2>
                     {patient && <p style={{color:"rgba(255,255,255,0.6)"}}>Patient: {patient.first_name} {patient.last_name}</p>}
                 </div>
                 <div className="d-flex gap-2">

@@ -37,7 +37,7 @@ const ReceiptManagement = () => {
 
   return (
     <div>
-      <h2>Receipt Management</h2>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Receipt Management</h2>
       <div>
         <label>Header</label>
         <textarea

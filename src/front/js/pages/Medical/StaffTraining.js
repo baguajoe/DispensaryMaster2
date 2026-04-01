@@ -15,7 +15,7 @@ const StaffTraining = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📚 Medical Staff Training</h2><p>{resources.length} training resources</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📚 Medical Staff Training</h2><p>{resources.length} training resources</p></div>
                 <button className="btn btn-success" onClick={()=>navigate("/training")}>Go to Training Center →</button>
             </div>
             <div className="row g-3">

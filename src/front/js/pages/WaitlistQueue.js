@@ -38,7 +38,7 @@ const WaitlistQueue = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🔢 Waitlist & Queue</h2><p>{queue.length} customers waiting · Auto-refreshes every 15s</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🔢 Waitlist & Queue</h2><p>{queue.length} customers waiting · Auto-refreshes every 15s</p></div>
             </div>
 
             <div className="row g-3 mb-4">

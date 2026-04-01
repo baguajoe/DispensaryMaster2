@@ -43,7 +43,7 @@ const EmployeeDashboard = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>👔 Employee Management</h2><p>{employees.length} employees</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>👔 Employee Management</h2><p>{employees.length} employees</p></div>
                 <div className="d-flex gap-2">
                     <button className="btn btn-outline-light" onClick={()=>navigate("/payroll")}>💰 Payroll</button>
                     <button className="btn btn-outline-light" onClick={()=>navigate("/manager-shifts")}>📅 Shifts</button>

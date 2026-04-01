@@ -29,7 +29,7 @@ const AddGrowTask = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📋 Add Grow Task</h2><p>Assign tasks to plant batches or staff</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📋 Add Grow Task</h2><p>Assign tasks to plant batches or staff</p></div>
                 <button className="btn btn-outline-light" onClick={() => navigate("/growfarms/task-list")}>← Back to Tasks</button>
             </div>
             <div className="glass-panel" style={{maxWidth:"700px"}}>

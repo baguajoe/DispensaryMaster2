@@ -40,7 +40,7 @@ const ProductReviews = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>⭐ Product Reviews</h2><p>{reviews.length} reviews · {avgRating} avg rating</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>⭐ Product Reviews</h2><p>{reviews.length} reviews · {avgRating} avg rating</p></div>
                 <button className="btn btn-success" onClick={()=>setShowForm(!showForm)}>+ Write Review</button>
             </div>
 

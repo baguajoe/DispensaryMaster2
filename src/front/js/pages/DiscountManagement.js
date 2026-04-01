@@ -46,7 +46,7 @@ const DiscountManagement = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🏷️ Discount Management</h2><p>{deals.filter(d=>d.is_active).length} active deals</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🏷️ Discount Management</h2><p>{deals.filter(d=>d.is_active).length} active deals</p></div>
                 <button className="btn btn-success" onClick={()=>{ setEditing(null); setForm({ title:"", description:"", discount_percent:0, discount_type:"percent", min_purchase:0, start_date:"", end_date:"", is_active:true, code:"" }); setShowForm(!showForm); }}>+ New Deal</button>
             </div>
 

@@ -23,7 +23,7 @@ const GramLimitChecker = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>⚖️ Gram Limit Compliance</h2><p>State-mandated purchase limits per customer per day</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>⚖️ Gram Limit Compliance</h2><p>State-mandated purchase limits per customer per day</p></div>
             <div className="row g-4">
                 <div className="col-md-5">
                     <div className="glass-panel">

@@ -29,7 +29,7 @@ const MultiLocationDashboard = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🏪 Multi-Location Dashboard</h2><p>{summary.length} locations</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🏪 Multi-Location Dashboard</h2><p>{summary.length} locations</p></div>
                 <button className="btn btn-success" onClick={handleSync} disabled={syncing}>{syncing?<span className="spinner-border spinner-border-sm me-2"/>:"🔄 "}Sync All Inventory</button>
             </div>
 

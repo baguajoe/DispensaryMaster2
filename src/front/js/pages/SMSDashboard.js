@@ -38,7 +38,7 @@ const SMSDashboard = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>📱 SMS Dashboard</h2><p>Send and track customer text messages</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📱 SMS Dashboard</h2><p>Send and track customer text messages</p></div>
 
             {!configured && (
                 <div className="alert alert-warning mb-4">

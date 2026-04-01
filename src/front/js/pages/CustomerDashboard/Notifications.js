@@ -22,7 +22,7 @@ const Notifications = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>🔔 Notifications</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>🔔 Notifications</h2>
                     <p>{unread} unread notification{unread !== 1 ? "s" : ""}</p>
                 </div>
             </div>

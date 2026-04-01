@@ -46,7 +46,7 @@ const Support = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>💬 Help & Support</h2><p>Get help with your orders and account</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>💬 Help & Support</h2><p>Get help with your orders and account</p></div>
                 <button className="btn btn-success" onClick={() => setShowForm(!showForm)}>+ New Ticket</button>
             </div>
 

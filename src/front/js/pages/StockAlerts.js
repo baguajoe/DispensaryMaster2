@@ -40,7 +40,7 @@ const StockAlerts = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>⚠️ Stock Alerts</h2><p>{total} products need attention</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>⚠️ Stock Alerts</h2><p>{total} products need attention</p></div>
 
             <div className="row g-3 mb-4">
                 <div className="col-6 col-md-3"><div className="glass-panel text-center"><div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.5)",textTransform:"uppercase"}}>Out of Stock</div><div style={{fontSize:"2rem",fontWeight:700,color:"#f5365c"}}>{alerts.out_of_stock.length}</div></div></div>

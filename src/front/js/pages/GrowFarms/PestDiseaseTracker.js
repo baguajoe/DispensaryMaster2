@@ -33,7 +33,7 @@ const PestDiseaseTracker = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🐛 Pest & Disease Tracker</h2><p>{activeIssues} active issues across all batches</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🐛 Pest & Disease Tracker</h2><p>{activeIssues} active issues across all batches</p></div>
                 <button className="btn btn-danger" onClick={() => setShowModal(true)}>+ Report Issue</button>
             </div>
 

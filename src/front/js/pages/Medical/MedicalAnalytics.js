@@ -15,7 +15,7 @@ const MedicalAnalytics = () => {
     if (loading) return <div className="main-content d-flex justify-content-center align-items-center" style={{minHeight:"60vh"}}><div className="spinner-border text-light"/></div>;
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>📊 Medical Analytics</h2><p>Patient and prescription insights</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📊 Medical Analytics</h2><p>Patient and prescription insights</p></div>
             <div className="row g-3 mb-4">
                 {[
                     {l:"Total Patients", v:summary?.total_patients||0, c:"#11cdef"},

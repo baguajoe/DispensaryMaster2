@@ -42,7 +42,7 @@ const CheckoutPage = () => {
 
   return (
     <div>
-      <h1>Checkout</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Checkout</h1>
 
       {/* Promotion Input Section */}
       <PromotionInput

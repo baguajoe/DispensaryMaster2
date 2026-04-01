@@ -54,7 +54,7 @@ const InventoryPage = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📦 Inventory Management</h2><p>{products.length} products tracked</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📦 Inventory Management</h2><p>{products.length} products tracked</p></div>
                 <div className="d-flex gap-2">
                     <button className="btn btn-outline-warning" onClick={()=>navigate("/stock-alerts")}>⚠️ Alerts</button>
                     <button className="btn btn-success" onClick={()=>navigate("/products")}>+ Add Product</button>

@@ -57,7 +57,7 @@ const LoyaltyProgram = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>🏆 Loyalty Program</h2><p>Earn points with every purchase and redeem for rewards</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🏆 Loyalty Program</h2><p>Earn points with every purchase and redeem for rewards</p></div>
 
             {/* Points Banner */}
             <div className="glass-panel mb-4 p-4 text-center" style={{background:`linear-gradient(135deg, ${currentTier.color}22, ${currentTier.color}11)`,borderColor:`${currentTier.color}44`}}>

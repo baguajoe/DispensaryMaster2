@@ -19,7 +19,7 @@ const Cart = () => {
 
   return (
     <div>
-      <h1>Cart</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Cart</h1>
       <ul>
         {cartItems.map((item) => (
           <li key={item.id}>

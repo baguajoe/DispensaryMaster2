@@ -15,7 +15,7 @@ const GrowFarmOverview = () => {
 
     return (
         <div>
-            <h1>Grow Farm Overview</h1>
+            <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Grow Farm Overview</h1>
             <div className="dashboard-grid">
                 <DashboardMetrics
                     title="Total Farms"

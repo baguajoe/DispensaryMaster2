@@ -40,7 +40,7 @@ const GrowTaskList = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>📋 Grow Task List</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>📋 Grow Task List</h2>
                     <p>{tasks.filter(t=>t.status==="Pending").length} pending · {tasks.filter(t=>t.status==="Completed").length} completed</p>
                 </div>
                 <button className="btn btn-success" onClick={() => navigate("/growfarms/add-grow-task")}>+ Add Task</button>

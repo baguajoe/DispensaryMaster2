@@ -34,7 +34,7 @@ const Reports = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>Reports</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Reports</h2>
                     <p>Business performance reports</p>
                 </div>
                 <button className="btn btn-outline-success btn-sm" onClick={exportCSV} disabled={!data}>

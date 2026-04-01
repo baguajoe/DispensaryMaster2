@@ -40,7 +40,7 @@ const BarcodeScanner = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>📷 Barcode Scanner</h2><p>Scan or enter product barcode/SKU to look up inventory</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📷 Barcode Scanner</h2><p>Scan or enter product barcode/SKU to look up inventory</p></div>
             <div className="row g-4">
                 <div className="col-md-6">
                     <div className="glass-panel mb-4">

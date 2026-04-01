@@ -19,12 +19,12 @@ const OrderDetails = ({ orderId }) => {
 
   return (
     <div>
-      <h1>Order Details</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Order Details</h1>
       <p>Order ID: {order.id}</p>
       <p>Status: {order.status}</p>
       <p>Date: {order.date}</p>
       <p>Total: {order.total}</p>
-      <h3>Items:</h3>
+      <h3 style={{ color: "#ffab00", fontWeight: 700 }}>Items:</h3>
       <ul>
         {order.items.map((item, index) => (
           <li key={index}>

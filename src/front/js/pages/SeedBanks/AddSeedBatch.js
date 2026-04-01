@@ -30,7 +30,7 @@ const AddSeedBatch = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🌰 Add Seed Batch</h2><p>Register new seeds into the seed bank</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌰 Add Seed Batch</h2><p>Register new seeds into the seed bank</p></div>
                 <button className="btn btn-outline-light" onClick={() => navigate("/seedbanks/batch-list")}>← Back</button>
             </div>
             <div className="glass-panel" style={{maxWidth:"700px"}}>

@@ -19,7 +19,7 @@ const EnvironmentData = () => {
     if (loading) return <div className="main-content d-flex justify-content-center align-items-center" style={{minHeight:"60vh"}}><div className="spinner-border text-light"/></div>;
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>🌡️ Environment Data</h2><p>Monitor grow room conditions</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌡️ Environment Data</h2><p>Monitor grow room conditions</p></div>
             <div className="glass-panel mb-4">
                 <h5 className="mb-3">Log Reading</h5>
                 <form onSubmit={handleSubmit}>

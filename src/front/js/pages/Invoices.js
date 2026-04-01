@@ -28,7 +28,7 @@ const Invoices = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>Invoices</h2><p>Manage customer invoices</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>Invoices</h2><p>Manage customer invoices</p></div>
             <div className="row g-3 mb-4">
                 {[
                     { label:"Total Invoiced", value:`$${total.toFixed(2)}`, color:"#11cdef" },

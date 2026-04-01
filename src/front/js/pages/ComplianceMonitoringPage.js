@@ -72,7 +72,7 @@ const ComplianceMonitoringPage = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>⚖️ Compliance Monitoring</h2><p>License tracking, audits, and document management</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>⚖️ Compliance Monitoring</h2><p>License tracking, audits, and document management</p></div>
 
             {/* State selector */}
             <div className="glass-panel mb-4">

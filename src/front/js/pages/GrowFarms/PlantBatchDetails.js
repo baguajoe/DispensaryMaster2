@@ -29,7 +29,7 @@ const PlantBatchDetails = () => {
 
   return (
     <div className="plant-batch-details">
-      <h2>Plant Batch Details</h2>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Plant Batch Details</h2>
       <p>
         <strong>Strain:</strong> {batch.strain}
       </p>

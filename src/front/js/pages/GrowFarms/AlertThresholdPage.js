@@ -38,9 +38,9 @@ const AlertThresholdPage = () => {
 
   return (
     <div>
-      <h1>Alert Threshold Management</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Alert Threshold Management</h1>
       <AlertThresholdForm onSubmit={handleFormSubmit} />
-      <h2>Existing Thresholds</h2>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Existing Thresholds</h2>
       <ul>
         {thresholds.map((threshold) => (
           <li key={threshold.id}>

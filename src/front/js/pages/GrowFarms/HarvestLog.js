@@ -36,7 +36,7 @@ const HarvestLog = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🌾 Harvest Log</h2><p>Track all harvested batches and weights</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌾 Harvest Log</h2><p>Track all harvested batches and weights</p></div>
                 <button className="btn btn-success" onClick={() => setShowModal(true)}>+ Log Harvest</button>
             </div>
 

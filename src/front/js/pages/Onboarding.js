@@ -66,7 +66,7 @@ const Onboarding = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📋 Employee Onboarding</h2><p>State-specific new hire checklists</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📋 Employee Onboarding</h2><p>State-specific new hire checklists</p></div>
                 <button className="btn btn-success" onClick={() => setShowNew(!showNew)}>+ New Onboarding</button>
             </div>
 

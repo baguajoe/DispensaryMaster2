@@ -22,24 +22,24 @@ const Settings = () => {
 
   return (
     <div>
-      <h1>Settings</h1>
-      <h2>Theme</h2>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Settings</h1>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Theme</h2>
       <p>Current Theme: {theme}</p>
       <button onClick={toggleTheme}>Toggle Theme</button>
 
-      <h2>Language Preferences</h2>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Language Preferences</h2>
       <select value={language} onChange={(e) => setLanguage(e.target.value)}>
         <option value="English">English</option>
         <option value="Spanish">Spanish</option>
         <option value="French">French</option>
       </select>
 
-      <h2>Security</h2>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Security</h2>
       <p>Two-Factor Authentication: {security.twoFAEnabled ? "Enabled" : "Disabled"}</p>
       <button onClick={toggleTwoFA}>
         {security.twoFAEnabled ? "Disable 2FA" : "Enable 2FA"}
       </button>
-      <h3>Login Activity</h3>
+      <h3 style={{ color: "#ffab00", fontWeight: 700 }}>Login Activity</h3>
       <ul>
         {security.loginHistory.map((entry, index) => (
           <li key={index}>

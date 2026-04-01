@@ -19,7 +19,7 @@ const PaymentMethods = () => {
 
   return (
     <div>
-      <h1>Payment Methods</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Payment Methods</h1>
       <ul>
         {paymentMethods.map((method) => (
           <li key={method.id}>

@@ -31,7 +31,7 @@ const Login = () => {
 
     return (
         <div className="login-container main-content">
-            <h1>Login</h1>
+            <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Login</h1>
             <input
                 type="email"
                 placeholder="Email"

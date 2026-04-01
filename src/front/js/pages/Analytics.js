@@ -19,7 +19,7 @@ const Analytics = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>Analytics</h2><p>Sales performance and inventory insights</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>Analytics</h2><p>Sales performance and inventory insights</p></div>
             <div className="row g-3 mb-4">
                 {[
                     { title:"Total Revenue", value:`$${(salesData?.total_sales||0).toFixed(2)}`, icon:"💰", color:"#2dce89" },

@@ -39,7 +39,7 @@ const Deals = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🏷️ Deals & Promotions</h2><p>Manage dispensary promotions and discounts</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🏷️ Deals & Promotions</h2><p>Manage dispensary promotions and discounts</p></div>
                 <button className="btn btn-success" onClick={openNew}>+ Create Deal</button>
             </div>
             {deals.length === 0 ? (

@@ -67,7 +67,7 @@ const Users = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>Users</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Users</h2>
                     <p>Manage dispensary staff accounts</p>
                 </div>
                 <button className="btn btn-success" onClick={() => { setEditUser(null); setFormData({ email:"", password:"", role:"employee" }); setShowModal(true); }}>

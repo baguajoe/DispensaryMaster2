@@ -40,7 +40,7 @@ const YieldPrediction = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📊 Yield Predictions</h2><p>Forecast harvest yields per batch</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📊 Yield Predictions</h2><p>Forecast harvest yields per batch</p></div>
                 <button className="btn btn-success" onClick={() => setShowModal(true)}>+ Add Prediction</button>
             </div>
 

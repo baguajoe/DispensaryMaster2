@@ -252,7 +252,7 @@ const TrainingHome = () => {
                         {types.map(t=><button key={t} className={`btn btn-sm ${typeFilter===t?"btn-light":"btn-outline-light"}`} onClick={()=>setTypeFilter(t)}>{t}</button>)}
                     </div>
                     {loading?<div className="text-center py-5"><div className="spinner-border text-light"/></div>
-                    :filtered.length===0?<div className="text-center py-5" style={{color:"rgba(255,255,255,0.5)"}}><div style={{fontSize:"3rem"}}>🎓</div><h5 className="text-white">No training materials yet</h5><button className="btn btn-success mt-2" onClick={()=>navigate("/training/create")}>Add First Module</button></div>
+                    :filtered.length===0?<div className="text-center py-5" style={{color:"rgba(255,255,255,0.5)"}}><div style={{fontSize:"3rem"}}>🎓</div><h5 style={{ color: "#ffab00", fontWeight: 900 }}>No training materials yet</h5><button className="btn btn-success mt-2" onClick={()=>navigate("/training/create")}>Add First Module</button></div>
                     :<>
                         {required.length>0&&<div className="mb-4"><h6 className="text-danger fw-bold mb-3">Required Training ({required.length})</h6><div className="row">{required.map(r=><Card key={r.id} r={r}/>)}</div></div>}
                         {optional.length>0&&<div><h6 className="text-white fw-bold mb-3">{required.length>0?"Additional":"All"} Training ({optional.length})</h6><div className="row">{optional.map(r=><Card key={r.id} r={r}/>)}</div></div>}

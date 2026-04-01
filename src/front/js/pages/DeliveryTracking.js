@@ -50,7 +50,7 @@ const DeliveryTracking = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🚗 Delivery Tracking</h2><p>{deliveries.filter(d=>d.status!=="delivered").length} active deliveries</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🚗 Delivery Tracking</h2><p>{deliveries.filter(d=>d.status!=="delivered").length} active deliveries</p></div>
                 <button className="btn btn-success" onClick={()=>setShowCreate(!showCreate)}>+ New Delivery</button>
             </div>
 

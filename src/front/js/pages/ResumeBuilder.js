@@ -60,7 +60,7 @@ const ResumeBuilder = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📄 My Resume</h2><p>Build your cannabis industry profile</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📄 My Resume</h2><p>Build your cannabis industry profile</p></div>
                 <div className="d-flex gap-2">
                     <button className="btn btn-outline-light" onClick={() => navigate("/job-board")}>Browse Jobs</button>
                     <button className="btn btn-success" onClick={handleSave} disabled={saving}>

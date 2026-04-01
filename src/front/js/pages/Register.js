@@ -19,7 +19,7 @@
     
 //       return (
 //         <div>
-//           <h1>Register</h1>
+//           <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Register</h1>
 //           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
 //           <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
 //           <button onClick={handleRegister}>Register</button>

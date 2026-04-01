@@ -28,7 +28,7 @@ const MedicalDashboard = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>🏥 Medical Dashboard</h2><p>Patient care and compliance overview</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🏥 Medical Dashboard</h2><p>Patient care and compliance overview</p></div>
 
             <div className="row g-3 mb-4">
                 {[

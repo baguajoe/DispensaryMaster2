@@ -47,7 +47,7 @@ const BatchPage = () => {
 
   return (
     <div className="batch-page-container">
-      <h1>Plant Batches</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Plant Batches</h1>
       <div className="batch-controls">
         <input
           type="text"

@@ -529,3 +529,47 @@ thead th { color: rgba(255,248,225,0.5) !important; background: rgba(255,171,0,0
 .badge.bg-danger { background: rgba(255,82,82,0.15) !important; color: #ff5252 !important; }
 .badge.bg-warning { background: rgba(255,215,64,0.15) !important; color: #ffd740 !important; }
 .badge.bg-secondary { background: rgba(255,171,0,0.08) !important; color: rgba(255,248,225,0.5) !important; }
+
+/* ═══════════════════════════════════
+   CONSISTENT PAGE HEADERS
+   ═══════════════════════════════════ */
+.page-title {
+    color: #ffab00 !important;
+    font-weight: 900 !important;
+    font-size: 1.75rem !important;
+    margin: 0 0 0.25rem 0 !important;
+}
+.page-subtitle {
+    color: rgba(255,248,225,0.45) !important;
+    font-size: 0.85rem !important;
+    margin: 0 !important;
+}
+.page-header {
+    margin-bottom: 1.5rem;
+}
+/* Force all page h1/h2 to be amber */
+.main-content h1, .main-content h2 {
+    color: #ffab00 !important;
+    font-weight: 900 !important;
+}
+.main-content h3, .main-content h4 {
+    color: #ffab00 !important;
+    font-weight: 700 !important;
+}
+.main-content h5, .main-content h6 {
+    color: #ffab00 !important;
+    font-weight: 700 !important;
+}
+/* Stat card labels */
+.stat-label {
+    color: rgba(255,248,225,0.45) !important;
+    font-size: 0.72rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    font-weight: 700 !important;
+}
+.stat-value {
+    color: #ffab00 !important;
+    font-size: 1.5rem !important;
+    font-weight: 900 !important;
+}

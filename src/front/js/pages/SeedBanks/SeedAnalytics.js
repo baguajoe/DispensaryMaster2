@@ -12,7 +12,7 @@ const SeedAnalytics = () => {
     if (loading) return <div className="main-content d-flex justify-content-center align-items-center" style={{minHeight:"60vh"}}><div className="spinner-border text-light"/></div>;
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>📊 Seed Analytics</h2></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📊 Seed Analytics</h2></div>
             <div className="row g-3 mb-4">
                 {[{l:"Total Batches",v:batches.length,c:"#11cdef"},{l:"Total Seeds",v:total,c:"#2dce89"},{l:"Strains",v:strains.length,c:"#ffd600"}].map((s,i)=>(
                     <div key={i} className="col-4"><div className="glass-panel text-center"><div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.5)",textTransform:"uppercase"}}>{s.l}</div><div style={{fontSize:"1.8rem",fontWeight:700,color:s.c}}>{s.v}</div></div></div>

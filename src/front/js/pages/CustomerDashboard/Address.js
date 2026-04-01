@@ -20,7 +20,7 @@ const Address = () => {
 
   return (
     <div>
-      <h1>Manage Addresses</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Manage Addresses</h1>
       <ul>
         {addresses.map((addr) => (
           <li key={addr.id}>

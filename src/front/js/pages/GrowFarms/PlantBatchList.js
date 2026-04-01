@@ -71,7 +71,7 @@ const PlantBatchList = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>🌿 Plant Batches</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌿 Plant Batches</h2>
                     <p>{batches.length} total batches · {batches.filter(b=>b.status!=="Harvested").length} active</p>
                 </div>
                 <button className="btn btn-success" onClick={openNew}>+ New Batch</button>

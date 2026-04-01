@@ -9,7 +9,7 @@ const SeedResourceManagement = () => {
     ]);
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>🔧 Seed Resource Management</h2></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🔧 Seed Resource Management</h2></div>
             <div className="glass-panel">
                 <div className="table-responsive">
                     <table className="table table-dark table-hover mb-0">

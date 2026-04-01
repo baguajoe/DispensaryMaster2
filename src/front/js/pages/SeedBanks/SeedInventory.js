@@ -42,7 +42,7 @@ const SeedInventory = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📋 Seed Inventory</h2><p>{totalSeeds.toLocaleString()} total seeds across {batches.length} batches</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📋 Seed Inventory</h2><p>{totalSeeds.toLocaleString()} total seeds across {batches.length} batches</p></div>
                 <button className="btn btn-outline-success btn-sm" onClick={exportCSV}>⬇ Export CSV</button>
             </div>
 

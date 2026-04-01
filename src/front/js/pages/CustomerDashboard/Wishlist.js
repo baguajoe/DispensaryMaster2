@@ -31,7 +31,7 @@ const Wishlist = () => {
     return (
         <div className="main-content p-4">
             <div className="page-header mb-4">
-                <h2>❤️ Wishlist</h2>
+                <h2 style={{ color: "#ffab00", fontWeight: 800 }}>❤️ Wishlist</h2>
                 <p>{wishlist.length} saved items</p>
             </div>
 

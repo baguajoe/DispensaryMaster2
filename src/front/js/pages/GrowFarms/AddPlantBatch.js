@@ -25,7 +25,7 @@ const AddPlantBatch = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🌱 Add Plant Batch</h2><p>Start tracking a new grow batch</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌱 Add Plant Batch</h2><p>Start tracking a new grow batch</p></div>
                 <button className="btn btn-outline-light" onClick={() => navigate("/growfarms/plant-batch-list")}>← Back</button>
             </div>
             <div className="glass-panel" style={{maxWidth:"700px"}}>

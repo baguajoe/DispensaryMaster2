@@ -43,7 +43,7 @@ const StrainCatalog = () => {
 
   return (
     <div>
-      <h2>Strain Catalog</h2>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Strain Catalog</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"

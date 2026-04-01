@@ -86,7 +86,7 @@ const Shop = () => {
 
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>🌿 Shop</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌿 Shop</h2>
                     <p>{filtered.length} products available</p>
                 </div>
                 <button className="btn btn-outline-success" onClick={() => navigate("/cart-management")}>

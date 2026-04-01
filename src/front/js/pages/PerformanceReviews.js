@@ -65,7 +65,7 @@ const PerformanceReviews = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>⭐ Performance Reviews</h2><p>{reviews.length} reviews on record</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>⭐ Performance Reviews</h2><p>{reviews.length} reviews on record</p></div>
                 <button className="btn btn-success" onClick={() => setShowForm(!showForm)}>+ New Review</button>
             </div>
 

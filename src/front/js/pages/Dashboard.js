@@ -62,7 +62,7 @@ const Dashboard = () => {
     return (
         <div className="main-content p-4">
             <div className="page-header mb-4">
-                <h2>Dashboard</h2>
+                <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Dashboard</h2>
                 <p>Welcome back — here's what's happening today</p>
             </div>
 

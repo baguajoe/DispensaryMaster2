@@ -36,7 +36,7 @@ const ComplianceReports = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>📋 Compliance Reports</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>📋 Compliance Reports</h2>
                     <p>Medical card status, prescription activity, and appointment records</p>
                 </div>
                 <button className="btn btn-outline-success btn-sm" onClick={exportCSV}>⬇ Export CSV</button>

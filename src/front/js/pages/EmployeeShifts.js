@@ -46,7 +46,7 @@ const EmployeeShifts = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>⏰ My Shifts</h2><p>{shifts.length} shifts · {totalHours.toFixed(1)} total hours</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>⏰ My Shifts</h2><p>{shifts.length} shifts · {totalHours.toFixed(1)} total hours</p></div>
 
             <div className="glass-panel mb-4 text-center" style={{padding:"2rem"}}>
                 {currentShift ? (

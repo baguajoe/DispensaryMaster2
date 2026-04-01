@@ -35,7 +35,7 @@ const GrowReports = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📊 Grow Farm Reports</h2><p>Production summary and batch analytics</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📊 Grow Farm Reports</h2><p>Production summary and batch analytics</p></div>
                 <button className="btn btn-outline-success btn-sm" onClick={exportCSV}>⬇ Export CSV</button>
             </div>
 

@@ -55,7 +55,7 @@ const SeedBatchList = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📦 Seed Batch List</h2><p>{batches.length} total batches · {batches.reduce((s,b) => s+(b.quantity||0), 0)} total seeds</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📦 Seed Batch List</h2><p>{batches.length} total batches · {batches.reduce((s,b) => s+(b.quantity||0), 0)} total seeds</p></div>
                 <button className="btn btn-success" onClick={() => navigate("/seedbanks/add-seed-batch")}>+ Add Batch</button>
             </div>
 

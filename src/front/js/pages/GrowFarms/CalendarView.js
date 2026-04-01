@@ -24,7 +24,7 @@ const CalendarView = () => {
 
     return (
         <div>
-            <h1>Calendar View</h1>
+            <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Calendar View</h1>
             <Calendar
                 localizer={localizer}
                 events={events}

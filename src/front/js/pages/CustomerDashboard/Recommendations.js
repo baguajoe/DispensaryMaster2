@@ -43,7 +43,7 @@ const Recommendations = () => {
                 </div>
             )}
             <div className="page-header mb-4">
-                <h2>✨ Recommended for You</h2>
+                <h2 style={{ color: "#ffab00", fontWeight: 800 }}>✨ Recommended for You</h2>
                 <p>Products selected based on your purchase history and preferences</p>
             </div>
 

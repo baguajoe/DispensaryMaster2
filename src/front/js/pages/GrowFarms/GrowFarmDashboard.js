@@ -29,7 +29,7 @@ const GrowFarmDashboard = () => {
     return (
         <div className="main-content p-4">
             <div className="page-header mb-4">
-                <h2>🌱 Grow Farm Dashboard</h2>
+                <h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌱 Grow Farm Dashboard</h2>
                 <p>Monitor all active plant batches, tasks, and harvest tracking</p>
             </div>
 

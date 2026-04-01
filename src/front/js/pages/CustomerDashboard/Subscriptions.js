@@ -23,7 +23,7 @@ const Subscriptions = () => {
 
   return (
     <div>
-      <h1>Manage Subscriptions</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Manage Subscriptions</h1>
       <p>Current Plan: {subscription.plan}</p>
       <p>Price: {subscription.price}</p>
       <p>Next Billing Date: {subscription.nextBillingDate}</p>
@@ -31,7 +31,7 @@ const Subscriptions = () => {
       <button onClick={() => handleUpgradeDowngrade("Basic")}>Downgrade to Basic</button>
       <button onClick={() => handleUpgradeDowngrade("Pro")}>Upgrade to Pro</button>
 
-      <h2>Billing History</h2>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Billing History</h2>
       <ul>
         {billingHistory.map((item, index) => (
           <li key={index}>

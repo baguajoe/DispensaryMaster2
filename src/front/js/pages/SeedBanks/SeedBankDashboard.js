@@ -22,7 +22,7 @@ const SeedBankDashboard = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>🌰 Seed Bank Dashboard</h2><p>Manage seed inventory, storage, and germination tracking</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌰 Seed Bank Dashboard</h2><p>Manage seed inventory, storage, and germination tracking</p></div>
 
             <div className="row g-3 mb-4">
                 {[

@@ -31,7 +31,7 @@ const MetrcIntegration = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>🌿 Metrc Integration</h2><p>State-required seed-to-sale tracking</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🌿 Metrc Integration</h2><p>State-required seed-to-sale tracking</p></div>
 
             {!status?.configured && (
                 <div className="alert alert-warning mb-4">

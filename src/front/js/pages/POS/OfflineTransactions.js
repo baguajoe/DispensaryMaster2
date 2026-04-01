@@ -35,7 +35,7 @@ const OfflineTransactions = () => {
 
   return (
     <div>
-      <h2>Offline Transactions</h2>
+      <h2 style={{ color: "#ffab00", fontWeight: 800 }}>Offline Transactions</h2>
       {offlineTransactions.length === 0 ? (
         <p>No offline transactions</p>
       ) : (

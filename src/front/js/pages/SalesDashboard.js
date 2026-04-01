@@ -28,7 +28,7 @@ const SalesDashboard = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📊 Sales Dashboard</h2><p>Revenue and order overview</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📊 Sales Dashboard</h2><p>Revenue and order overview</p></div>
                 <div className="d-flex gap-2">
                     {["day","week","month","year"].map(p => (
                         <button key={p} className={`btn btn-sm ${period===p?"btn-success":"btn-outline-light"}`} onClick={()=>setPeriod(p)}>{p.charAt(0).toUpperCase()+p.slice(1)}</button>

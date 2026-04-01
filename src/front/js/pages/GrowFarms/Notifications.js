@@ -12,7 +12,7 @@ const Notifications = () => {
 
     return (
         <div>
-            <h1>Notifications</h1>
+            <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Notifications</h1>
             <ul>
                 {notifications.map((notification, index) => (
                     <li key={index} style={{ color: notification.type === "warning" ? "red" : "black" }}>

@@ -47,7 +47,7 @@ const ComplianceReportsPage = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>📄 Compliance Reports</h2><p>Generate and manage regulatory reports</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📄 Compliance Reports</h2><p>Generate and manage regulatory reports</p></div>
 
             <div className="d-flex gap-2 mb-4">
                 {["reports","batch"].map(tab => (

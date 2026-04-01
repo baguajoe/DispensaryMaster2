@@ -4,7 +4,7 @@ const SeedBankSettings = () => {
     const [saved, setSaved] = useState(false);
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>⚙️ Seed Bank Settings</h2></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>⚙️ Seed Bank Settings</h2></div>
             <div className="glass-panel">
                 <div className="row g-3">
                     <div className="col-md-3"><label className="form-label">Storage Temp (°F)</label><input className="form-control" type="number" value={settings.storage_temp} onChange={e=>setSettings({...settings,storage_temp:e.target.value})} /></div>

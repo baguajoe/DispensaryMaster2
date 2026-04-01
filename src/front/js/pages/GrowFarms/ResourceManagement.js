@@ -24,7 +24,7 @@ const ResourceManagement = () => {
 
     return (
         <div>
-            <h1>Resource Management</h1>
+            <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Resource Management</h1>
             <button onClick={handleAddResource}>Add Resource</button>
             <ul>
                 {resources.map((resource, index) => (

@@ -28,7 +28,7 @@ const AssignGrowTask = () => {
 
     return (
         <div>
-            <h1>Assign Grow Task</h1>
+            <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Assign Grow Task</h1>
             <div>
                 <label>Select Task:</label>
                 <select onChange={(e) => setSelectedTask(e.target.value)}>

@@ -34,7 +34,7 @@ const PatientProfile = () => {
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="page-header">
-                    <h2>👤 {patient.first_name} {patient.last_name}</h2>
+                    <h2 style={{ color: "#ffab00", fontWeight: 800 }}>👤 {patient.first_name} {patient.last_name}</h2>
                     <p style={{color:"rgba(255,255,255,0.6)"}}>Patient #{patient.id} · Card: {patient.medical_card_number || "N/A"}</p>
                 </div>
                 <div className="d-flex gap-2">

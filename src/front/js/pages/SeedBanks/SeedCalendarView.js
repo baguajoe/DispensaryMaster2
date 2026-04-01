@@ -26,7 +26,7 @@ const SeedCalendarView = () => {
 
   return (
     <div>
-      <h1>SeedBank Calendar</h1>
+      <h1 style={{ color: "#ffab00", fontWeight: 900 }}>SeedBank Calendar</h1>
       <Calendar
         localizer={localizer}
         events={events}

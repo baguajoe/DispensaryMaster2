@@ -35,7 +35,7 @@ const CustomerProfile = () => {
 
     return (
         <div className="main-content p-4">
-            <div className="page-header mb-4"><h2>👤 My Profile</h2><p>Manage your account information</p></div>
+            <div className="page-header mb-4"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>👤 My Profile</h2><p>Manage your account information</p></div>
             <div className="row g-4">
                 {/* Profile Card */}
                 <div className="col-md-4">
@@ -44,7 +44,7 @@ const CustomerProfile = () => {
                             style={{width:"80px",height:"80px",background:`${TIER_COLORS[tier]}33`,border:`2px solid ${TIER_COLORS[tier]}`,fontSize:"1.8rem",fontWeight:700,color:TIER_COLORS[tier]}}>
                             {initials}
                         </div>
-                        <h5 className="text-white">{profile?.first_name ? `${profile.first_name} ${profile.last_name}` : profile?.email}</h5>
+                        <h5 style={{ color: "#ffab00", fontWeight: 900 }}>{profile?.first_name ? `${profile.first_name} ${profile.last_name}` : profile?.email}</h5>
                         <p style={{color:TIER_COLORS[tier],textTransform:"capitalize",margin:"0 0 0.5rem"}}>{tier} Member</p>
                         <p style={{color:"rgba(255,255,255,0.5)",fontSize:"0.85rem",margin:0}}>{profile?.email}</p>
                         <hr style={{borderColor:"rgba(255,255,255,0.1)"}} />

@@ -372,7 +372,7 @@ const Products = () => {
         )}
         
         <header className="products-header flex-column align-items-start">
-          <h1>Products</h1>
+          <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Products</h1>
           <div className="button-group d-flex gap-2 mt-3 w-100 justify-content-end">
             <div className="dropdown">
               <button className="btn btn-dark btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

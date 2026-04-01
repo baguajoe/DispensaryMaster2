@@ -35,7 +35,7 @@ const Campaign = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>📢 Campaigns</h2><p>Marketing campaigns and promotions</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>📢 Campaigns</h2><p>Marketing campaigns and promotions</p></div>
                 <button className="btn btn-success" onClick={openNew}>+ New Campaign</button>
             </div>
             {campaigns.length === 0 ? (

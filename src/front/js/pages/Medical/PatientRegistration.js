@@ -36,7 +36,7 @@ const PatientRegistration = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🏥 Register New Patient</h2><p>Complete all required fields</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🏥 Register New Patient</h2><p>Complete all required fields</p></div>
                 <button className="btn btn-outline-light" onClick={() => navigate("/medical/patients")}>← Back to List</button>
             </div>
 

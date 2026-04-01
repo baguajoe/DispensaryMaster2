@@ -41,7 +41,7 @@ const Stores = () => {
     return (
         <div className="main-content p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="page-header"><h2>🏪 Stores</h2><p>{stores.length} locations</p></div>
+                <div className="page-header"><h2 style={{ color: "#ffab00", fontWeight: 800 }}>🏪 Stores</h2><p>{stores.length} locations</p></div>
                 <button className="btn btn-success" onClick={() => { setEditing(null); setForm({ name:"", address:"", city:"", state:"", zip_code:"", phone:"", email:"", is_active:true }); setShowForm(!showForm); }}>+ Add Store</button>
             </div>
 

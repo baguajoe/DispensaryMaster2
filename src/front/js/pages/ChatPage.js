@@ -7,7 +7,7 @@ const ChatPage = () => {
 
     return (
         <div>
-            <h1>Chat</h1>
+            <h1 style={{ color: "#ffab00", fontWeight: 900 }}>Chat</h1>
             <ChatBox identity={userIdentity} />
         </div>
     );
