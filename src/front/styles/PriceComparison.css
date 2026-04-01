@@ -1,7 +1,7 @@
 /* General Page Style */
 .price-comparison-page {
     padding: 24px;
-    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
+    background: linear-gradient(to right, #0a0800, #0f0e00); /* Blue to Teal Gradient */
     color: #0a0800; /* Matches the sidebar theme */
     min-height: calc(100vh - 90px); /* Adjust for navbar height */
     margin-left: 16rem; /* Leaves space for the sidebar */
@@ -25,7 +25,7 @@
 .table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #2a4365; /* Matches sidebar background */
+    background-color: #0a0800; /* Matches sidebar background */
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -45,11 +45,11 @@
 }
 
 .table tbody tr:nth-child(odd) {
-    background: #285e61; /* Slightly lighter teal for alternating rows */
+    background: #0f0e00; /* Slightly lighter #ffab00 for alternating rows */
 }
 
 .table tbody tr:hover {
-    background: #1e3a4c; /* Darker teal on hover */
+    background: #1e3a4c; /* Darker #ffab00 on hover */
 }
 
 .table tbody td {
@@ -65,7 +65,7 @@
 }
 
 .pagination-button {
-    background-color: #2a4365; /* Matches sidebar background */
+    background-color: #0a0800; /* Matches sidebar background */
     color: #0a0800;
     padding: 8px 16px;
     margin: 0 4px;
@@ -104,7 +104,7 @@
 }
 
 .search-bar-container button {
-    background-color: #2a4365; /* Matches sidebar background */
+    background-color: #0a0800; /* Matches sidebar background */
     color: #0a0800;
     padding: 12px 20px;
     border-radius: 8px;

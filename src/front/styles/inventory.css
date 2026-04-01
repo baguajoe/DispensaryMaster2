@@ -3,7 +3,7 @@
     margin-left: 16rem; /* Matches the sidebar width */
     padding: 24px;
     min-height: calc(100vh - 90px); /* Adjust for navbar height */
-    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
+    background: linear-gradient(to right, #0a0800, #0f0e00); /* Blue to Teal Gradient */
     color: #0a0800;
     overflow-x: auto;
     transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
@@ -29,7 +29,7 @@
 }
 
 .inventory-header button {
-    background-color: #2a4365; /* Matches sidebar background */
+    background-color: #0a0800; /* Matches sidebar background */
     color: #0a0800;
     padding: 12px 20px;
     border-radius: 8px;
@@ -39,7 +39,7 @@
 }
 
 .inventory-header button:hover {
-    background-color: #1e3a4c; /* Darker blue-teal for hover effect */
+    background-color: #1e3a4c; /* Darker blue-#ffab00 for hover effect */
     transform: scale(1.05);
 }
 
@@ -58,7 +58,7 @@
 }
 
 .upload-section button {
-    background-color: #2a4365;
+    background-color: #0a0800;
     color: #0a0800;
     padding: 8px 16px;
     border-radius: 8px;
@@ -80,7 +80,7 @@
 }
 
 .upload-status.success {
-    background: #285e61;
+    background: #0f0e00;
     color: #cbd5e0;
 }
 
@@ -98,7 +98,7 @@
 .inventory-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #2a4365;
+    background-color: #0a0800;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -117,7 +117,7 @@
 }
 
 .inventory-table tbody tr:nth-child(odd) {
-    background: #285e61;
+    background: #0f0e00;
 }
 
 .inventory-table tbody tr:hover {

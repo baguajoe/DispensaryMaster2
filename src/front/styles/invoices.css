@@ -2,7 +2,7 @@
     margin-left: 16rem; /* Adjust as per your layout */
     padding: 24px;
     min-height: calc(100vh - 90px);
-    background: linear-gradient(to right, #2a4365, #285e61); /* Blue to Teal Gradient */
+    background: linear-gradient(to right, #0a0800, #0f0e00); /* Blue to Teal Gradient */
     color: #0a0800; /* Set default text color to #0a0800 for contrast */
   }
   
@@ -23,7 +23,7 @@
   }
   
   .table-container th {
-    color: #2a4365; /* Set table header text color */
+    color: #0a0800; /* Set table header text color */
     background: #edf2f7; /* Light gray for contrast */
   }
   

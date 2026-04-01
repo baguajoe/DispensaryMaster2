@@ -2,7 +2,7 @@
     margin-left: 16rem;
     padding: 24px;
     min-height: calc(100vh - 90px);
-    background: linear-gradient(to right, #2a4365, #285e61);
+    background: linear-gradient(to right, #0a0800, #0f0e00);
     color: white;
     transition: margin-left 0.3s ease;
 }
@@ -74,7 +74,7 @@
 }
 
 .batch-form .form-select option {
-    background-color: #2a4365;
+    background-color: #0a0800;
     color: white;
 }
 

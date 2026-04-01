@@ -188,9 +188,9 @@ const JobPost = () => {
                         <h5 className="fw-semibold mb-3">Your Dispensary / Company</h5>
                         <select className="form-select mb-3" style={inputStyle}
                             value={formData.company_id} onChange={e => setFormData({...formData, company_id:e.target.value})}>
-                            <option value="" style={{background:"#1a2a3a"}}>-- Select your dispensary --</option>
+                            <option value="" style={{background:"#0a0800"}}>-- Select your dispensary --</option>
                             {(store.companies||[]).map(c => (
-                                <option key={c.id} value={c.id} style={{background:"#1a2a3a"}}>{c.name}</option>
+                                <option key={c.id} value={c.id} style={{background:"#0a0800"}}>{c.name}</option>
                             ))}
                         </select>
                         <div className="p-3 rounded" style={{background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)"}}>
@@ -226,14 +226,14 @@ const JobPost = () => {
                                 <label className="form-label small" style={{color:"rgba(255,255,255,0.7)"}}>Category</label>
                                 <select className="form-select" style={inputStyle} value={formData.category}
                                     onChange={e => setFormData({...formData, category:e.target.value})}>
-                                    {JOB_CATEGORIES.map(c => <option key={c} style={{background:"#1a2a3a"}}>{c}</option>)}
+                                    {JOB_CATEGORIES.map(c => <option key={c} style={{background:"#0a0800"}}>{c}</option>)}
                                 </select>
                             </div>
                             <div className="col-md-3">
                                 <label className="form-label small" style={{color:"rgba(255,255,255,0.7)"}}>Type</label>
                                 <select className="form-select" style={inputStyle} value={formData.job_type}
                                     onChange={e => setFormData({...formData, job_type:e.target.value})}>
-                                    {JOB_TYPES.map(t => <option key={t} style={{background:"#1a2a3a"}}>{t}</option>)}
+                                    {JOB_TYPES.map(t => <option key={t} style={{background:"#0a0800"}}>{t}</option>)}
                                 </select>
                             </div>
                             <div className="col-md-6">

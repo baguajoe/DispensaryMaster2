@@ -264,7 +264,7 @@ const TrainingHome = () => {
                 <>
                     <div className="modal fade show d-block" tabIndex="-1">
                         <div className="modal-dialog modal-md">
-                            <div className="modal-content" style={{background:"#1a2a3a",color:"white",border:"1px solid rgba(255,255,255,0.2)"}}>
+                            <div className="modal-content" style={{background:"#0a0800",color:"white",border:"1px solid rgba(255,255,255,0.2)"}}>
                                 <div className="modal-header" style={{borderBottom:"1px solid rgba(255,255,255,0.15)"}}>
                                     <h5 className="modal-title">Assign Training</h5>
                                     <button className="btn-close btn-close-white" onClick={()=>setAssignModal(null)}/>
@@ -314,7 +314,7 @@ const TrainingHome = () => {
                 <>
                     <div className="modal fade show d-block" tabIndex="-1">
                         <div className="modal-dialog modal-lg modal-dialog-scrollable">
-                            <div className="modal-content" style={{background:"#1a2a3a",color:"white",border:"1px solid rgba(255,255,255,0.2)"}}>
+                            <div className="modal-content" style={{background:"#0a0800",color:"white",border:"1px solid rgba(255,255,255,0.2)"}}>
                                 <div className="modal-header" style={{borderBottom:"1px solid rgba(255,255,255,0.15)"}}>
                                     <div>
                                         <h5 className="modal-title fw-bold">{ICONS[selected.resource_type]} {selected.title}</h5>

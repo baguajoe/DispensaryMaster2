@@ -4,7 +4,7 @@
     padding: 24px;
     min-height: calc(100vh - 90px);
     /* Adjust for navbar height */
-    background: linear-gradient(to right, #2a4365, #285e61);
+    background: linear-gradient(to right, #0a0800, #0f0e00);
     /* Blue to Teal Gradient */
     color: #0a0800;
     /* Matches sidebar color */
@@ -16,7 +16,7 @@
 
 .orders-page {
     padding: 24px;
-    background: linear-gradient(to right, #2a4365, #285e61);
+    background: linear-gradient(to right, #0a0800, #0f0e00);
     color: #0a0800;
     min-height: calc(100vh - 90px);
 }
