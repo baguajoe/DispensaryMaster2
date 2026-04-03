@@ -566,3 +566,16 @@ thead th { color: rgba(255,248,225,0.5) !important; background: rgba(255,171,0,0
     font-size: 1.5rem !important;
     font-weight: 900 !important;
 }
+
+/* SIDEBAR HEADING OVERRIDE — must beat h5 !important */
+.sidebar .sidebar-heading,
+.sidebar h5.sidebar-heading,
+h5.sidebar-heading {
+  color: #fff8e1 !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+}
+.sidebar .nav-link {
+  color: rgba(255,248,225,0.9) !important;
+}

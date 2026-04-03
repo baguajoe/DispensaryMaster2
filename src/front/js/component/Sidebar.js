@@ -156,7 +156,7 @@ export const Sidebar = () => {
                             className="sidebar-heading"
                             onClick={() => toggleSection(section)}
                             aria-expanded={!!collapsedSections[section]}
-                            style={{ color: "#fff8e1 !important" as any, fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em" }}
+                            style={{ color: "#fff8e1", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em" }}
                         >
                             {!isCollapsed && (sectionLabels[section] || section.replace(/([A-Z])/g, " $1").trim())}
                             <span className="sidebar-arrow">
