@@ -472,7 +472,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             // ─── CART ───────────────────────────────────────────────
             fetchCart: async () => {
                 try {
-                    const resp = await fetch(process.env.BACKEND_URL + "/api/cart", {
+                    const resp = await fetch(process.env.BACKEND_URL + "/api/cart/add", {
                         headers: getActions().getAuthHeaders(),
                     });
                     const data = await resp.json();
@@ -485,7 +485,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             addToCart: async (product, quantity = 1) => {
                 try {
-                    const resp = await fetch(process.env.BACKEND_URL + "/api/cart", {
+                    const resp = await fetch(process.env.BACKEND_URL + "/api/cart/add", {
                         method: "POST",
                         headers: getActions().getAuthHeaders(),
                         body: JSON.stringify({ product_id: typeof product === "object" ? product.id : product, quantity }),
@@ -520,7 +520,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             clearCart: async () => {
                 try {
-                    const resp = await fetch(process.env.BACKEND_URL + "/api/cart", {
+                    const resp = await fetch(process.env.BACKEND_URL + "/api/cart/add", {
                         method: "DELETE",
                         headers: getActions().getAuthHeaders(),
                     });
