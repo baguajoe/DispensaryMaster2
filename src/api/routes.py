@@ -837,14 +837,14 @@ def check_and_alert_low_stock(product_id):
     product = Product.query.get(product_id)
     if product:
         threshold = getattr(product, 'low_stock_threshold', 10)  # Default threshold if not set
-        if product.current_stock < threshold:
+        if product.stock < threshold:
             print(f"⚠️ Low stock alert for product '{product.name}' (ID: {product.id})")
 
             # Emit alert via WebSocket (optional)
             socketio.emit('low_stock_alert', {
                 'product_id': product.id,
                 'product_name': product.name,
-                'current_stock': product.current_stock,
+                'current_stock': product.stock,
                 'threshold': threshold,
                 'message': f"Low stock alert for {product.name}"
             }, broadcast=True)
@@ -854,13 +854,13 @@ def check_and_alert_low_stock(product_id):
 def update_stock(product_id):
     data = request.json
     product = Product.query.get_or_404(product_id)
-    product.current_stock = data['current_stock']
+    product.stock = data['current_stock']
     db.session.commit()
 
     # Emit WebSocket event for inventory update
     socketio.emit('inventory_updated', {
         'product_id': product.id,
-        'current_stock': product.current_stock
+        'current_stock': product.stock
     }, broadcast=True)
 
     # Check for low stock alert
@@ -2303,8 +2303,8 @@ def add_to_cart():
     if not product:
         return jsonify({"error": "Product not found"}), 404
     
-    if product.current_stock < quantity:
-        return jsonify({"error": f"Insufficient stock. Only {product.current_stock} available"}), 400
+    if product.stock < quantity:
+        return jsonify({"error": f"Insufficient stock. Only {product.stock} available"}), 400
     
     # Check if item already in cart
     existing_item = CartItem.query.filter_by(
@@ -2315,8 +2315,8 @@ def add_to_cart():
     
     if existing_item:
         new_quantity = existing_item.quantity + quantity
-        if new_quantity > product.current_stock:
-            return jsonify({"error": f"Cannot add more. Only {product.current_stock} available"}), 400
+        if new_quantity > product.stock:
+            return jsonify({"error": f"Cannot add more. Only {product.stock} available"}), 400
         existing_item.quantity = new_quantity
     else:
         new_item = CartItem(
@@ -2477,10 +2477,10 @@ def get_cart_summary():
     total = 0
     for item in cart_items:
         product = Product.query.get(item.product_id)
-        if not product or product.current_stock < item.quantity:
+        if not product or product.stock < item.quantity:
             return jsonify({"error": f"Insufficient stock for {product.name}"}), 400
 
-        product.current_stock -= item.quantity
+        product.stock -= item.quantity
         db.session.add(product)
 
         total += item.quantity * item.product.unit_price
@@ -3882,7 +3882,7 @@ def metrc_sync_inventory():
             payload = {
                 "Label": product.batch_number or f"DM-{product.id}",
                 "Name": product.name,
-                "Quantity": float(product.current_stock),
+                "Quantity": float(product.stock),
                 "UnitOfMeasureName": "Grams",
                 "ProductCategoryName": product.category,
             }
@@ -4121,10 +4121,10 @@ def sync_inventory_across_locations():
         "out_of_stock": []
     }
     for product in products:
-        if product.current_stock <= 0:
+        if product.stock <= 0:
             sync_report["out_of_stock"].append({"id": product.id, "name": product.name})
-        elif hasattr(product, 'reorder_point') and product.current_stock <= product.reorder_point:
-            sync_report["low_stock_alerts"].append({"id": product.id, "name": product.name, "stock": product.current_stock})
+        elif hasattr(product, 'reorder_point') and product.stock <= product.reorder_point:
+            sync_report["low_stock_alerts"].append({"id": product.id, "name": product.name, "stock": product.stock})
     return jsonify(sync_report), 200
 
 @api.route('/locations/inventory-summary', methods=['GET'])
