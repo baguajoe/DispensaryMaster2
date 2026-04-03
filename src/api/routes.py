@@ -2278,7 +2278,7 @@ def remove_from_wishlist(item_id):
     return jsonify({"message": "Item removed from wishlist"}), 200
 
 
-# @api.route('/cart', methods=['GET'])
+@api.route('/cart', methods=['GET'])
 # @jwt_required()
 # def get_cart():
 #     user_id = get_jwt_identity()  # Assumes you use JWT to authenticate users

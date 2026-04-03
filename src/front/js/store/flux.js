@@ -472,7 +472,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             // ─── CART ───────────────────────────────────────────────
             fetchCart: async () => {
                 try {
-                    const resp = await fetch(process.env.BACKEND_URL + "/api/cart/add", {
+                    const resp = await fetch(process.env.BACKEND_URL + "/api/cart/summary", {
                         headers: getActions().getAuthHeaders(),
                     });
                     const data = await resp.json();
