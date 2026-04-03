@@ -47,7 +47,7 @@
 }
 .sidebar-nav { padding: 0.5rem 0; flex: 1; overflow-y: auto; }
 .sidebar-heading {
-    color: rgba(255,248,225,0.75);
+    color: #fff8e1;
     font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -63,7 +63,7 @@
 .sidebar-heading:hover { color: #ffab00; }
 .dropdown-content { padding-left: 0.5rem; }
 .sidebar-nav .nav-link {
-    color: rgba(255,248,225,0.85);
+    color: rgba(255,248,225,0.9);
     padding: 0.4rem 1.1rem;
     font-size: 0.8rem;
     display: block;
