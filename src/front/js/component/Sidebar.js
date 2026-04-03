@@ -3,7 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../../styles/sidebar.css";
 
 export const Sidebar = () => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        return localStorage.getItem("sidebarCollapsed") === "true" ? true : false;
+    });
     const [collapsedSections, setCollapsedSections] = useState({});
     const location = useLocation();
     const navigate = useNavigate();
@@ -138,7 +140,10 @@ export const Sidebar = () => {
         <div className={`sidebar ${isCollapsed ? "sidebar-collapsed" : ""}`} style={{ width: isCollapsed ? "60px" : "240px", minWidth: isCollapsed ? "60px" : "240px", maxWidth: isCollapsed ? "60px" : "240px", flexShrink: 0, transition: "width 0.25s ease" }}>
             <button
                 className="sidebar-toggle"
-                onClick={() => setIsCollapsed((prev) => !prev)}
+                onClick={() => setIsCollapsed((prev) => {
+                    localStorage.setItem("sidebarCollapsed", !prev);
+                    return !prev;
+                })}
             >
                 {isCollapsed ? "→" : "←"}
             </button>
