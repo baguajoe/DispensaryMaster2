@@ -4,7 +4,7 @@ import "../../styles/sidebar.css";
 
 export const Sidebar = () => {
     const [isCollapsed, setIsCollapsed] = useState(() => {
-        return localStorage.getItem("sidebarCollapsed") === "true" ? true : false;
+        return false;
     });
     const [collapsedSections, setCollapsedSections] = useState({});
     const location = useLocation();
@@ -141,7 +141,7 @@ export const Sidebar = () => {
             <button
                 className="sidebar-toggle"
                 onClick={() => setIsCollapsed((prev) => {
-                    localStorage.setItem("sidebarCollapsed", !prev);
+                    
                     return !prev;
                 })}
             >
