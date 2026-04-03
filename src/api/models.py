@@ -1332,7 +1332,6 @@ class YieldPrediction(db.Model):
 
 class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     theme = db.Column(db.String(50))
     notifications_enabled = db.Column(db.Boolean, default=True)
@@ -1683,7 +1682,6 @@ class Cart(db.Model):
 class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cart_id = db.Column(db.Integer, db.ForeignKey('cart.id'), nullable=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
@@ -2193,7 +2191,6 @@ class Resume(db.Model):
     # profile_photo added for LeafBridge photo system
     __tablename__ = 'resume'
     id = db.Column(db.Integer, primary_key=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), nullable=False)
@@ -2345,7 +2342,6 @@ class PerformanceReview(db.Model):
 class SavedJob(db.Model):
     __tablename__ = 'saved_job'
     id = db.Column(db.Integer, primary_key=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False)
     saved_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -2491,7 +2487,6 @@ class StripePayment(db.Model):
 class LeafBridgePost(db.Model):
     __tablename__ = 'leafbridge_post'
     id = db.Column(db.Integer, primary_key=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     post_type = db.Column(db.String(30), default='update')
@@ -2506,7 +2501,6 @@ class LeafBridgePost(db.Model):
 class LeafBridgeConnection(db.Model):
     __tablename__ = 'leafbridge_connection'
     id = db.Column(db.Integer, primary_key=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     target_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     status = db.Column(db.String(20), default='pending')
@@ -2537,7 +2531,6 @@ class LeafBridgeMessage(db.Model):
 class LeafBridgeConversation(db.Model):
     __tablename__ = 'leafbridge_conversation'
     id = db.Column(db.Integer, primary_key=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     other_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -2550,7 +2543,6 @@ class LeafBridgeComment(db.Model):
     __tablename__ = 'leafbridge_comment'
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('leafbridge_post.id'), nullable=False)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -2562,7 +2554,6 @@ class LeafBridgeComment(db.Model):
 class LeafBridgeNotification(db.Model):
     __tablename__ = 'leafbridge_notification'
     id = db.Column(db.Integer, primary_key=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     type = db.Column(db.String(50), nullable=False)
     message = db.Column(db.String(255), nullable=False)
@@ -2653,7 +2644,6 @@ class TrainingAssignment(db.Model):
 class LeafBridgePhoto(db.Model):
     __tablename__ = 'leafbridge_photo'
     id = db.Column(db.Integer, primary_key=True)
-    profile_photo = db.Column(db.String(500), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     url = db.Column(db.String(500), nullable=False)
     caption = db.Column(db.String(200), nullable=True)
