@@ -2454,7 +2454,7 @@ def get_cart_summary():
     cart_items = CartItem.query.filter_by(user_id=user_id, saved_for_later=False).all()
     
     item_count = sum(item.quantity for item in cart_items)
-    total = sum(float(item.product.unit_price) * item.quantity for item in cart_items)
+    total = sum(float(item.product.price) * item.quantity for item in cart_items)
     
     return jsonify({
         "item_count": item_count,
@@ -2483,12 +2483,12 @@ def get_cart_summary():
         product.stock -= item.quantity
         db.session.add(product)
 
-        total += item.quantity * item.product.unit_price
+        total += item.quantity * item.product.price
         order_item = OrderItem(
             order_id=order.id,
             product_id=item.product_id,
             quantity=item.quantity,
-            unit_price=item.product.unit_price,
+            unit_price=item.product.price,
         )
         db.session.add(order_item)
         db.session.delete(item)  # Remove from cart
