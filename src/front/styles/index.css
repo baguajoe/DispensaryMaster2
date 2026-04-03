@@ -494,6 +494,7 @@ body { color: #fff8e1 !important; background: #0a0800 !important; }
 
 /* All headings amber */
 h1, h2, h3, h4, h5, h6 { color: #ffab00 !important; }
+.sidebar-heading { color: #fff8e1 !important; }
 
 /* Table text */
 table, td, th, tr { color: #fff8e1 !important; }
@@ -548,18 +549,10 @@ thead th { color: rgba(255,248,225,0.5) !important; background: rgba(255,171,0,0
     margin-bottom: 1.5rem;
 }
 /* Force all page h1/h2 to be amber */
-.main-content h1, .main-content h2 {
-    color: #ffab00 !important;
-    font-weight: 900 !important;
-}
-.main-content h3, .main-content h4 {
-    color: #ffab00 !important;
-    font-weight: 700 !important;
-}
-.main-content h5, .main-content h6 {
-    color: #ffab00 !important;
-    font-weight: 700 !important;
-}
+.main-content h1, .main-content h2 { color: #ffab00 !important; font-weight: 900 !important; }
+.main-content h3, .main-content h4 { color: #ffab00 !important; font-weight: 700 !important; }
+.main-content h5, .main-content h6 { color: #ffab00 !important; font-weight: 700 !important; }
+.sidebar h5.sidebar-heading { color: #fff8e1 !important; }
 /* Stat card labels */
 .stat-label {
     color: rgba(255,248,225,0.45) !important;
