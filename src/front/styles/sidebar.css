@@ -24,7 +24,7 @@
 .sidebar-toggle {
     background: transparent;
     border: 1px solid rgba(255,171,0,0.15);
-    color: rgba(255,248,225,0.4);
+    color: rgba(255,248,225,0.8);
     padding: 0.35rem 0.65rem;
     border-radius: 6px;
     margin: 0.65rem;
@@ -47,7 +47,7 @@
 }
 .sidebar-nav { padding: 0.5rem 0; flex: 1; overflow-y: auto; }
 .sidebar-heading {
-    color: rgba(255,248,225,0.25);
+    color: rgba(255,248,225,0.75);
     font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -63,7 +63,7 @@
 .sidebar-heading:hover { color: #ffab00; }
 .dropdown-content { padding-left: 0.5rem; }
 .sidebar-nav .nav-link {
-    color: rgba(255,248,225,0.5);
+    color: rgba(255,248,225,0.85);
     padding: 0.4rem 1.1rem;
     font-size: 0.8rem;
     display: block;
