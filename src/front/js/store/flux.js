@@ -488,7 +488,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                     const resp = await fetch(process.env.BACKEND_URL + "/api/cart", {
                         method: "POST",
                         headers: getActions().getAuthHeaders(),
-                        body: JSON.stringify({ product_id: product.id, quantity }),
+                        body: JSON.stringify({ product_id: typeof product === "object" ? product.id : product, quantity }),
                     });
                     const data = await resp.json();
                     if (resp.ok) {
